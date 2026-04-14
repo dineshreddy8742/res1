@@ -290,7 +290,7 @@ async def get_admin_stats(user_id: str = Depends(get_current_user)):
     """Get statistics for admin dashboard (admin only)."""
     repo = UserRepository()
     user = await repo.get_user_by_id(user_id)
-    if not user or not user.get("is_admin", False):
+    if not user or (not user.get("is_admin", False) and user.get("role") != "admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
 
     try:
@@ -323,7 +323,7 @@ async def get_all_users(user_id: str = Depends(get_current_user)):
     """Get all registered users (admin only)."""
     repo = UserRepository()
     user = await repo.get_user_by_id(user_id)
-    if not user or not user.get("is_admin", False):
+    if not user or (not user.get("is_admin", False) and user.get("role") != "admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
     
     users = await repo.get_all_users()
@@ -337,7 +337,7 @@ async def admin_add_user(req: RegisterRequest, user_id: str = Depends(get_curren
     """Admin manually adds a user."""
     repo = UserRepository()
     admin = await repo.get_user_by_id(user_id)
-    if not admin or not admin.get("is_admin", False):
+    if not admin or (not admin.get("is_admin", False) and admin.get("role") != "admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
     
     # Check if email exists
@@ -362,7 +362,7 @@ async def admin_bulk_import(users: List[RegisterRequest], user_id: str = Depends
     """Admin bulk imports users from CSV data sent from frontend."""
     repo = UserRepository()
     admin = await repo.get_user_by_id(user_id)
-    if not admin or not admin.get("is_admin", False):
+    if not admin or (not admin.get("is_admin", False) and admin.get("role") != "admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
     
     users_to_add = []
@@ -388,7 +388,7 @@ async def admin_bulk_import(users: List[RegisterRequest], user_id: str = Depends
 async def get_colleges(user_id: str = Depends(get_current_user)):
     repo = UserRepository()
     admin = await repo.get_user_by_id(user_id)
-    if not admin or not admin.get("is_admin", False):
+    if not admin or (not admin.get("is_admin", False) and admin.get("role") != "admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
 
     result = repo._get_supabase_client().table("colleges").select("*").execute()
@@ -398,7 +398,7 @@ async def get_colleges(user_id: str = Depends(get_current_user)):
 async def add_college(name: str, email: str, user_id: str = Depends(get_current_user)):
     repo = UserRepository()
     admin = await repo.get_user_by_id(user_id)
-    if not admin or not admin.get("is_admin", False):
+    if not admin or (not admin.get("is_admin", False) and admin.get("role") != "admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
 
     result = repo._get_supabase_client().table("colleges").insert({"name": name, "email": email}).execute()
@@ -410,7 +410,7 @@ async def add_college(name: str, email: str, user_id: str = Depends(get_current_
 async def update_college(college_id: str, name: str, email: str, user_id: str = Depends(get_current_user)):
     repo = UserRepository()
     admin = await repo.get_user_by_id(user_id)
-    if not admin or not admin.get("is_admin", False):
+    if not admin or (not admin.get("is_admin", False) and admin.get("role") != "admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
 
     result = repo._get_supabase_client().table("colleges").update({"name": name, "email": email}).eq("id", college_id).execute()
@@ -422,7 +422,7 @@ async def update_college(college_id: str, name: str, email: str, user_id: str = 
 async def delete_college(college_id: str, user_id: str = Depends(get_current_user)):
     repo = UserRepository()
     admin = await repo.get_user_by_id(user_id)
-    if not admin or not admin.get("is_admin", False):
+    if not admin or (not admin.get("is_admin", False) and admin.get("role") != "admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
 
     # Check if college has students
@@ -491,7 +491,7 @@ async def disable_user(target_user_id: str, user_id: str = Depends(get_current_u
     """Disable a user account."""
     repo = UserRepository()
     requester = await repo.get_user_by_id(user_id)
-    if not requester or not requester.get("is_admin", False):
+    if not requester or (not requester.get("is_admin", False) and requester.get("role") != "admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
     
     await repo.update_user(target_user_id, {"is_active": False})
@@ -503,7 +503,7 @@ async def enable_user(target_user_id: str, user_id: str = Depends(get_current_us
     """Enable a disabled user account."""
     repo = UserRepository()
     requester = await repo.get_user_by_id(user_id)
-    if not requester or not requester.get("is_admin", False):
+    if not requester or (not requester.get("is_admin", False) and requester.get("role") != "admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
     
     await repo.update_user(target_user_id, {"is_active": True})
@@ -522,7 +522,7 @@ async def admin_update_user(req: AdminUserUpdate, user_id: str = Depends(get_cur
     """Admin update any user's profile."""
     repo = UserRepository()
     requester = await repo.get_user_by_id(user_id)
-    if not requester or not requester.get("is_admin", False):
+    if not requester or (not requester.get("is_admin", False) and requester.get("role") != "admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
     
     update_data = {

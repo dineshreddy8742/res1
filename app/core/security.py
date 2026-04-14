@@ -93,6 +93,6 @@ async def require_admin(request: Request) -> bool:
     from app.database.repositories.user_repository import UserRepository
     repo = UserRepository()
     user = await repo.get_user_by_id(user_id)
-    if not user or not user.get("is_admin", False):
+    if not user or (not user.get("is_admin", False) and user.get("role") != "admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
     return True
