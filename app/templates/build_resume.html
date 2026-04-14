@@ -38,7 +38,10 @@
             </div>
             <div class="flex items-center gap-2">
                 <button @click="startTour()" class="nav-btn bg-white/10 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-white/20 transition-all">🎓 Tour</button>
-                <button @click="saveToLocalStorage()" class="nav-btn bg-green-500/30 text-green-300 px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-green-500/50 transition-all">💾 Save</button>
+                <button @click="saveToServer()" :disabled="isSaving" class="nav-btn bg-green-500/30 text-green-300 px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-green-500/50 transition-all">
+                    <span x-show="!isSaving">💾 Save</span>
+                    <span x-show="isSaving">⌛ Saving...</span>
+                </button>
                 <button @click="resetResume()" class="nav-btn bg-red-500/30 text-red-300 px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-red-500/50 transition-all">🗑️ Clear</button>
                 <button @click="showDownloadModal = true" class="nav-btn bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-1.5 rounded-lg text-sm font-bold hover:scale-105 transition-all shadow-lg">📥 Download</button>
                 <button @click="showFormattingPanel = !showFormattingPanel" :class="showFormattingPanel ? 'bg-yellow-500 text-white' : 'bg-white/10 text-white'" class="nav-btn px-3 py-1.5 rounded-lg text-sm font-bold hover:scale-105 transition-all">🎨 Customize</button>
@@ -732,6 +735,9 @@ function resumeBuilder() {
             languages: [], achievements: [], interests: [], customSections: []
         },
 
+        selectedResumeId: null,
+        isSaving: false,
+
         init() {
             this.loadExistingResumes();
             const saved = localStorage.getItem('draftResume');
@@ -801,7 +807,99 @@ function resumeBuilder() {
         saveToLocalStorage(notify = true) {
             localStorage.setItem('draftResume', JSON.stringify(this.data));
             localStorage.setItem('resume_formatting', JSON.stringify(this.formatting));
-            if (notify) alert('✅ Resume saved to browser!');
+            if (notify) console.log('Draft saved to browser');
+        },
+
+        async saveToServer() {
+            this.isSaving = true;
+            try {
+                // 1. Prepare data mapping (Frontend -> Backend Schema)
+                const mappedData = {
+                    user_information: {
+                        name: this.data.name || 'Resume Owner',
+                        main_job_title: this.data.title || 'Professional',
+                        profile_description: this.data.profile || '',
+                        email: this.data.email || 'user@example.com',
+                        phone: this.data.phone || '',
+                        linkedin: this.data.linkedin || '',
+                        github: this.data.github || '',
+                        experiences: this.data.experience.map(exp => ({
+                            job_title: exp.title || 'Role',
+                            company: exp.company || 'Company',
+                            location: exp.location || '',
+                            start_date: exp.startDate || 'N/A',
+                            end_date: exp.endDate || 'Present',
+                            four_tasks: (exp.description || '').split('\n').filter(l => l.trim()).slice(0, 4)
+                        })),
+                        education: this.data.education.map(edu => ({
+                            institution: edu.school || 'School',
+                            degree: edu.degree || 'Degree',
+                            description: edu.gpa || '',
+                            start_date: edu.startDate || 'N/A',
+                            end_date: edu.endDate || 'N/A'
+                        })),
+                        skills: {
+                            hard_skills: [
+                                ...this.data.skills.programming.map(s => s.text),
+                                ...this.data.skills.ai_ml.map(s => s.text),
+                                ...this.data.skills.cloud_devops.map(s => s.text),
+                                ...this.data.skills.frontend_backend.map(s => s.text),
+                                ...this.data.skills.tools_frameworks.map(s => s.text)
+                            ].filter(s => s),
+                            soft_skills: this.data.skills.soft_skills.map(s => s.text).filter(s => s)
+                        }
+                    },
+                    projects: this.data.projects.map(p => ({
+                        project_name: p.name || 'Project',
+                        two_goals_of_the_project: (p.description || '').split('\n').filter(l => l.trim()).slice(0, 2),
+                        project_end_result: p.techStack || '',
+                        tech_stack: (p.techStack || '').split(',').map(s => s.trim())
+                    })),
+                    certificate: this.data.certifications.map(c => ({
+                        name: c.name || 'Cert',
+                        institution: c.issuer || 'Issuer',
+                        date: c.date || 'N/A'
+                    })),
+                    extra_curricular_activities: this.data.languages.map(l => ({
+                        name: l.name,
+                        description: `Proficiency: ${l.level}`
+                    }))
+                };
+
+                // Validate min items for backend schema
+                mappedData.user_information.experiences.forEach(e => {
+                    while (e.four_tasks.length < 4) e.four_tasks.push('.');
+                });
+                mappedData.projects.forEach(p => {
+                    while (p.two_goals_of_the_project.length < 2) p.two_goals_of_the_project.push('.');
+                });
+
+                // 2. Send to API
+                const res = await fetch('/api/resume/save-manual', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: this.data.name ? `${this.data.name}'s Resume` : 'Draft Resume',
+                        data: mappedData,
+                        resume_id: this.selectedResumeId,
+                        selected_template: this.formatting.template === 'modern' ? 'modern_pro' : 'ats_standard'
+                    })
+                });
+
+                if (res.ok) {
+                    const result = await res.json();
+                    this.selectedResumeId = result.id;
+                    alert('✅ Resume saved to your profile successfully!');
+                } else {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Failed to save');
+                }
+            } catch(e) {
+                console.error(e);
+                alert('❌ Error saving to server: ' + e.message);
+            } finally {
+                this.isSaving = false;
+            }
         },
         resetResume() { if (confirm('Reset all fields?')) { localStorage.removeItem('draftResume'); this.data = { name: '', title: '', phone: '', email: '', linkedin: '', github: '', profile: '', experience: [], education: [], skills: { programming: [], ai_ml: [], cloud_devops: [], frontend_backend: [], tools_frameworks: [], soft_skills: [] }, projects: [], certifications: [], languages: [], achievements: [], interests: [], customSections: [] }; this.addEducation(); this.addSkill('programming'); this.addSkill('ai_ml'); this.addSkill('tools_frameworks'); } },
 
@@ -850,19 +948,38 @@ function resumeBuilder() {
         },
         removeSkill(category, index) { this.data.skills[category].splice(index, 1); this.updatePreview(); },
 
-        downloadPDF() {
+        async downloadPDF() {
             this.showDownloadModal = false;
+            
+            // 1. Encourage saving to server first so download works reliably
+            if (confirm('Save your progress to the server before downloading? (Recommended for best PDF quality)')) {
+                await this.saveToServer();
+            }
+
             const element = document.getElementById('resume-content');
             const opt = {
                 margin: 0,
                 filename: (this.data.name || 'Resume') + '.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+                html2canvas: { scale: 2, useCORS: true, letterRendering: true, backgroundColor: '#ffffff' },
                 jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
             
-            // New Promise-based usage:
-            html2pdf().set(opt).from(element).save();
+            try {
+                // If we have an ID, we can also offer the backend download which is often more stable
+                if (this.selectedResumeId && confirm('Use high-fidelity server-side PDF generator? (Click Cancel to use browser-side generator)')) {
+                    window.open(`/api/resume/${this.selectedResumeId}/download?use_optimized=true`, '_blank');
+                    return;
+                }
+
+                this.isSaving = true; // Show loading state
+                await html2pdf().set(opt).from(element).save();
+            } catch (e) {
+                console.error('PDF Generation error:', e);
+                alert('Frontend PDF generation failed. Please use "Sync to Server" then download from Dashboard, OR use Ctrl+P to Print and Save as PDF.');
+            } finally {
+                this.isSaving = false;
+            }
         },
         printResume() { this.showDownloadModal = false; window.print(); },
         

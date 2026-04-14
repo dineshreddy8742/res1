@@ -111,6 +111,12 @@ class OptimizationResponse(BaseModel):
     optimized_data: Dict[str, Any] = Field(..., description="Optimized resume data")
 
 
+class ManualSaveRequest(BaseModel):
+    title: str
+    data: ResumeData
+    resume_id: Optional[str] = None
+    selected_template: Optional[str] = "ats_standard"
+
 class ContactFormRequest(BaseModel):
     """Schema for contact form submission."""
 
@@ -509,6 +515,39 @@ async def track_download(
         await user_repo.increment_download_count(resume.get("user_id"))
     return {"success": True}
 
+@resume_router.post("/save-manual")
+async def save_manual_resume(
+    request: ManualSaveRequest,
+    user_id: str = Depends(get_current_user_id),
+    repo: ResumeRepository = Depends(get_resume_repository),
+):
+    """Save a manually built resume to the database."""
+    try:
+        # If resume_id is provided, update existing, otherwise create new
+        if request.resume_id:
+            update_data = {
+                "title": request.title,
+                "optimized_data": request.data.model_dump(),
+                "selected_template": request.selected_template,
+                "status": "completed"
+            }
+            success = await repo.update_resume(request.resume_id, update_data)
+            return {"status": "success", "id": request.resume_id} if success else {"status": "error"}
+        else:
+            new_resume = Resume(
+                user_id=user_id,
+                title=request.title,
+                original_content="Manually built resume",
+                job_description="N/A",
+                optimized_data=request.data,
+                status="completed",
+                selected_template=request.selected_template or "ats_standard"
+            )
+            created_id = await repo.create_resume(new_resume)
+            return {"status": "success", "id": created_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @resume_router.put(
     "/{resume_id}",
@@ -888,33 +927,31 @@ async def download_resume(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Resume with ID {resume_id} not found",
         )
-    if use_optimized and not resume.get("optimized_data"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Optimized resume data not available. Please optimize the resume first.",
-        )
     
     try:
-        if use_optimized:
+        if use_optimized and resume.get("optimized_data"):
             json_data = resume["optimized_data"]
-        else:
+        elif not use_optimized and resume.get("original_content"):
+            # If original content is available, we'd normally parse it, 
+            # but for now we provide a minimal structure
             json_data = {
                 "user_information": {
-                    "name": "",
+                    "name": resume.get("title", "Resume"),
                     "main_job_title": "",
                     "profile_description": resume.get("original_content", ""),
-                    "email": "",
-                    "linkedin": "",
-                    "github": "",
+                    "email": "user@example.com",
                     "experiences": [],
                     "education": [],
-                    "skills": {"hard_skills": [], "soft_skills": []},
-                    "hobbies": []
-                },
-                "projects": [],
-                "certificate": [],
-                "extra_curricular_activities": []
+                    "skills": {"hard_skills": [], "soft_skills": []}
+                }
             }
+        elif resume.get("optimized_data"):
+            json_data = resume["optimized_data"]
+        else:
+             raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Resume data is empty. Please add content or optimize first.",
+            )
         
         if isinstance(json_data, str):
             import json as json_mod
