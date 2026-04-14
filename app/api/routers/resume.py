@@ -515,6 +515,7 @@ async def track_download(
         await user_repo.increment_download_count(resume.get("user_id"))
     return {"success": True}
 
+@resume_router.post("/save-manual")
 async def save_manual_resume(
     request: ManualSaveRequest,
     user_id: str = Depends(get_current_user),
