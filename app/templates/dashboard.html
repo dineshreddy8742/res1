@@ -734,72 +734,55 @@
             showResumeDetailsModal: false,
             selectedResume: null,
 
+            isViewingStudent: false,
+            targetStudentName: '',
+            
             // Initialize the component and fetch data
             async init() {
-                // Set initial state to prevent operations during initialization
                 this.pageLeaving = false;
                 this.showDeleteModal = false;
                 this.resumeToDelete = null;
 
-                // Fetch user info
                 try {
                     const res = await fetch('/api/auth/me');
                     if (res.ok) {
                         this.user = await res.json();
+                        
+                        // Check for admin viewing another student
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const targetUserId = urlParams.get('user');
+                        
+                        if (targetUserId && (this.user.is_admin || this.user.role === 'admin')) {
+                            this.isViewingStudent = true;
+                            await this.loadResumes(targetUserId);
+                        } else {
+                            await this.loadResumes(this.user.id);
+                        }
+                    } else {
+                        window.location.href = '/login';
                     }
                 } catch(e) { console.error('Failed to fetch user:', e); }
 
-                // Initialize view mode from localStorage if available
                 const savedViewMode = localStorage.getItem('resumeDashboardViewMode');
-                if (savedViewMode) {
-                    this.viewMode = savedViewMode;
-                }
+                if (savedViewMode) this.viewMode = savedViewMode;
 
-                // Add multiple event listeners for different browser behaviors
                 window.addEventListener('beforeunload', () => {
                     this.pageLeaving = true;
-                    this.showDeleteModal = false;
-                    this.resumeToDelete = null;
                 });
                 
-                // For Chromium-based browsers (Edge, Brave, Chrome)
-                document.addEventListener('visibilitychange', () => {
-                    if (document.visibilityState === 'hidden') {
-                        this.pageLeaving = true;
-                        this.showDeleteModal = false;
-                        this.resumeToDelete = null;
-                    }
-                });
-                
-                // Cache navigation actions to prevent race conditions
-                const originalPushState = history.pushState;
-                history.pushState = function() {
-                    // Set the global variable that Alpine.js can access
-                    window.alpinePageTransition = true;
-                    
-                    // Call the original function
-                    return originalPushState.apply(this, arguments);
-                };
-                
-                await this.loadResumes();
+                this.$watch('searchQuery', value => { this.filterResumes(); this.sortResumes(); });
                 this.calculateStats();
                 this.sortResumes();
-
-                this.$watch('searchQuery', value => { this.filterResumes(); this.sortResumes(); });
-                this.$watch('viewMode', value => { localStorage.setItem('resumeDashboardViewMode', value); });
             },
 
-            async loadResumes() {
+            async loadResumes(uid) {
                 try {
-                    // Try authenticated endpoint first
-                    const res = await fetch('/api/auth/my-resumes');
-                    if (res.ok) { this.resumes = await res.json(); return; }
-                } catch(e) {}
-                // Fallback
-                try {
-                    const res = await fetch('/api/resume/user/temp-user-id');
-                    if (res.ok) this.resumes = await res.json();
-                } catch(e) {}
+                    const res = await fetch(`/api/resume/user/${uid}`);
+                    if (res.ok) { 
+                        this.resumes = await res.json(); 
+                        this.filteredResumes = [...this.resumes];
+                    }
+                } catch(e) { console.error('Load Error:', e); }
             },
 
             // Filter resumes based on search query
@@ -862,25 +845,24 @@
             },
             
             // Load resumes from the API
-            async loadResumes() {
+            async loadResumes(uid) {
                 try {
                     this.isLoading = true;
-                    // In a real app, you'd get the user ID from auth state
-                    // Here we're using a placeholder user ID
-                    const userId = 'temp-user-id';
-                    const response = await fetch(`/api/resume/user/${userId}`);
+                    const response = await fetch(`/api/resume/user/${uid}`);
                     
                     if (response.ok) {
                         const data = await response.json();
                         this.resumes = data;
-                        this.filteredResumes = [...data]; // Initialize filtered resumes
+                        this.filteredResumes = [...data];
+                        
+                        // If viewing student, get their name
+                        if (this.isViewingStudent && this.resumes.length > 0) {
+                            // Optionally fetch student profile for name
+                        }
                     } else {
-                        console.error('Failed to load resumes');
-                        // Show a notification for error
                         this.showNotification('Error loading resumes', 'error');
                     }
                 } catch (error) {
-                    console.error('Error loading resumes:', error);
                     this.showNotification('Error connecting to server', 'error');
                 } finally {
                     this.isLoading = false;
@@ -936,7 +918,10 @@
             },
 
             // Download resume PDF
-            downloadResume(resumeId) {
+            async downloadResume(resumeId) {
+                // Track download in background
+                fetch(`/api/resume/${resumeId}/track-download`, { method: 'POST' }).catch(() => {});
+
                 const downloadUrl = `/api/resume/${resumeId}/download?use_optimized=true`;
                 const downloadLink = document.createElement('a');
                 downloadLink.href = downloadUrl;

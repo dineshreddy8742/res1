@@ -92,6 +92,17 @@ class UserRepository(BaseRepository):
         except Exception:
             return False
 
+    async def increment_download_count(self, user_id: str) -> bool:
+        """Increment user's download count."""
+        try:
+            user = await self.get_user_by_id(user_id)
+            if user:
+                current_count = user.get("download_count", 0) or 0
+                return await self.update_user(user_id, {"download_count": current_count + 1})
+            return False
+        except Exception:
+            return False
+
     async def get_all_users(self) -> List[Dict]:
         """Get all users (admin only)."""
         try:
@@ -124,6 +135,7 @@ class UserRepository(BaseRepository):
             return {
                 "total_users": total_users,
                 "total_resumes": total_resumes,
+                "total_downloads": sum(u.get("download_count", 0) or 0 for u in users),
                 "colleges": colleges,
                 "users_by_college": users_by_college,
                 "recent_logins": recent_logins,

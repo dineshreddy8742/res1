@@ -496,6 +496,18 @@ async def get_user_resumes(
             }
         )
     return formatted_resumes
+    
+@resume_router.post("/{resume_id}/track-download")
+async def track_download(
+    resume_id: str,
+    repo: ResumeRepository = Depends(get_resume_repository),
+):
+    """Increment download count when a resume is downloaded."""
+    resume = await repo.get_resume_by_id(resume_id)
+    if resume and resume.get("user_id"):
+        user_repo = UserRepository()
+        await user_repo.increment_download_count(resume.get("user_id"))
+    return {"success": True}
 
 
 @resume_router.put(

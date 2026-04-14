@@ -146,6 +146,16 @@ async def register(req: RegisterRequest, response: Response):
     return RegisterResponse(success=True, message="Account created successfully!", user_id=user_id)
 
 
+@auth_router.get("/me")
+async def get_me(user_id: str = Depends(get_current_user)):
+    """Get current logged-in user details."""
+    repo = UserRepository()
+    user = await repo.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
 # ===== Login =====
 class LoginRequest(BaseModel):
     email: Optional[str] = None
