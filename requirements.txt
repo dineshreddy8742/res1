@@ -26,3 +26,4 @@ fpdf2
 pypdf
 PyPDF2
 python-docx
+pytesseract
