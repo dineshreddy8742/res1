@@ -32,29 +32,40 @@
                                 <label class="block text-sm font-bold text-blue-200 mb-2 ml-1">Full Name</label>
                                 <div class="relative">
                                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">👤</span>
-                                    <input x-model="name" type="text" required 
-                                           class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-400/10 transition-all font-medium" 
+                                    <input x-model="name" type="text" required
+                                           class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-400/10 transition-all font-medium"
                                            placeholder="John Doe">
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-blue-200 mb-2 ml-1">Roll Number</label>
+                                <label class="block text-sm font-bold text-blue-200 mb-2 ml-1">Email Address</label>
                                 <div class="relative">
-                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">🆔</span>
-                                    <input x-model="roll_number" type="text" required 
-                                           class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-400/10 transition-all font-medium" 
-                                           placeholder="21ABC1234">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">📧</span>
+                                    <input x-model="email" type="email" required
+                                           class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-400/10 transition-all font-medium"
+                                           placeholder="22781a1234@svcet.edu.in">
                                 </div>
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-bold text-blue-200 mb-2 ml-1">College/Institution</label>
-                            <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">🏫</span>
-                                <input x-model="college" type="text" required 
-                                       class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-400/10 transition-all font-medium" 
-                                       placeholder="Your University Name">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-blue-200 mb-2 ml-1">Roll Number</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">🆔</span>
+                                    <input x-model="roll_number" type="text" required
+                                           class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-400/10 transition-all font-medium"
+                                           placeholder="22781a1234">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-blue-200 mb-2 ml-1">College/Institution</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">🏫</span>
+                                    <input x-model="college" type="text" required
+                                           class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-400/10 transition-all font-medium"
+                                           placeholder="SVCET">
+                                </div>
                             </div>
                         </div>
 
@@ -92,6 +103,7 @@
 function registerForm() {
     return {
         name: '',
+        email: '',
         roll_number: '',
         college: '',
         password: '',
@@ -106,6 +118,7 @@ function registerForm() {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        email: this.email,
                         roll_number: this.roll_number,
                         name: this.name,
                         college: this.college,
