@@ -29,7 +29,7 @@ async def dashboard(
     redirect = require_login_redirect(request)
     if redirect:
         return redirect
-    return templates.TemplateResponse("dashboard.html", {"request": request})
+    return templates.TemplateResponse(request, "dashboard.html", {"request": request})
 
 
 @web_router.get(
@@ -45,7 +45,7 @@ async def create_resume(
     redirect = require_login_redirect(request)
     if redirect:
         return redirect
-    return templates.TemplateResponse("create.html", {"request": request})
+    return templates.TemplateResponse(request, "create.html", {"request": request})
 
 
 @web_router.get(
@@ -63,7 +63,7 @@ async def view_resume(
     if redirect:
         return redirect
     return templates.TemplateResponse(
-        "resume_view.html", {"request": request, "resume_id": resume_id}
+        request, "resume_view.html", {"request": request, "resume_id": resume_id}
     )
 
 
@@ -82,6 +82,7 @@ async def optimize_resume_page(
     if redirect:
         return redirect
     return templates.TemplateResponse(
+        request,
         "resume_optimize.html",
         {
             "request": request,
@@ -104,4 +105,4 @@ async def settings(
     redirect = require_login_redirect(request)
     if redirect:
         return redirect
-    return templates.TemplateResponse("settings.html", {"request": request})
+    return templates.TemplateResponse(request, "settings.html", {"request": request})

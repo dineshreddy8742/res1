@@ -77,7 +77,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
             )
         # For web requests, render our custom 404 page
         return templates.TemplateResponse(
-            "404.html", {"request": request}, status_code=404
+            request, "404.html", {"request": request}, status_code=404
         )
 
     # For API routes, return JSON error
@@ -88,6 +88,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 
     # For other errors on web routes, show a simple error page
     return templates.TemplateResponse(
+        request,
         "404.html",
         {"request": request, "status_code": exc.status_code, "detail": str(exc.detail)},
         status_code=exc.status_code,
@@ -112,6 +113,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
     # For web routes, show an error page with validation details
     return templates.TemplateResponse(
+        request,
         "404.html",
         {
             "request": request,
@@ -213,7 +215,7 @@ app.include_router(web_router)
 @app.get("/", include_in_schema=False)
 async def root_page(request: Request):
     """Serve the HTML landing page."""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html", {"request": request})
 
 
 # Catch-all for not found pages - IMPORTANT: This must come AFTER including all routers
@@ -237,4 +239,4 @@ async def catch_all(request: Request, path: str):
         raise StarletteHTTPException(status_code=404)
 
     # For truly non-existent routes, render the 404 page
-    return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+    return templates.TemplateResponse(request, "404.html", {"request": request}, status_code=404)

@@ -20,8 +20,12 @@ try:
     from pdf2image import convert_from_path
     OCR_AVAILABLE = True
 except ImportError:
-    pytesseract = None  # type: ignore
-    convert_from_path = None  # type: ignore
+    pytesseract = None
+    convert_from_path = None
+    OCR_AVAILABLE = False
+except Exception:
+    pytesseract = None
+    convert_from_path = None
     OCR_AVAILABLE = False
 
 
