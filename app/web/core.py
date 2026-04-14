@@ -32,8 +32,8 @@ async def home(
 ):
     """Render the homepage."""
     return templates.TemplateResponse(
-        name="index.html",
-        context={"request": request},
+        "index.html",
+        {"request": request},
     )
 
 
@@ -48,8 +48,8 @@ async def about(
 ):
     """Render the about page."""
     return templates.TemplateResponse(
-        name="about.html",
-        context={"request": request},
+        "about.html",
+        {"request": request},
     )
 
 
@@ -64,8 +64,8 @@ async def contribution(
 ):
     """Render the contribution page."""
     return templates.TemplateResponse(
-        name="contribution.html",
-        context={"request": request},
+        "contribution.html",
+        {"request": request},
     )
 
 
@@ -82,8 +82,8 @@ async def create_resume(
     redirect = require_login_redirect(request)
     if redirect: return redirect
     return templates.TemplateResponse(
-        name="create.html",
-        context={"request": request},
+        "create.html",
+        {"request": request},
     )
 
 @core_web_router.get(
@@ -99,8 +99,8 @@ async def build_resume(
     redirect = require_login_redirect(request)
     if redirect: return redirect
     return templates.TemplateResponse(
-        name="build_resume.html",
-        context={"request": request},
+        "build_resume.html",
+        {"request": request},
     )
 
 @core_web_router.get(
@@ -116,8 +116,8 @@ async def cover_letter_page(
     redirect = require_login_redirect(request)
     if redirect: return redirect
     return templates.TemplateResponse(
-        name="cover_letter.html",
-        context={"request": request},
+        "cover_letter.html",
+        {"request": request},
     )
 
 @core_web_router.get(
@@ -131,8 +131,8 @@ async def login_page(
 ):
     """Render the login page."""
     return templates.TemplateResponse(
-        name="login.html",
-        context={"request": request},
+        "login.html",
+        {"request": request},
     )
 
 @core_web_router.get(
@@ -148,8 +148,8 @@ async def admin_page(
     """Render the admin dashboard."""
     # Note: require_admin is a dependency, so it will raise 403 if not admin
     return templates.TemplateResponse(
-        name="admin.html",
-        context={"request": request},
+        "admin.html",
+        {"request": request},
     )
 
 @core_web_router.get(
@@ -165,8 +165,8 @@ async def college_detail(
 ):
     """Render college detail page showing enrolled students."""
     return templates.TemplateResponse(
-        name="college_detail.html",
-        context={"request": request, "college_id": college_id},
+        "college_detail.html",
+        {"request": request, "college_id": college_id},
     )
 
 @core_web_router.get(
@@ -182,6 +182,6 @@ async def profile_page(
     redirect = require_login_redirect(request)
     if redirect: return redirect
     return templates.TemplateResponse(
-        name="profile.html",
-        context={"request": request},
+        "profile.html",
+        {"request": request},
     )
