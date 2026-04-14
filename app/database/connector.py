@@ -41,11 +41,22 @@ class SupabaseConnectionManager:
     def get_client(self) -> Client:
         """Get the Supabase client instance, creating it if it doesn't exist.
 
+        Uses SERVICE ROLE KEY for admin operations (bypasses RLS).
+        Falls back to ANON KEY if service role is not available.
+
         Returns:
             Client: Supabase client for database operations
         """
         if self._client is None:
-            self._client = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
+            # Prefer service role key for admin operations (bypasses RLS)
+            api_key = settings.SUPABASE_SERVICE_ROLE_KEY or settings.SUPABASE_ANON_KEY
+            
+            if settings.SUPABASE_SERVICE_ROLE_KEY:
+                print("Using Supabase SERVICE ROLE KEY (admin mode)")
+            else:
+                print("WARNING: Using Supabase ANON KEY - RLS policies may block access")
+            
+            self._client = create_client(settings.SUPABASE_URL, api_key)
         return self._client
 
     def table(self, table_name: str):
