@@ -548,6 +548,32 @@ async def admin_update_user(req: AdminUserUpdate, user_id: str = Depends(get_cur
     
     return {"success": True, "message": "User updated successfully"}
 
+class AdminPasswordReset(BaseModel):
+    user_id: str
+    new_password: str
+
+@auth_router.post("/admin/reset-password")
+async def admin_reset_password(req: AdminPasswordReset, user_id: str = Depends(get_current_user)):
+    """Admin manually resets a user's password."""
+    repo = UserRepository()
+    admin = await repo.get_user_by_id(user_id)
+    if not admin or (not admin.get("is_admin", False) and admin.get("role") != "admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Simple validation
+    if len(req.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+    
+    # Hash password
+    from app.core.security import hash_password
+    hashed = hash_password(req.new_password)
+    
+    success = await repo.update_user(req.user_id, {"password_hash": hashed})
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to reset password")
+        
+    return {"success": True, "message": "Password changed successfully"}
+
 @auth_router.get("/admin/activity")
 async def get_recent_activity(user_id: str = Depends(get_current_user)):
     """Get 10 most recent user registrations."""
