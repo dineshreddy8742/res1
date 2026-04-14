@@ -13,6 +13,7 @@ httpx
 
 # AI
 openai
+langchain-core
 
 # Security
 python-jose[cryptography]
