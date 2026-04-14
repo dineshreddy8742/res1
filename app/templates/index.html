@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+
+{% block title %}DailSmart AI - AI-Powered Resume Optimizer | Land Your Dream Job{% endblock %}
+
+{% block content %}
+<!-- Animated Background -->
+<div class="relative min-h-screen overflow-hidden bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white">
+    <!-- Floating Orbs -->
+    <div class="absolute top-20 left-10 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
+    <div class="absolute top-40 right-10 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+    <div class="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+    
+    <!-- Hero Section -->
+    <section class="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
+        <div class="grid gap-12 lg:grid-cols-2 lg:items-center">
+            <!-- Left Content -->
+            <div class="text-center lg:text-left">
+                <!-- Badge -->
+                <div class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-purple-400/30 px-5 py-2 mb-6 backdrop-blur-sm">
+                    <span class="flex h-2 w-2 rounded-full bg-green-400 animate-pulse"></span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-purple-200">✨ AI-Powered Resume Studio</span>
+                </div>
+                
+                <!-- Main Headline -->
+                <h1 class="text-5xl font-black leading-tight sm:text-6xl lg:text-7xl">
+                    <span class="bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500 bg-clip-text text-transparent">Transform Your Resume</span>
+                    <br>
+                    <span class="text-white">into an Interview Magnet</span>
+                </h1>
+                
+                <!-- Subtitle -->
+                <p class="mt-6 text-lg leading-relaxed text-blue-100 sm:text-xl max-w-2xl mx-auto lg:mx-0">
+                    Supercharge your job applications with <strong class="text-yellow-400">AI-powered optimization</strong>, 
+                    <strong class="text-pink-400">ATS scoring</strong>, and 
+                    <strong class="text-cyan-400">recruiter insights</strong>. 
+                    Get hired faster with resumes that actually work! 🚀
+                </p>
+                
+                <!-- CTA Buttons -->
+                <div class="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center lg:justify-start">
+                    <a href="/create" class="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 px-8 py-4 text-base font-bold text-white shadow-2xl shadow-purple-500/50 transition-all duration-300 hover:scale-105 hover:shadow-purple-500/70">
+                        <span class="relative z-10">🎯 Optimize My Resume</span>
+                        <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                    </a>
+                    <a href="/dashboard" class="inline-flex items-center justify-center rounded-full border-2 border-white/30 bg-white/10 px-8 py-4 text-base font-bold text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/20 hover:border-white/50 hover:scale-105">
+                        📊 View Dashboard
+                    </a>
+                </div>
+                
+                <!-- Stats -->
+                <div class="mt-12 grid grid-cols-3 gap-6">
+                    <div class="rounded-2xl bg-gradient-to-br from-pink-500/20 to-purple-500/20 border border-pink-400/30 p-5 backdrop-blur-sm">
+                        <p class="text-4xl font-black bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">+22pts</p>
+                        <p class="mt-2 text-sm text-blue-200 font-medium">Avg. Score Boost</p>
+                    </div>
+                    <div class="rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 p-5 backdrop-blur-sm">
+                        <p class="text-4xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">3x</p>
+                        <p class="mt-2 text-sm text-blue-200 font-medium">More Interviews</p>
+                    </div>
+                    <div class="rounded-2xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-400/30 p-5 backdrop-blur-sm">
+                        <p class="text-4xl font-black bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">10k+</p>
+                        <p class="mt-2 text-sm text-blue-200 font-medium">Resumes Optimized</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Visual -->
+            <div class="relative">
+                <!-- Glow Effects -->
+                <div class="absolute -top-10 -right-10 h-40 w-40 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full blur-3xl opacity-50"></div>
+                <div class="absolute -bottom-10 -left-10 h-40 w-40 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full blur-3xl opacity-50"></div>
+                
+                <!-- Main Card -->
+                <div class="relative rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 p-6 backdrop-blur-xl shadow-2xl">
+                    <!-- Score Header -->
+                    <div class="mb-6 rounded-2xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-bold uppercase tracking-wider text-green-300">🎯 ATS Match Score</p>
+                                <p class="mt-2 text-5xl font-black text-white">84%</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="inline-flex items-center gap-2 rounded-full bg-green-500/30 px-4 py-2">
+                                    <span class="text-2xl">📈</span>
+                                    <span class="text-lg font-bold text-green-200">+22 pts</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Progress Bar -->
+                        <div class="mt-4 h-4 overflow-hidden rounded-full bg-white/20">
+                            <div class="h-full rounded-full bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 animate-pulse"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Before/After Comparison -->
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <!-- Before -->
+                        <div class="rounded-2xl border-2 border-red-400/30 bg-gradient-to-br from-red-500/10 to-orange-500/10 p-5">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-2xl">❌</span>
+                                <p class="text-sm font-bold uppercase tracking-wide text-red-300">Before</p>
+                            </div>
+                            <ul class="space-y-2 text-sm text-red-200">
+                                <li class="flex items-start gap-2">
+                                    <span class="mt-1 text-xs">•</span>
+                                    <span>Generic summary</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="mt-1 text-xs">•</span>
+                                    <span>Low keyword match</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="mt-1 text-xs">•</span>
+                                    <span>Weak bullet points</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- After -->
+                        <div class="rounded-2xl border-2 border-green-400/30 bg-gradient-to-br from-green-500/10 to-emerald-500/10 p-5">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-2xl">✅</span>
+                                <p class="text-sm font-bold uppercase tracking-wide text-green-300">After</p>
+                            </div>
+                            <ul class="space-y-2 text-sm text-green-200">
+                                <li class="flex items-start gap-2">
+                                    <span class="mt-1 text-xs">•</span>
+                                    <span>AI-optimized summary</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="mt-1 text-xs">•</span>
+                                    <span>Perfect keyword match</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="mt-1 text-xs">•</span>
+                                    <span>Impact-driven bullets</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Skills Tags -->
+                    <div class="mt-6">
+                        <p class="text-sm font-bold text-purple-300 mb-3">🔥 Matched Skills</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="rounded-full bg-gradient-to-r from-pink-500/30 to-purple-500/30 border border-pink-400/40 px-4 py-2 text-sm font-semibold text-pink-200">Python</span>
+                            <span class="rounded-full bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border border-cyan-400/40 px-4 py-2 text-sm font-semibold text-cyan-200">Machine Learning</span>
+                            <span class="rounded-full bg-gradient-to-r from-yellow-500/30 to-orange-500/30 border border-yellow-400/40 px-4 py-2 text-sm font-semibold text-yellow-200">Computer Vision</span>
+                            <span class="rounded-full bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-400/40 px-4 py-2 text-sm font-semibold text-green-200">PyTorch</span>
+                            <span class="rounded-full bg-gradient-to-r from-purple-500/30 to-indigo-500/30 border border-purple-400/40 px-4 py-2 text-sm font-semibold text-purple-200">OpenCV</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section id="features" class="relative z-10 bg-gradient-to-b from-transparent to-black/30 backdrop-blur-sm py-20">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <!-- Section Header -->
+            <div class="text-center mb-16">
+                <p class="text-sm font-bold uppercase tracking-widest text-purple-300 mb-4">🌟 Why Choose DailSmart AI</p>
+                <h2 class="text-4xl font-black sm:text-5xl lg:text-6xl">
+                    <span class="bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500 bg-clip-text text-transparent">
+                        Everything You Need
+                    </span>
+                </h2>
+                <p class="mt-4 text-lg text-blue-200 max-w-2xl mx-auto">
+                    Powerful AI features designed to make your resume stand out from the crowd
+                </p>
+            </div>
+            
+            <!-- Feature Cards Grid -->
+            <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+                <!-- Feature 1 -->
+                <div class="group relative rounded-3xl bg-gradient-to-br from-pink-500/10 to-purple-500/10 border-2 border-pink-400/30 p-8 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-pink-500/30">
+                    <div class="absolute -top-6 left-1/2 -translate-x-1/2 w-14 h-14 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center text-3xl shadow-lg">
+                        🎯
+                    </div>
+                    <div class="mt-8">
+                        <h3 class="text-xl font-bold text-white mb-3">ATS Score Analysis</h3>
+                        <p class="text-sm text-blue-200 leading-relaxed">
+                            Get detailed breakdown of your resume's ATS compatibility. See exactly what recruiters see.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="group relative rounded-3xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-2 border-cyan-400/30 p-8 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/30">
+                    <div class="absolute -top-6 left-1/2 -translate-x-1/2 w-14 h-14 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center text-3xl shadow-lg">
+                        🔍
+                    </div>
+                    <div class="mt-8">
+                        <h3 class="text-xl font-bold text-white mb-3">Keyword Optimization</h3>
+                        <p class="text-sm text-blue-200 leading-relaxed">
+                            AI matches your resume to job descriptions. Find missing keywords and boost your match score.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="group relative rounded-3xl bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-2 border-yellow-400/30 p-8 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/30">
+                    <div class="absolute -top-6 left-1/2 -translate-x-1/2 w-14 h-14 rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center text-3xl shadow-lg">
+                        ✨
+                    </div>
+                    <div class="mt-8">
+                        <h3 class="text-xl font-bold text-white mb-3">AI Enhancement</h3>
+                        <p class="text-sm text-blue-200 leading-relaxed">
+                            Transform weak bullet points into impactful achievements. AI rewrites your resume professionally.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="group relative rounded-3xl bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-2 border-green-400/30 p-8 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-500/30">
+                    <div class="absolute -top-6 left-1/2 -translate-x-1/2 w-14 h-14 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center text-3xl shadow-lg">
+                        📊
+                    </div>
+                    <div class="mt-8">
+                        <h3 class="text-xl font-bold text-white mb-3">Application Tracker</h3>
+                        <p class="text-sm text-blue-200 leading-relaxed">
+                            Track all your job applications in one place. Never lose track of tailored resumes again.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="relative z-10 py-20">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <!-- Section Header -->
+            <div class="text-center mb-16">
+                <p class="text-sm font-bold uppercase tracking-widest text-cyan-300 mb-4">⚡ Simple Process</p>
+                <h2 class="text-4xl font-black sm:text-5xl lg:text-6xl text-white">
+                    How It Works
+                </h2>
+                <p class="mt-4 text-lg text-blue-200 max-w-2xl mx-auto">
+                    Four simple steps to your dream resume
+                </p>
+            </div>
+            
+            <!-- Steps -->
+            <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+                <!-- Step 1 -->
+                <div class="relative">
+                    <div class="rounded-3xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-400/40 p-8 backdrop-blur-sm text-center">
+                        <div class="mx-auto w-20 h-20 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-4xl mb-4 shadow-lg">
+                            📄
+                        </div>
+                        <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-purple-500 text-white font-black text-xl mb-4">
+                            1
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Upload Resume</h3>
+                        <p class="text-sm text-blue-200">
+                            Drop your PDF resume and we'll extract and analyze it instantly
+                        </p>
+                    </div>
+                    <!-- Arrow (hidden on mobile) -->
+                    <div class="hidden lg:block absolute top-1/2 -right-6 text-4xl text-purple-400">→</div>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="relative">
+                    <div class="rounded-3xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-400/40 p-8 backdrop-blur-sm text-center">
+                        <div class="mx-auto w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center text-4xl mb-4 shadow-lg">
+                            💼
+                        </div>
+                        <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-500 text-white font-black text-xl mb-4">
+                            2
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Add Job Description</h3>
+                        <p class="text-sm text-blue-200">
+                            Paste the job description to target specific requirements
+                        </p>
+                    </div>
+                    <div class="hidden lg:block absolute top-1/2 -right-6 text-4xl text-blue-400">→</div>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="relative">
+                    <div class="rounded-3xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-400/40 p-8 backdrop-blur-sm text-center">
+                        <div class="mx-auto w-20 h-20 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center text-4xl mb-4 shadow-lg">
+                            🤖
+                        </div>
+                        <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-yellow-500 text-white font-black text-xl mb-4">
+                            3
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">AI Analysis</h3>
+                        <p class="text-sm text-blue-200">
+                            Our AI optimizes your resume for maximum ATS compatibility
+                        </p>
+                    </div>
+                    <div class="hidden lg:block absolute top-1/2 -right-6 text-4xl text-yellow-400">→</div>
+                </div>
+                
+                <!-- Step 4 -->
+                <div class="relative">
+                    <div class="rounded-3xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-2 border-green-400/40 p-8 backdrop-blur-sm text-center">
+                        <div class="mx-auto w-20 h-20 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center text-4xl mb-4 shadow-lg">
+                            🚀
+                        </div>
+                        <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-500 text-white font-black text-xl mb-4">
+                            4
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Download & Apply</h3>
+                        <p class="text-sm text-blue-200">
+                            Get your optimized resume ready to download and start applying!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="relative z-10 py-20">
+        <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <div class="relative rounded-3xl overflow-hidden">
+                <!-- Background Gradient -->
+                <div class="absolute inset-0 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600"></div>
+                
+                <!-- Decorative Elements -->
+                <div class="absolute top-0 left-0 w-40 h-40 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+                <div class="absolute bottom-0 right-0 w-60 h-60 bg-white/10 rounded-full translate-x-1/3 translate-y-1/3"></div>
+                
+                <!-- Content -->
+                <div class="relative z-10 px-8 py-16 sm:px-12 sm:py-20 text-center">
+                    <h2 class="text-4xl font-black sm:text-5xl lg:text-6xl text-white mb-6">
+                        Ready to Land Your Dream Job? 🎯
+                    </h2>
+                    <p class="text-lg sm:text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+                        Join thousands of job seekers who've transformed their careers with AI-powered resume optimization
+                    </p>
+                    <a href="/create" class="group inline-flex items-center justify-center rounded-full bg-white px-10 py-5 text-lg font-black text-purple-700 shadow-2xl transition-all duration-300 hover:scale-110 hover:shadow-white/50">
+                        <span>🚀 Get Started Free</span>
+                        <svg class="ml-2 w-6 h-6 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                        </svg>
+                    </a>
+                    <p class="mt-6 text-sm text-white/80">
+                        ✨ No credit card required • ⚡ Instant results • 🎯 ATS-optimized
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Custom CSS for animations -->
+<style>
+@keyframes blob {
+    0% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(30px, -50px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+    100% { transform: translate(0px, 0px) scale(1); }
+}
+
+.animate-blob {
+    animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+    animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+    animation-delay: 4s;
+}
+</style>
+{% endblock %}

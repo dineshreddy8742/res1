@@ -1,0 +1,895 @@
+{% extends "base.html" %}
+
+{% block title %}Build Resume - DailSmart AI{% endblock %}
+
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@8.3.1/dist/css/shepherd.css"/>
+<script src="https://cdn.jsdelivr.net/npm/shepherd.js@8.3.1/dist/js/shepherd.min.js"></script>
+<style>
+.shepherd-modal-overlay-container { background: rgba(30,20,60,0.6) !important; }
+.shepherd-element { background: linear-gradient(135deg, #1e1b4b, #312e81) !important; border: 2px solid rgba(168,85,247,0.4) !important; border-radius: 16px !important; }
+.shepherd-title { color: #f9fafb !important; font-weight: 800 !important; }
+.shepherd-text { color: #c7d2fe !important; }
+.shepherd-button { background: linear-gradient(135deg, #a855f7, #ec4899) !important; border-radius: 8px !important; font-weight: 700 !important; }
+.shepherd-button.shepherd-button-secondary { background: rgba(255,255,255,0.1) !important; color: #e2e8f0 !important; }
+.shepherd-cancel-icon { color: #94a3b8 !important; }
+.shepherd-arrow:before { background: #312e81 !important; }
+@keyframes blob { 0% { transform: translate(0,0) scale(1); } 33% { transform: translate(30px,-50px) scale(1.1); } 66% { transform: translate(-20px,20px) scale(0.9); } 100% { transform: translate(0,0) scale(1); } }
+.animate-blob { animation: blob 7s infinite; }
+.animation-delay-2000 { animation-delay: 2s; }
+@media print { input[type="checkbox"], button, .nav-btn { display: none !important; } .form-section { display: none !important; } }
+.cursor-text { cursor: text; }
+[contenteditable="true"]:focus { outline: 2px solid rgba(168,85,247,0.5); outline-offset: 2px; border-radius: 4px; background: rgba(168,85,247,0.05); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="relative min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div class="absolute top-20 left-10 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+    <div class="absolute top-40 right-10 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+    
+    <div class="relative z-10 max-w-full mx-auto py-6 px-4" x-data="resumeBuilder()" x-init="init()">
+        <!-- Floating Navbar -->
+        <div id="resume-nav" class="sticky top-2 z-40 bg-gradient-to-r from-purple-900/90 via-blue-900/90 to-indigo-900/90 backdrop-blur-xl border border-white/20 rounded-2xl px-4 py-2.5 mb-4 flex items-center justify-between shadow-2xl">
+            <div class="flex items-center gap-3">
+                <span class="text-xl">📝</span>
+                <span class="text-white font-bold text-sm hidden sm:inline">Resume Builder</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button @click="startTour()" class="nav-btn bg-white/10 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-white/20 transition-all">🎓 Tour</button>
+                <button @click="saveToLocalStorage()" class="nav-btn bg-green-500/30 text-green-300 px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-green-500/50 transition-all">💾 Save</button>
+                <button @click="resetResume()" class="nav-btn bg-red-500/30 text-red-300 px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-red-500/50 transition-all">🗑️ Clear</button>
+                <button @click="showDownloadModal = true" class="nav-btn bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-1.5 rounded-lg text-sm font-bold hover:scale-105 transition-all shadow-lg">📥 Download</button>
+                <button @click="showFormattingPanel = !showFormattingPanel" :class="showFormattingPanel ? 'bg-yellow-500 text-white' : 'bg-white/10 text-white'" class="nav-btn px-3 py-1.5 rounded-lg text-sm font-bold hover:scale-105 transition-all">🎨 Customize</button>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+            <div>
+                <h1 class="text-4xl font-black bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500 bg-clip-text text-transparent">Build Resume from Scratch</h1>
+                <p class="text-blue-200 mt-1">Start from scratch OR import existing resume • <span class="text-green-300 font-bold">✅ ATS-Friendly Mode ON</span> • Clean, simple, professional formatting</p>
+            </div>
+        </div>
+
+        <!-- Import from existing resume -->
+        <div id="import-section" class="bg-white/10 backdrop-blur-xl border-2 border-blue-400/30 rounded-2xl p-4 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">📂</span>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Import Existing Resume</h3>
+                        <p class="text-sm text-blue-300">Select one of your resumes to use as a starting point, then customize it</p>
+                    </div>
+                </div>
+                <div class="flex-1 md:flex-none md:ml-auto flex gap-3">
+                    <select x-model="selectedExistingResume" class="flex-1 md:w-64 bg-white/10 border border-white/30 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-400">
+                        <option value="">-- Select a resume to import --</option>
+                        <template x-for="r in existingResumes" :key="r.id">
+                            <option :value="r.id" class="bg-purple-900" x-text="r.title + (r.ats_score ? ' (' + r.ats_score + '% ATS)' : '')"></option>
+                        </template>
+                    </select>
+                    <button @click="importSelectedResume()" :disabled="!selectedExistingResume || importLoading" class="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-bold hover:scale-105 transition-all disabled:opacity-50 whitespace-nowrap">
+                        <span x-show="!importLoading">📥 Import</span>
+                        <span x-show="importLoading">Loading...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formatting Controls Panel -->
+        <div x-show="showFormattingPanel" x-transition id="customize-panel" class="bg-white/10 backdrop-blur-xl border-2 border-yellow-400/30 rounded-2xl p-5 mb-6">
+            <h2 class="text-lg font-bold text-white mb-4 flex items-center">🎨 Resume Customization</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Template Selection -->
+                <div>
+                    <label class="block text-sm font-bold text-blue-200 mb-2">📄 Template (10 Options)</label>
+                    <div class="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
+                        <template x-for="tpl in templates" :key="tpl.id">
+                            <button @click="formatting.template = tpl.id" :class="formatting.template === tpl.id ? 'bg-purple-500 border-purple-400 ring-2 ring-purple-400' : 'bg-white/5 border-white/20 hover:bg-white/10'" class="border-2 rounded-lg p-2 text-left transition-all">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg" x-text="tpl.icon"></span>
+                                    <div>
+                                        <div class="text-xs font-bold text-white" x-text="tpl.name"></div>
+                                        <div class="text-[10px] text-white/50" x-text="tpl.desc"></div>
+                                    </div>
+                                </div>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+                <!-- Accent Color -->
+                <div>
+                    <label class="block text-sm font-bold text-blue-200 mb-2">🎨 Accent Color</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <template x-for="color in accentColors" :key="color.id">
+                            <button @click="formatting.accentColor = color.id" :class="formatting.accentColor === color.id ? 'ring-2 ring-white scale-110' : ''" class="w-8 h-8 rounded-full mx-auto transition-all hover:scale-110" :style="'background-color: ' + color.hex" :title="color.name"></button>
+                        </template>
+                    </div>
+                </div>
+                <!-- Font -->
+                <div>
+                    <label class="block text-sm font-bold text-blue-200 mb-2">🔤 Font</label>
+                    <select x-model="formatting.fontFamily" @change="updatePreview()" class="w-full bg-white/10 border border-white/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-400">
+                        <option value="sans-serif" class="bg-purple-900">Sans-Serif (Clean)</option>
+                        <option value="serif" class="bg-purple-900">Serif (Classic)</option>
+                        <option value="mono" class="bg-purple-900">Mono (Technical)</option>
+                    </select>
+                    <div class="mt-3">
+                        <label class="block text-xs font-bold text-blue-200 mb-1">Size: <span x-text="['11px','12px','14px','15px','16px'][formatting.fontSize - 1]"></span></label>
+                        <input x-model.number="formatting.fontSize" @input="updatePreview()" type="range" min="1" max="5" class="w-full accent-yellow-400">
+                    </div>
+                </div>
+                <!-- Spacing -->
+                <div>
+                    <label class="block text-sm font-bold text-blue-200 mb-2">📏 Spacing</label>
+                    <div class="space-y-2">
+                        <div>
+                            <label class="block text-xs text-blue-300">Section: <span x-text="formatting.sectionGap"></span></label>
+                            <input x-model.number="formatting.sectionGap" @input="updatePreview()" type="range" min="1" max="5" class="w-full accent-green-400">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-blue-300">Item: <span x-text="formatting.itemGap"></span></label>
+                            <input x-model.number="formatting.itemGap" @input="updatePreview()" type="range" min="1" max="5" class="w-full accent-green-400">
+                        </div>
+                    </div>
+                    <div class="mt-3 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <input x-model="formatting.compactMode" @change="updatePreview()" type="checkbox" class="rounded bg-white/10 border-white/30 text-green-500 focus:ring-green-400">
+                            <span class="text-xs text-white">Compact Mode</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input x-model="formatting.atsMode" @change="updatePreview()" type="checkbox" class="rounded bg-white/10 border-white-300 text-blue-500 focus:ring-blue-400" checked>
+                            <span class="text-xs text-white font-bold text-green-300">✅ ATS-Friendly Mode</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 bg-white/5 border border-white/20 rounded-lg p-3 flex flex-wrap gap-4 text-xs text-blue-300">
+                <span>📄 <strong x-text="templates.find(t => t.id === formatting.template)?.name"></strong></span>
+                <span>🎨 <strong x-text="accentColors.find(c => c.id === formatting.accentColor)?.name"></strong></span>
+                <span>🔤 <strong x-text="formatting.fontFamily"></strong> / <span x-text="['11px','12px','14px','15px','16px'][formatting.fontSize - 1]"></span></span>
+                <span>📏 <strong x-text="formatting.sectionGap"></strong>/<strong x-text="formatting.itemGap"></strong></span>
+                <span x-show="formatting.compactMode">📦 Compact</span>
+                <span x-show="formatting.atsMode" class="text-green-300 font-bold">✅ ATS Mode</span>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-[1fr_1.3fr] gap-6">
+            <!-- LEFT: Form Controls (ALL sections) -->
+            <div id="form-section" class="space-y-4 max-h-[calc(100vh-220px)] overflow-y-auto pr-2 pb-6">
+                
+                <!-- Personal Info -->
+                <div class="bg-white/10 backdrop-blur-xl border-2 border-pink-400/30 rounded-2xl p-5">
+                    <h2 class="text-lg font-bold text-white mb-3">👤 Personal Information</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input x-model="data.name" @input="updatePreview()" type="text" class="col-span-2 bg-white/10 border border-white/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-pink-400" placeholder="Full Name">
+                        <input x-model="data.title" @input="updatePreview()" type="text" class="col-span-2 bg-white/10 border border-white/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-pink-400" placeholder="Job Title (e.g. Software Engineer)">
+                        <input x-model="data.phone" @input="updatePreview()" type="text" class="bg-white/10 border border-white/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-pink-400" placeholder="Phone">
+                        <input x-model="data.email" @input="updatePreview()" type="text" class="bg-white/10 border border-white/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-pink-400" placeholder="Email">
+                        <input x-model="data.linkedin" @input="updatePreview()" type="text" class="bg-white/10 border border-white/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-pink-400" placeholder="LinkedIn username">
+                        <input x-model="data.github" @input="updatePreview()" type="text" class="bg-white/10 border border-white/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-pink-400" placeholder="GitHub username">
+                    </div>
+                </div>
+
+                <!-- Profile -->
+                <div class="bg-white/10 backdrop-blur-xl border-2 border-blue-400/30 rounded-2xl p-5">
+                    <h2 class="text-lg font-bold text-white mb-3">📋 Profile Summary</h2>
+                    <textarea x-model="data.profile" @input="updatePreview()" rows="3" class="w-full bg-white/10 border border-white/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-400 resize-none" placeholder="Brief career summary..."></textarea>
+                </div>
+
+                <!-- Experience (from Resume-Matcher) -->
+                <div class="bg-white/10 backdrop-blur-xl border-2 border-indigo-400/30 rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-white">💼 Experience</h2>
+                        <div class="flex gap-2">
+                            <button @click="addExperience()" class="bg-indigo-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-indigo-600">+ Add</button>
+                            <button @click="removeSelected('experience')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-600">- Remove</button>
+                        </div>
+                    </div>
+                    <template x-for="(exp, i) in data.experience" :key="i">
+                        <div class="bg-white/5 border border-white/20 rounded-lg p-3 mb-2">
+                            <label class="flex items-center gap-2 mb-2"><input type="checkbox" x-model="exp._selected" class="rounded"><span class="text-xs text-white/60">Select to remove</span></label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input x-model="exp.title" @input="updatePreview()" type="text" class="col-span-2 bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-indigo-400" placeholder="Job Title">
+                                <input x-model="exp.company" @input="updatePreview()" type="text" class="bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-indigo-400" placeholder="Company">
+                                <input x-model="exp.location" @input="updatePreview()" type="text" class="bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-indigo-400" placeholder="Location">
+                                <input x-model="exp.startDate" @input="updatePreview()" type="text" class="bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-indigo-400" placeholder="Start Date">
+                                <input x-model="exp.endDate" @input="updatePreview()" type="text" class="bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-indigo-400" placeholder="End Date">
+                                <textarea x-model="exp.description" @input="updatePreview()" rows="2" class="col-span-2 bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-indigo-400 resize-none" placeholder="Achievements/responsibilities (one per line)..."></textarea>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Education -->
+                <div class="bg-white/10 backdrop-blur-xl border-2 border-green-400/30 rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-white">🎓 Education</h2>
+                        <div class="flex gap-2">
+                            <button @click="addEducation()" class="bg-green-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-green-600">+ Add</button>
+                            <button @click="removeSelected('education')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-600">- Remove</button>
+                        </div>
+                    </div>
+                    <template x-for="(edu, i) in data.education" :key="i">
+                        <div class="bg-white/5 border border-white/20 rounded-lg p-3 mb-2">
+                            <label class="flex items-center gap-2 mb-2"><input type="checkbox" x-model="edu._selected" class="rounded"><span class="text-xs text-white/60">Select to remove</span></label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input x-model="edu.degree" @input="updatePreview()" type="text" class="col-span-2 bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-green-400" placeholder="Degree">
+                                <input x-model="edu.school" @input="updatePreview()" type="text" class="col-span-2 bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-green-400" placeholder="School/Institute">
+                                <input x-model="edu.startDate" @input="updatePreview()" type="text" class="bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-green-400" placeholder="Start Year">
+                                <input x-model="edu.endDate" @input="updatePreview()" type="text" class="bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-green-400" placeholder="End Year">
+                                <input x-model="edu.gpa" @input="updatePreview()" type="text" class="col-span-2 bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-green-400" placeholder="GPA/Grade (optional)">
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Skills with Categorized Sub-sections -->
+                <div class="bg-white/10 backdrop-blur-xl border-2 border-purple-400/30 rounded-2xl p-5">
+                    <h2 class="text-lg font-bold text-white mb-4">💡 Skills (Categorized)</h2>
+                    
+                    <!-- Programming -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-bold text-purple-300">💻 Programming Languages</h3>
+                            <button @click="addSkill('programming')" class="bg-purple-500 text-white px-2 py-0.5 rounded text-xs font-bold hover:bg-purple-600">+ Add</button>
+                        </div>
+                        <div class="space-y-1.5">
+                            <template x-for="(skill, i) in data.skills.programming" :key="i">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-purple-300 text-xs">▸</span>
+                                    <input x-model="skill.text" @input="updatePreview()" type="text" class="flex-1 bg-white/10 border border-white/30 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-purple-400" placeholder="e.g. Python, Java, C++">
+                                    <button @click="removeSkill('programming', i)" class="text-red-400 hover:text-red-300 text-sm font-bold">×</button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- AI/ML -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-bold text-cyan-300">🤖 AI / Machine Learning</h3>
+                            <button @click="addSkill('ai_ml')" class="bg-cyan-500 text-white px-2 py-0.5 rounded text-xs font-bold hover:bg-cyan-600">+ Add</button>
+                        </div>
+                        <div class="space-y-1.5">
+                            <template x-for="(skill, i) in data.skills.ai_ml" :key="i">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-cyan-300 text-xs">▸</span>
+                                    <input x-model="skill.text" @input="updatePreview()" type="text" class="flex-1 bg-white/10 border border-white/30 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-cyan-400" placeholder="e.g. TensorFlow, PyTorch, Scikit-learn">
+                                    <button @click="removeSkill('ai_ml', i)" class="text-red-400 hover:text-red-300 text-sm font-bold">×</button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Cloud/DevOps -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-bold text-blue-300">☁️ Cloud & DevOps</h3>
+                            <button @click="addSkill('cloud_devops')" class="bg-blue-500 text-white px-2 py-0.5 rounded text-xs font-bold hover:bg-blue-600">+ Add</button>
+                        </div>
+                        <div class="space-y-1.5">
+                            <template x-for="(skill, i) in data.skills.cloud_devops" :key="i">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-blue-300 text-xs">▸</span>
+                                    <input x-model="skill.text" @input="updatePreview()" type="text" class="flex-1 bg-white/10 border border-white/30 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blue-400" placeholder="e.g. AWS, GCP, Docker, Kubernetes">
+                                    <button @click="removeSkill('cloud_devops', i)" class="text-red-400 hover:text-red-300 text-sm font-bold">×</button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Frontend/Backend -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-bold text-green-300">🌐 Frontend & Backend</h3>
+                            <button @click="addSkill('frontend_backend')" class="bg-green-500 text-white px-2 py-0.5 rounded text-xs font-bold hover:bg-green-600">+ Add</button>
+                        </div>
+                        <div class="space-y-1.5">
+                            <template x-for="(skill, i) in data.skills.frontend_backend" :key="i">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-green-300 text-xs">▸</span>
+                                    <input x-model="skill.text" @input="updatePreview()" type="text" class="flex-1 bg-white/10 border border-white/30 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-green-400" placeholder="e.g. React, Django, Flask, Node.js">
+                                    <button @click="removeSkill('frontend_backend', i)" class="text-red-400 hover:text-red-300 text-sm font-bold">×</button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Tools & Frameworks -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-bold text-amber-300">🔧 Tools & Frameworks</h3>
+                            <button @click="addSkill('tools_frameworks')" class="bg-amber-500 text-white px-2 py-0.5 rounded text-xs font-bold hover:bg-amber-600">+ Add</button>
+                        </div>
+                        <div class="space-y-1.5">
+                            <template x-for="(skill, i) in data.skills.tools_frameworks" :key="i">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-amber-300 text-xs">▸</span>
+                                    <input x-model="skill.text" @input="updatePreview()" type="text" class="flex-1 bg-white/10 border border-white/30 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-amber-400" placeholder="e.g. Git, GitHub, SQL, REST APIs">
+                                    <button @click="removeSkill('tools_frameworks', i)" class="text-red-400 hover:text-red-300 text-sm font-bold">×</button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Soft Skills -->
+                    <div class="mb-2">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-bold text-pink-300">🤝 Soft Skills</h3>
+                            <button @click="addSkill('soft_skills')" class="bg-pink-500 text-white px-2 py-0.5 rounded text-xs font-bold hover:bg-pink-600">+ Add</button>
+                        </div>
+                        <div class="space-y-1.5">
+                            <template x-for="(skill, i) in data.skills.soft_skills" :key="i">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-pink-300 text-xs">▸</span>
+                                    <input x-model="skill.text" @input="updatePreview()" type="text" class="flex-1 bg-white/10 border border-white/30 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-pink-400" placeholder="e.g. Leadership, Communication">
+                                    <button @click="removeSkill('soft_skills', i)" class="text-red-400 hover:text-red-300 text-sm font-bold">×</button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects (from Resume-Matcher) -->
+                <div class="bg-white/10 backdrop-blur-xl border-2 border-cyan-400/30 rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-white">🚀 Projects</h2>
+                        <div class="flex gap-2">
+                            <button @click="addProject()" class="bg-cyan-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-cyan-600">+ Add</button>
+                            <button @click="removeSelected('projects')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-600">- Remove</button>
+                        </div>
+                    </div>
+                    <template x-for="(proj, i) in data.projects" :key="i">
+                        <div class="bg-white/5 border border-white/20 rounded-lg p-3 mb-2">
+                            <label class="flex items-center gap-2 mb-2"><input type="checkbox" x-model="proj._selected" class="rounded"><span class="text-xs text-white/60">Select to remove</span></label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input x-model="proj.name" @input="updatePreview()" type="text" class="col-span-2 bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-cyan-400" placeholder="Project Name">
+                                <textarea x-model="proj.description" @input="updatePreview()" rows="2" class="col-span-2 bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-cyan-400 resize-none" placeholder="Project description/goals (one per line)..."></textarea>
+                                <input x-model="proj.techStack" @input="updatePreview()" type="text" class="col-span-2 bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-cyan-400" placeholder="Tech stack (comma separated)">
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Certifications (from Resume-Matcher) -->
+                <div class="bg-white/10 backdrop-blur-xl border-2 border-amber-400/30 rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-white">🏅 Certifications</h2>
+                        <div class="flex gap-2">
+                            <button @click="addCertification()" class="bg-amber-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-amber-600">+ Add</button>
+                            <button @click="removeSelected('certifications')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-600">- Remove</button>
+                        </div>
+                    </div>
+                    <template x-for="(cert, i) in data.certifications" :key="i">
+                        <div class="bg-white/5 border border-white/20 rounded-lg p-3 mb-2">
+                            <label class="flex items-center gap-2 mb-2"><input type="checkbox" x-model="cert._selected" class="rounded"><span class="text-xs text-white/60">Select to remove</span></label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input x-model="cert.name" @input="updatePreview()" type="text" class="col-span-2 bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-amber-400" placeholder="Certification Name">
+                                <input x-model="cert.issuer" @input="updatePreview()" type="text" class="bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-amber-400" placeholder="Issuing Organization">
+                                <input x-model="cert.date" @input="updatePreview()" type="text" class="bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-amber-400" placeholder="Date">
+                                <input x-model="cert.id" @input="updatePreview()" type="text" class="bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-amber-400" placeholder="Credential ID (optional)">
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Languages -->
+                <div class="bg-white/10 backdrop-blur-xl border-2 border-yellow-400/30 rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-white">🌐 Languages</h2>
+                        <div class="flex gap-2">
+                            <button @click="addLanguage()" class="bg-yellow-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-yellow-600">+ Add</button>
+                            <button @click="removeSelected('languages')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-600">- Remove</button>
+                        </div>
+                    </div>
+                    <template x-for="(lang, i) in data.languages" :key="i">
+                        <div class="bg-white/5 border border-white/20 rounded-lg p-2 mb-1.5 flex items-center gap-2">
+                            <input type="checkbox" x-model="lang._selected" class="rounded">
+                            <input x-model="lang.name" @input="updatePreview()" type="text" class="flex-1 bg-transparent text-white text-xs focus:outline-none" placeholder="Language">
+                            <span class="text-white/40 text-xs">-</span>
+                            <input x-model="lang.level" @input="updatePreview()" type="text" class="flex-1 bg-transparent text-white text-xs focus:outline-none" placeholder="Level (e.g. Fluent)">
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Achievements (from Resume-Builder) -->
+                <div class="bg-white/10 backdrop-blur-xl border-2 border-orange-400/30 rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-white">🏆 Achievements</h2>
+                        <div class="flex gap-2">
+                            <button @click="addAchievement()" class="bg-orange-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-orange-600">+ Add</button>
+                            <button @click="removeSelected('achievements')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-600">- Remove</button>
+                        </div>
+                    </div>
+                    <template x-for="(ach, i) in data.achievements" :key="i">
+                        <div class="bg-white/5 border border-white/20 rounded-lg p-2 mb-1.5 flex items-center gap-2">
+                            <input type="checkbox" x-model="ach._selected" class="rounded">
+                            <input x-model="ach.text" @input="updatePreview()" type="text" class="flex-1 bg-transparent text-white text-xs focus:outline-none" placeholder="Achievement">
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Interests (from Resume-Builder) -->
+                <div class="bg-white/10 backdrop-blur-xl border-2 border-teal-400/30 rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-white">🎯 Interests</h2>
+                        <div class="flex gap-2">
+                            <button @click="addInterest()" class="bg-teal-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-teal-600">+ Add</button>
+                            <button @click="removeSelected('interests')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-600">- Remove</button>
+                        </div>
+                    </div>
+                    <template x-for="(interest, i) in data.interests" :key="i">
+                        <div class="bg-white/5 border border-white/20 rounded-lg p-2 mb-1.5 flex items-center gap-2">
+                            <input type="checkbox" x-model="interest._selected" class="rounded">
+                            <input x-model="interest.text" @input="updatePreview()" type="text" class="flex-1 bg-transparent text-white text-xs focus:outline-none" placeholder="Interest">
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Custom Sections (from Resume-Matcher) -->
+                <div class="bg-white/10 backdrop-blur-xl border-2 border-indigo-400/30 rounded-2xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-white">📌 Custom Sections</h2>
+                        <div class="flex gap-2">
+                            <button @click="addCustomSection()" class="bg-indigo-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-indigo-600" :disabled="data.customSections.length >= 3">+ Add (max 3)</button>
+                            <button @click="removeSelected('customSections')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-600">- Remove</button>
+                        </div>
+                    </div>
+                    <template x-for="(sec, i) in data.customSections" :key="i">
+                        <div class="bg-white/5 border border-white/20 rounded-lg p-3 mb-2">
+                            <label class="flex items-center gap-2 mb-2"><input type="checkbox" x-model="sec._selected" class="rounded"><span class="text-xs text-white/60">Select to remove</span></label>
+                            <input x-model="sec.title" @input="updatePreview()" type="text" class="w-full bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs font-bold focus:outline-none focus:border-indigo-400 mb-2" placeholder="Section Title">
+                            <textarea x-model="sec.description" @input="updatePreview()" rows="2" class="w-full bg-white/10 border border-white/30 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-indigo-400 resize-none" placeholder="Section content..."></textarea>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- RIGHT: Live Resume Preview (ALL sections properly aligned) -->
+            <div class="lg:sticky lg:top-6">
+                <div class="bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-white flex items-center">👁️ Live Preview</h2>
+                        <span class="text-xs text-blue-300">Auto-saves to browser</span>
+                    </div>
+                    
+                    <!-- Resume Preview Container -->
+                    <div id="resume-preview-container" class="bg-white rounded-xl overflow-hidden" :style="previewStyles" style="min-height: 700px;">
+                        <div id="resume-content" class="p-6 leading-relaxed" :class="{
+                            'font-mono': formatting.template === 'tech',
+                            'font-serif': formatting.template === 'elegant' || formatting.template === 'academic',
+                            'bg-gray-50': formatting.template === 'startup',
+                        }" :style="'font-size: ' + fontSize + '; font-family: ' + fontFamily + '; color: ' + textColor + ';'"
+                        :data-ats-mode="formatting.atsMode">
+                            
+                            <!-- Header -->
+                            <div class="text-center pb-3 mb-3" :class="formatting.atsMode ? 'border-b-2 border-gray-300' : ''" :style="!formatting.atsMode ? 'border-bottom: 2px solid ' + accentColor + ';' : ''">
+                                <h1 class="font-bold tracking-wide cursor-text hover:bg-gray-50 rounded px-1"
+                                    :style="'color: ' + textColor + '; font-size: ' + headerScale + 'em; font-weight: ' + (formatting.template === 'bold' ? '900' : formatting.template === 'elegant' ? '700' : 'bold') + ';'"
+                                    x-text="data.name || 'YOUR NAME'" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.name = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()"></h1>
+                                <p class="mt-0.5" :class="formatting.atsMode ? 'text-gray-600' : ''" style="color: #666;" x-text="data.title || 'YOUR JOB PROFILE'" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.title = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()"></p>
+                                <div class="flex flex-wrap justify-center gap-x-3 gap-y-1 mt-1.5 text-xs" :class="formatting.atsMode ? 'text-gray-600' : ''" style="color: #555;">
+                                    <span x-show="data.phone" x-text="data.phone" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.phone = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()" class="hover:underline cursor-text"></span>
+                                    <span x-show="data.email" x-text="data.email" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.email = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()" class="hover:underline cursor-text"></span>
+                                    <span x-show="data.linkedin" x-text="'linkedin.com/in/' + data.linkedin" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.linkedin = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()" class="hover:underline cursor-text"></span>
+                                    <span x-show="data.github" x-text="'github.com/' + data.github" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.github = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()" class="hover:underline cursor-text"></span>
+                                </div>
+                            </div>
+
+                            <!-- Profile -->
+                            <div class="mb-3" x-show="data.profile" :style="sectionStyle">
+                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Summary</h3>
+                                <p class="text-gray-700 text-xs cursor-text hover:bg-gray-50 rounded px-1 -mx-1" x-text="data.profile" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.profile = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()"></p>
+                            </div>
+
+                            <!-- Experience -->
+                            <div class="mb-3" x-show="data.experience.length > 0" :style="sectionStyle">
+                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Experience</h3>
+                                <template x-for="(exp, i) in data.experience" :key="i">
+                                    <div class="mb-2" :style="itemStyle">
+                                        <div class="flex justify-between items-baseline">
+                                            <span class="font-bold text-gray-900 text-xs" x-text="exp.title"></span>
+                                            <span class="text-gray-600 text-xs" x-text="exp.startDate + ' - ' + exp.endDate"></span>
+                                        </div>
+                                        <div class="text-gray-700 italic text-xs" x-text="exp.company + (exp.location ? ', ' + exp.location : '')"></div>
+                                        <template x-if="exp.description">
+                                            <div class="mt-1">
+                                                <template x-for="(line, j) in exp.description.split('\n').filter(l => l.trim())" :key="j">
+                                                    <p class="text-gray-700 text-xs" x-text="'• ' + line.trim()"></p>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Education -->
+                            <div class="mb-3" x-show="data.education.length > 0" :style="sectionStyle">
+                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Education</h3>
+                                <template x-for="(edu, i) in data.education" :key="i">
+                                    <div class="mb-2" :style="itemStyle">
+                                        <div class="flex justify-between items-baseline">
+                                            <span class="font-bold text-gray-900 text-xs" x-text="edu.degree"></span>
+                                            <span class="text-gray-600 text-xs" x-text="edu.startDate + ' - ' + edu.endDate"></span>
+                                        </div>
+                                        <p class="text-gray-700 text-xs" x-text="edu.school + (edu.gpa ? ' | GPA: ' + edu.gpa : '')"></p>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Skills (ATS-friendly) -->
+                            <div class="mb-3" x-show="hasAnySkills()" :style="sectionStyle">
+                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Skills</h3>
+                                
+                                <template x-if="data.skills.programming && data.skills.programming.some(s => s.text)">
+                                    <div class="mb-1" :style="itemStyle">
+                                        <span class="text-xs font-bold" :class="formatting.atsMode ? 'text-gray-700' : 'text-gray-600'">Programming: </span>
+                                        <template x-for="(skill, i) in data.skills.programming.filter(s => s.text)" :key="i">
+                                            <span class="text-xs mr-1" :class="formatting.atsMode ? 'text-gray-700' : 'text-gray-700'" x-text="skill.text + (i < data.skills.programming.filter(s => s.text).length - 1 ? ', ' : '')"></span>
+                                        </template>
+                                    </div>
+                                </template>
+                                
+                                <template x-if="data.skills.ai_ml && data.skills.ai_ml.some(s => s.text)">
+                                    <div class="mb-1" :style="itemStyle">
+                                        <span class="text-xs font-bold" :class="formatting.atsMode ? 'text-gray-700' : 'text-gray-600'">AI/ML: </span>
+                                        <template x-for="(skill, i) in data.skills.ai_ml.filter(s => s.text)" :key="i">
+                                            <span class="text-xs mr-1" :class="formatting.atsMode ? 'text-gray-700' : 'text-gray-700'" x-text="skill.text + (i < data.skills.ai_ml.filter(s => s.text).length - 1 ? ', ' : '')"></span>
+                                        </template>
+                                    </div>
+                                </template>
+                                
+                                <template x-if="data.skills.cloud_devops && data.skills.cloud_devops.some(s => s.text)">
+                                    <div class="mb-1" :style="itemStyle">
+                                        <span class="text-xs font-bold" :class="formatting.atsMode ? 'text-gray-700' : 'text-gray-600'">Cloud/DevOps: </span>
+                                        <template x-for="(skill, i) in data.skills.cloud_devops.filter(s => s.text)" :key="i">
+                                            <span class="text-xs mr-1" :class="formatting.atsMode ? 'text-gray-700' : 'text-gray-700'" x-text="skill.text + (i < data.skills.cloud_devops.filter(s => s.text).length - 1 ? ', ' : '')"></span>
+                                        </template>
+                                    </div>
+                                </template>
+                                
+                                <template x-if="data.skills.frontend_backend && data.skills.frontend_backend.some(s => s.text)">
+                                    <div class="mb-1" :style="itemStyle">
+                                        <span class="text-xs font-bold" :class="formatting.atsMode ? 'text-gray-700' : 'text-gray-600'">Frontend/Backend: </span>
+                                        <template x-for="(skill, i) in data.skills.frontend_backend.filter(s => s.text)" :key="i">
+                                            <span class="text-xs mr-1" :class="formatting.atsMode ? 'text-gray-700' : 'text-gray-700'" x-text="skill.text + (i < data.skills.frontend_backend.filter(s => s.text).length - 1 ? ', ' : '')"></span>
+                                        </template>
+                                    </div>
+                                </template>
+                                
+                                <template x-if="data.skills.tools_frameworks && data.skills.tools_frameworks.some(s => s.text)">
+                                    <div class="mb-1" :style="itemStyle">
+                                        <span class="text-xs font-bold" :class="formatting.atsMode ? 'text-gray-700' : 'text-gray-600'">Tools: </span>
+                                        <template x-for="(skill, i) in data.skills.tools_frameworks.filter(s => s.text)" :key="i">
+                                            <span class="text-xs mr-1" :class="formatting.atsMode ? 'text-gray-700' : 'text-gray-700'" x-text="skill.text + (i < data.skills.tools_frameworks.filter(s => s.text).length - 1 ? ', ' : '')"></span>
+                                        </template>
+                                    </div>
+                                </template>
+                                
+                                <template x-if="data.skills.soft_skills && data.skills.soft_skills.some(s => s.text)">
+                                    <div class="mb-1" :style="itemStyle">
+                                        <span class="text-xs font-bold" :class="formatting.atsMode ? 'text-gray-700' : 'text-gray-600'">Soft Skills: </span>
+                                        <template x-for="(skill, i) in data.skills.soft_skills.filter(s => s.text)" :key="i">
+                                            <span class="text-xs mr-1" :class="formatting.atsMode ? 'text-gray-700' : 'text-gray-700'" x-text="skill.text + (i < data.skills.soft_skills.filter(s => s.text).length - 1 ? ', ' : '')"></span>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Projects -->
+                            <div class="mb-3" x-show="data.projects.length > 0" :style="sectionStyle">
+                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Projects</h3>
+                                <template x-for="(proj, i) in data.projects" :key="i">
+                                    <div class="mb-2" :style="itemStyle">
+                                        <span class="font-bold text-gray-900 text-xs" x-text="proj.name"></span>
+                                        <template x-if="proj.description">
+                                            <div class="mt-1">
+                                                <template x-for="(line, j) in proj.description.split('\n').filter(l => l.trim())" :key="j">
+                                                    <p class="text-gray-700 text-xs" x-text="'• ' + line.trim()"></p>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <p class="text-gray-600 text-xs mt-0.5" x-show="proj.techStack" x-text="'Tech: ' + proj.techStack"></p>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Certifications -->
+                            <div class="mb-3" x-show="data.certifications.length > 0" :style="sectionStyle">
+                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Certifications</h3>
+                                <template x-for="(cert, i) in data.certifications" :key="i">
+                                    <div class="mb-1.5" :style="itemStyle">
+                                        <div class="flex justify-between items-baseline">
+                                            <span class="font-bold text-gray-900 text-xs" x-text="cert.name"></span>
+                                            <span class="text-gray-600 text-xs" x-text="cert.date"></span>
+                                        </div>
+                                        <p class="text-gray-700 text-xs" x-text="cert.issuer + (cert.id ? ' | ID: ' + cert.id : '')"></p>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Languages -->
+                            <div class="mb-3" x-show="data.languages.length > 0" :style="sectionStyle">
+                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Languages</h3>
+                                <div class="space-y-0.5">
+                                    <template x-for="(lang, i) in data.languages.filter(l => l.name)" :key="i">
+                                        <p class="text-gray-700 text-xs" x-text="'• ' + lang.name + (lang.level ? ' - ' + lang.level : '')"></p>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Achievements -->
+                            <div class="mb-3" x-show="data.achievements.length > 0" :style="sectionStyle">
+                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Achievements</h3>
+                                <div class="space-y-0.5">
+                                    <template x-for="(ach, i) in data.achievements.filter(a => a.text)" :key="i">
+                                        <p class="text-gray-700 text-xs" x-text="'• ' + ach.text"></p>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Interests -->
+                            <div class="mb-3" x-show="data.interests.length > 0" :style="sectionStyle">
+                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Interests</h3>
+                                <div class="space-y-0.5">
+                                    <template x-for="(interest, i) in data.interests.filter(int => int.text)" :key="i">
+                                        <p class="text-gray-700 text-xs" x-text="'• ' + interest.text"></p>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Custom Sections -->
+                            <template x-for="(sec, i) in data.customSections.filter(s => s.title)" :key="i">
+                                <div class="mb-3" :style="sectionStyle">
+                                    <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';" x-text="sec.title"></h3>
+                                    <p class="text-gray-700 text-xs whitespace-pre-line" x-text="sec.description"></p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Download Modal -->
+    <div x-show="showDownloadModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showDownloadModal = false" x-cloak>
+        <div class="bg-gradient-to-br from-purple-900 to-blue-900 backdrop-blur-xl border-2 border-white/20 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-black text-white">📥 Download or Print</h3>
+                <button @click="showDownloadModal = false" class="text-white/60 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <button @click="downloadPDF()" class="flex flex-col items-center justify-center bg-gradient-to-r from-red-500 to-pink-500 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
+                    <span class="text-4xl mb-2">📄</span>
+                    Resume PDF
+                </button>
+                <button @click="downloadCoverLetterPDF()" class="flex flex-col items-center justify-center bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
+                    <span class="text-4xl mb-2">✉️</span>
+                    Cover Letter PDF
+                </button>
+                <button @click="printResume()" class="flex flex-col items-center justify-center bg-gradient-to-r from-green-500 to-emerald-500 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
+                    <span class="text-4xl mb-2">🖨️</span>
+                    Print Resume
+                </button>
+                <button @click="printCoverLetter()" class="flex flex-col items-center justify-center bg-gradient-to-r from-orange-500 to-amber-500 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
+                    <span class="text-4xl mb-2">📋</span>
+                    Print Cover Letter
+                </button>
+            </div>
+            <p class="text-xs text-blue-300 text-center">💡 For best print results, use Chrome or Edge browsers.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function resumeBuilder() {
+    return {
+        existingResumes: [],
+        selectedExistingResume: '',
+        importLoading: false,
+        showFormattingPanel: false,
+        showDownloadModal: false,
+        templates: [
+            { id: 'classic', name: 'Classic', icon: '📄', desc: 'Traditional, clean layout' },
+            { id: 'modern', name: 'Modern', icon: '🎨', desc: 'Colorful accents, contemporary' },
+            { id: 'minimal', name: 'Minimal', icon: '⬜', desc: 'Clean, lots of whitespace' },
+            { id: 'bold', name: 'Bold', icon: '🔥', desc: 'Strong headers, high contrast' },
+            { id: 'elegant', name: 'Elegant', icon: '✨', desc: 'Serif fonts, refined style' },
+            { id: 'tech', name: 'Tech', icon: '💻', desc: 'Monospace, developer-focused' },
+            { id: 'executive', name: 'Executive', icon: '👔', desc: 'Professional, leadership' },
+            { id: 'creative', name: 'Creative', icon: '🎭', desc: 'Unique, artistic layout' },
+            { id: 'academic', name: 'Academic', icon: '🎓', desc: 'Research, education focus' },
+            { id: 'startup', name: 'Startup', icon: '🚀', desc: 'Modern, startup-friendly' }
+        ],
+        accentColors: [
+            { id: 'blue', name: 'Blue', hex: '#1D4ED8' },
+            { id: 'green', name: 'Green', hex: '#15803D' },
+            { id: 'orange', name: 'Orange', hex: '#EA580C' },
+            { id: 'red', name: 'Red', hex: '#DC2626' },
+            { id: 'purple', name: 'Purple', hex: '#7C3AED' },
+            { id: 'teal', name: 'Teal', hex: '#0D9488' },
+            { id: 'pink', name: 'Pink', hex: '#DB2777' },
+            { id: 'gray', name: 'Gray', hex: '#4B5563' }
+        ],
+        formatting: { template: 'classic', accentColor: 'blue', fontFamily: 'sans-serif', fontSize: 3, sectionGap: 3, itemGap: 2, compactMode: false, atsMode: true },
+        accentColorMap: { blue: '#1D4ED8', green: '#15803D', orange: '#EA580C', red: '#DC2626', purple: '#7C3AED', teal: '#0D9488', pink: '#DB2777', gray: '#4B5563' },
+        accentLightMap: { blue: '#DBEAFE', green: '#DCFCE7', orange: '#FED7AA', red: '#FEE2E2', purple: '#EDE9FE', teal: '#CCFBF1', pink: '#FCE7F3', gray: '#F3F4F6' },
+        fontFamilyMap: { 'sans-serif': 'system-ui, -apple-system, sans-serif', 'serif': 'Georgia, Cambria, "Times New Roman", serif', 'mono': 'SFMono-Regular, "SF Mono", Menlo, Consolas, monospace' },
+        fontSizeMap: { 1: '11px', 2: '12px', 3: '14px', 4: '15px', 5: '16px' },
+        spacingMap: { 1: 6, 2: 10, 3: 16, 4: 20, 5: 24 },
+        itemSpacingMap: { 1: 2, 2: 4, 3: 8, 4: 12, 5: 16 },
+        data: {
+            name: '', title: '', phone: '', email: '', linkedin: '', github: '', profile: '',
+            experience: [], education: [],
+            skills: { programming: [], ai_ml: [], cloud_devops: [], frontend_backend: [], tools_frameworks: [], soft_skills: [] },
+            projects: [], certifications: [],
+            languages: [], achievements: [], interests: [], customSections: []
+        },
+
+        init() {
+            this.loadExistingResumes();
+            const saved = localStorage.getItem('draftResume');
+            if (saved) { try { this.data = { ...this.data, ...JSON.parse(saved) }; } catch(e) {} }
+            const fmtSaved = localStorage.getItem('resume_formatting');
+            if (fmtSaved) { try { this.formatting = { ...this.formatting, ...JSON.parse(fmtSaved) }; } catch(e) {} }
+            // Ensure skills structure exists
+            if (!this.data.skills || typeof this.data.skills === 'object' && !Array.isArray(this.data.skills)) {
+                if (!this.data.skills.programming) this.data.skills = { programming: [], ai_ml: [], cloud_devops: [], frontend_backend: [], tools_frameworks: [], soft_skills: [] };
+            }
+            if (this.data.education.length === 0) this.addEducation();
+            if (this.data.skills.programming.length === 0) { this.addSkill('programming'); this.addSkill('ai_ml'); this.addSkill('tools_frameworks'); }
+            const hasSeenTour = localStorage.getItem('hasSeenResumeTour');
+            if (!hasSeenTour) { this.$nextTick(() => { setTimeout(() => { this.startTour(); localStorage.setItem('hasSeenResumeTour', 'true'); }, 1000); }); }
+        },
+
+        async loadExistingResumes() { try { const res = await fetch('/api/resume/user/temp-user-id'); if (res.ok) this.existingResumes = await res.json(); } catch(e) {} },
+
+        async importSelectedResume() {
+            this.importLoading = true;
+            try {
+                const res = await fetch(`/api/resume/${this.selectedExistingResume}`);
+                if (!res.ok) throw new Error('Failed to load resume');
+                const resume = await res.json();
+                const ui = resume.optimized_data?.user_information || {};
+                this.data.name = ui.name || ''; this.data.title = ui.main_job_title || ''; this.data.email = ui.email || '';
+                this.data.profile = ui.profile_description || '';
+                this.data.experience = (ui.experiences || []).map(e => ({ title: e.job_title, company: e.company, location: e.location || '', startDate: e.start_date, endDate: e.end_date, description: (e.four_tasks || []).join('\n'), _selected: false }));
+                this.data.education = (ui.education || []).map(e => ({ degree: e.degree, school: e.institution, startDate: e.start_date, endDate: e.end_date, gpa: e.description || '', _selected: false }));
+                const skills = ui.skills || {};
+                const allSkills = [...(skills.hard_skills || []), ...(skills.soft_skills || [])];
+                // Use exclusive categorization - each skill goes to ONLY ONE category
+                const categorized = { programming: [], ai_ml: [], cloud_devops: [], frontend_backend: [], tools_frameworks: [], soft_skills: [] };
+                const assigned = new Set();
+                // Priority order: soft_skills > ai_ml > cloud > frontend > programming > tools
+                const rules = [
+                    { cat: 'soft_skills', regex: /leadership|communication|team|problem.?solv|analytical|management|project.*management|delivery|ownership|initiative|collaboration|mentoring|advisory|event organization|peer engagement|entrepreneurship/i },
+                    { cat: 'ai_ml', regex: /tensorflow|pytorch|open.?cv|machine learning|deep learning|computer vision|langchain|langgraph|rag|gemini|vertex ai|nlp|object detection|image processing|scikit|pandas|numpy|advanced nlp|generative ai|ai agent|vector database|knowledge graph|multi.?agent|reference architecture|gcp.*platform|firebase/i },
+                    { cat: 'cloud_devops', regex: /aws|azure|docker|kubernetes|devops|ci\/cd|jenkins|cloud technologies/i },
+                    { cat: 'frontend_backend', regex: /react|node\.?js|express|flask|fastapi|django|angular|vue|html|css|rest|rest api|openai api|end.?to.?end.*design/i },
+                    { cat: 'programming', regex: /python|java|c\+\+|c#|javascript|typescript|sql|r |go |rust|swift|kotlin/i },
+                ];
+                allSkills.forEach(skill => {
+                    for (const rule of rules) {
+                        if (rule.regex.test(skill) && !assigned.has(skill.toLowerCase())) {
+                            categorized[rule.cat].push({ text: skill, _selected: false });
+                            assigned.add(skill.toLowerCase());
+                            break;
+                        }
+                    }
+                    // Unassigned skills go to tools_frameworks
+                    if (!assigned.has(skill.toLowerCase())) {
+                        categorized.tools_frameworks.push({ text: skill, _selected: false });
+                        assigned.add(skill.toLowerCase());
+                    }
+                });
+                this.data.skills = categorized;
+                this.data.projects = []; this.data.certifications = []; this.data.languages = []; this.data.achievements = []; this.data.interests = []; this.data.customSections = [];
+                this.updatePreview();
+                alert('✅ Resume imported! You can now customize it.');
+            } catch(e) { alert('❌ Error: ' + e.message); }
+            finally { this.importLoading = false; }
+        },
+
+        updatePreview() { clearTimeout(this._saveTimeout); this._saveTimeout = setTimeout(() => this.saveToLocalStorage(), 500); },
+        
+        saveToLocalStorage() {
+            localStorage.setItem('draftResume', JSON.stringify(this.data));
+            localStorage.setItem('resume_formatting', JSON.stringify(this.formatting));
+            alert('✅ Resume saved to browser!');
+        },
+        resetResume() { if (confirm('Reset all fields?')) { localStorage.removeItem('draftResume'); this.data = { name: '', title: '', phone: '', email: '', linkedin: '', github: '', profile: '', experience: [], education: [], skills: { programming: [], ai_ml: [], cloud_devops: [], frontend_backend: [], tools_frameworks: [], soft_skills: [] }, projects: [], certifications: [], languages: [], achievements: [], interests: [], customSections: [] }; this.addEducation(); this.addSkill('programming'); this.addSkill('ai_ml'); this.addSkill('tools_frameworks'); } },
+
+        get accentColor() { return this.accentColorMap[this.formatting.accentColor] || '#1D4ED8'; },
+        get accentLight() { return this.accentLightMap[this.formatting.accentColor] || '#DBEAFE'; },
+        get fontSize() { return this.fontSizeMap[this.formatting.fontSize] || '14px'; },
+        get sectionGap() { return this.spacingMap[this.formatting.sectionGap] || 16; },
+        get itemGap() { return this.itemSpacingMap[this.formatting.itemGap] || 4; },
+        get fontFamily() {
+            if (this.formatting.template === 'elegant' || this.formatting.template === 'academic') return 'Georgia, Cambria, "Times New Roman", serif';
+            if (this.formatting.template === 'tech') return 'SFMono-Regular, "SF Mono", Menlo, Consolas, monospace';
+            return this.fontFamilyMap[this.formatting.fontFamily] || 'system-ui, sans-serif';
+        },
+        get headerScale() {
+            if (this.formatting.template === 'bold') return [1.75, 2, 2.25, 2.5, 2.75][this.formatting.fontSize - 1] || 2.25;
+            if (this.formatting.template === 'minimal') return [1.25, 1.5, 1.75, 2, 2.25][this.formatting.fontSize - 1] || 1.75;
+            return [1.5, 1.75, 2, 2.25, 2.5][this.formatting.fontSize - 1] || 2;
+        },
+        get textColor() {
+            if (this.formatting.template === 'minimal') return '#333';
+            if (this.formatting.template === 'executive') return '#1a1a2e';
+            if (this.formatting.template === 'tech') return '#0d1117';
+            return '#111';
+        },
+        get previewStyles() { const m = this.formatting.compactMode ? 8 : 16; return `padding: ${m}px;`; },
+        get sectionStyle() { return `margin-bottom: ${this.sectionGap}px;`; },
+        get itemStyle() { return `margin-bottom: ${this.itemGap}px;`; },
+        hasAnySkills() {
+            const cats = ['programming', 'ai_ml', 'cloud_devops', 'frontend_backend', 'tools_frameworks', 'soft_skills'];
+            return cats.some(c => this.data.skills[c] && this.data.skills[c].some(s => s.text));
+        },
+
+        // Add functions
+        addExperience() { this.data.experience.push({ title: '', company: '', location: '', startDate: '', endDate: '', description: '', _selected: false }); },
+        addEducation() { this.data.education.push({ degree: '', school: '', startDate: '', endDate: '', gpa: '', _selected: false }); },
+        addSkill(category) { if (!category) category = 'programming'; if (!this.data.skills[category]) this.data.skills[category] = []; this.data.skills[category].push({ text: '', _selected: false }); },
+        addProject() { this.data.projects.push({ name: '', description: '', techStack: '', _selected: false }); },
+        addCertification() { this.data.certifications.push({ name: '', issuer: '', date: '', id: '', _selected: false }); },
+        addLanguage() { this.data.languages.push({ name: '', level: '', _selected: false }); },
+        addAchievement() { this.data.achievements.push({ text: '', _selected: false }); },
+        addInterest() { this.data.interests.push({ text: '', _selected: false }); },
+        addCustomSection() { if (this.data.customSections.length < 3) { this.data.customSections.push({ title: '', description: '', _selected: false }); } else { alert('Maximum 3 custom sections.'); } },
+        removeSelected(section) {
+            if (section === 'skills') { alert('Use the × button next to each skill to remove it.'); return; }
+            const items = this.data[section] || []; if (!items.length) { alert('No items.'); return; } if (!items.some(i => i._selected)) { alert('Select checkboxes to remove.'); return; } this.data[section] = items.filter(i => !i._selected); this.updatePreview();
+        },
+        removeSkill(category, index) { this.data.skills[category].splice(index, 1); this.updatePreview(); },
+
+        downloadPDF() {
+            this.showDownloadModal = false;
+            window.print();
+        },
+        printResume() { this.showDownloadModal = false; window.print(); },
+        
+        downloadCoverLetterPDF() {
+            const cl = this.generateCoverLetterText();
+            const w = window.open('', '_blank');
+            w.document.write('<html><head><title>Cover Letter - ' + (this.data.name || 'Resume') + '</title><style>body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;padding:20px;line-height:1.6;color:#333;}h1{text-align:center;border-bottom:2px solid #333;padding-bottom:10px;}</style></head><body>' + cl.replace(/\n/g, '<br>') + '</body></html>');
+            w.document.close();
+            setTimeout(() => { w.print(); }, 500);
+            this.showDownloadModal = false;
+        },
+        printCoverLetter() {
+            this.downloadCoverLetterPDF();
+        },
+        generateCoverLetterText() {
+            const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            return `${date}\n\nDear Hiring Manager,\n\nI am writing to express my strong interest in the ${this.data.title || 'position'} at your organization. With my background in ${this.getFirstFewSkills()} and proven track record of delivering results, I am confident I would be a valuable addition to your team.\n\n${this.data.profile || 'Throughout my career, I have consistently demonstrated the skills and dedication necessary to excel in this role.'}\n\n${this.data.experience.length > 0 ? `In my most recent role as ${this.data.experience[0].title} at ${this.data.experience[0].company}, I ${this.data.experience[0].description ? 'was responsible for ' + this.data.experience[0].description.split('\n')[0] : 'contributed significantly to the team\'s success.'}` : 'I am eager to bring my expertise and passion for excellence to your organization.'}\n\nI would welcome the opportunity to discuss how my qualifications align with your needs. Thank you for considering my application.\n\nSincerely,\n${this.data.name || '[Your Name]'}\n${this.data.email || ''}\n${this.data.phone || ''}`;
+        },
+        getFirstFewSkills() {
+            const all = [];
+            ['programming', 'ai_ml', 'cloud_devops', 'frontend_backend', 'tools_frameworks'].forEach(c => {
+                (this.data.skills[c] || []).forEach(s => { if (s.text) all.push(s.text); });
+            });
+            return all.slice(0, 4).join(', ') || 'relevant technical areas';
+        },
+
+        startTour() {
+            const tour = new Shepherd.Tour({ defaultStepOptions: { cancelIcon: { enabled: true }, scrollTo: { behavior: 'smooth', block: 'center' } } });
+            tour.addStep({ title: 'Welcome! 🎉', text: 'Build a professional, ATS-friendly resume with 10 templates, categorized skills, and cover letter generation!', buttons: [{ action() { return this.next(); }, text: 'Next →' }] });
+            tour.addStep({ title: '📂 Import Resume', text: 'Import an existing resume - skills are auto-categorized into 6 groups!', attachTo: { element: '#import-section', on: 'bottom' }, buttons: [{ action() { return this.back(); }, text: 'Back', classes: 'shepherd-button-secondary' }, { action() { return this.next(); }, text: 'Next →' }] });
+            tour.addStep({ title: '📝 Fill Details', text: 'Add Experience, Education, Skills (6 categories!), Projects, Certifications, and more.', attachTo: { element: '#form-section', on: 'right' }, buttons: [{ action() { return this.back(); }, text: 'Back', classes: 'shepherd-button-secondary' }, { action() { return this.next(); }, text: 'Next →' }] });
+            tour.addStep({ title: '🎨 10 Templates + ATS Mode', text: 'Choose from 10 templates! ✅ ATS Mode is ON by default for clean, simple, professional formatting that ATS systems love.', attachTo: { element: '#customize-panel', on: 'bottom' }, buttons: [{ action() { return this.back(); }, text: 'Back', classes: 'shepherd-button-secondary' }, { action() { return this.next(); }, text: 'Next →' }] });
+            tour.addStep({ title: '👁️ Live Preview', text: 'Clean, simple preview. Click name, title, or profile to edit inline! Skills organized by category.', attachTo: { element: '#resume-preview-container', on: 'left' }, buttons: [{ action() { return this.back(); }, text: 'Back', classes: 'shepherd-button-secondary' }, { action() { return this.next(); }, text: 'Next →' }] });
+            tour.addStep({ title: '📥 Download Options', text: 'Export Resume PDF, Cover Letter PDF, or Print. ATS-friendly formatting guaranteed!', attachTo: { element: '#resume-nav', on: 'bottom' }, buttons: [{ action() { return this.back(); }, text: 'Back', classes: 'shepherd-button-secondary' }, { action() { return this.complete(); }, text: "Let's Go! 🚀" }] });
+            tour.start();
+        }
+    };
+}
+</script>
+{% endblock %}

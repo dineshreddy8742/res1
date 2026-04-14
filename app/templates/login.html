@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Login - DailSmart AI{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex items-center justify-center px-4 py-12 relative overflow-hidden">
+    <!-- Premium Blobs -->
+    <div class="absolute top-20 left-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute bottom-20 right-10 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s"></div>
+    
+    <div class="relative z-10 max-w-md w-full">
+        <div class="text-center mb-8">
+            <a href="/" class="inline-flex items-center gap-3 text-white mb-6 hover:scale-105 transition-transform">
+                <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-500 text-lg font-black text-white shadow-lg">🚀</span>
+                <span class="text-2xl font-black bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">DailSmart AI</span>
+            </a>
+            <h1 class="text-4xl font-black text-white">Welcome Back! 👋</h1>
+            <p class="text-blue-200 mt-2">Login to your account to continue</p>
+        </div>
+
+        <div class="bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-[2rem] p-8 shadow-2xl">
+            <div x-data="loginForm()">
+                <form @submit.prevent="handleLogin()">
+                    <div class="space-y-6">
+                        <div x-show="error" class="bg-red-500/20 border border-red-400/40 rounded-xl p-4 text-red-200 text-sm flex items-center gap-3 animate-shake">
+                            <span>❌</span>
+                            <span x-text="error"></span>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-blue-200 mb-2">Login Type</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" 
+                                        @click="role = 'student'" 
+                                        :class="role === 'student' ? 'bg-pink-500 text-white border-pink-400' : 'bg-white/5 text-white/60 border-white/10'"
+                                        class="py-2.5 text-xs font-bold rounded-xl border transition-all">
+                                    🎓 STUDENT
+                                </button>
+                                <button type="button" 
+                                        @click="role = 'admin'" 
+                                        :class="role === 'admin' ? 'bg-purple-500 text-white border-purple-400' : 'bg-white/5 text-white/60 border-white/10'"
+                                        class="py-2.5 text-xs font-bold rounded-xl border transition-all">
+                                    🛡️ ADMIN
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-blue-200 mb-2">Roll Number</label>
+                            <div class="relative group">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-pink-400 transition-colors">🆔</span>
+                                <input x-model="rollNumber" type="text" required 
+                                       class="w-full bg-white/5 border border-white/20 rounded-xl pl-12 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-400/10 transition-all font-medium" 
+                                       placeholder="e.g. 21ABC1234">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-blue-200 mb-2">Password</label>
+                            <div class="relative group">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-pink-400 transition-colors">🔒</span>
+                                <input x-model="password" type="password" required 
+                                       class="w-full bg-white/5 border border-white/20 rounded-xl pl-12 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-400/10 transition-all font-medium" 
+                                       placeholder="••••••••">
+                            </div>
+                        </div>
+
+                        <button type="submit" :disabled="loading" 
+                                class="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white font-black py-4 rounded-xl shadow-xl shadow-purple-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2">
+                            <span x-show="!loading" class="text-lg">Login 🚀</span>
+                            <span x-show="loading" class="animate-spin text-xl">⏳</span>
+                            <span x-show="loading">Authenticating...</span>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-8 text-center pt-6 border-t border-white/10">
+                    <p class="text-blue-200 text-sm">
+                        New to DailSmart? 
+                        <a href="/register" class="text-pink-400 font-bold hover:text-pink-300 ml-1 underline decoration-2 underline-offset-4">Create Account ✨</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function loginForm() {
+    return {
+        rollNumber: '',
+        password: '',
+        role: 'student',
+        loading: false,
+        error: '',
+        async handleLogin() {
+            this.loading = true;
+            this.error = '';
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ roll_number: this.rollNumber, password: this.password })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || 'Login failed');
+                }
+                
+                // Save user info to local storage for quick access if needed
+                localStorage.setItem('user', JSON.stringify(data));
+                
+                if (data.is_admin || this.role === 'admin') {
+                    window.location.href = '/admin';
+                } else {
+                    window.location.href = '/dashboard';
+                }
+            } catch(e) {
+                this.error = e.message;
+            } finally {
+                this.loading = false;
+            }
+        }
+    };
+}
+</script>
+
+<style>
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+.animate-shake { animation: shake 0.2s ease-in-out 0s 2; }
+</style>
+{% endblock %}

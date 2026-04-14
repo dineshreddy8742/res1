@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - DailSmart AI{% endblock %}
+
+{% block content %}
+<div class="relative min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900" x-data="adminDashboard()">
+    <!-- Animated Background -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div class="absolute top-40 right-10 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+    </div>
+
+    <div class="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+            <div>
+                <h1 class="text-3xl font-black text-white">🛡️ Admin Control Center</h1>
+                <p class="text-blue-200 mt-1">Manage organizations, colleges, and student access levels</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button @click="activeTab = 'stats'" :class="activeTab === 'stats' ? 'bg-white text-purple-900 shadow-xl' : 'bg-white/10 text-white hover:bg-white/20'" class="px-5 py-2.5 rounded-xl font-bold transition-all">Overview</button>
+                <button @click="activeTab = 'colleges'" :class="activeTab === 'colleges' ? 'bg-white text-purple-900 shadow-xl' : 'bg-white/10 text-white hover:bg-white/20'" class="px-5 py-2.5 rounded-xl font-bold transition-all">🏫 Organizations</button>
+                <button @click="activeTab = 'users'" :class="activeTab === 'users' ? 'bg-white text-purple-900 shadow-xl' : 'bg-white/10 text-white hover:bg-white/20'" class="px-5 py-2.5 rounded-xl font-bold transition-all">👤 Student Access</button>
+            </div>
+        </div>
+
+        <!-- Tab 1: Stats Overview -->
+        <div x-show="activeTab === 'stats'" x-cloak class="space-y-8">
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="bg-white/10 border border-white/20 p-6 rounded-3xl backdrop-blur-xl">
+                    <p class="text-xs font-bold text-pink-300 uppercase tracking-widest">Total Students</p>
+                    <p class="text-4xl font-black text-white mt-2" x-text="stats.total_users"></p>
+                </div>
+                <div class="bg-white/10 border border-white/20 p-6 rounded-3xl backdrop-blur-xl">
+                    <p class="text-xs font-bold text-cyan-300 uppercase tracking-widest">Active Colleges</p>
+                    <p class="text-4xl font-black text-white mt-2" x-text="colleges.length"></p>
+                </div>
+                <div class="bg-white/10 border border-white/20 p-6 rounded-3xl backdrop-blur-xl">
+                    <p class="text-xs font-bold text-yellow-300 uppercase tracking-widest">Resumes Generated</p>
+                    <p class="text-4xl font-black text-white mt-2" x-text="stats.total_resumes"></p>
+                </div>
+                <div class="bg-white/10 border border-white/20 p-6 rounded-3xl backdrop-blur-xl">
+                    <p class="text-xs font-bold text-green-300 uppercase tracking-widest">Blocked Accounts</p>
+                    <p class="text-4xl font-black text-white mt-2" x-text="users.filter(u => u.status === 'blocked').length"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Organizations (Colleges) -->
+        <div x-show="activeTab === 'colleges'" x-cloak class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Add College Form -->
+            <div class="bg-white/10 border border-white/20 p-8 rounded-3xl backdrop-blur-xl shadow-2xl h-fit">
+                <h3 class="text-2xl font-black text-white mb-6">➕ Add New College</h3>
+                <form @submit.prevent="addCollege" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-blue-300 mb-1 uppercase">College Name</label>
+                        <input x-model="newCollege.name" type="text" required placeholder="e.g., SVCET Chittoor" class="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-blue-300 mb-1 uppercase">Location</label>
+                        <input x-model="newCollege.location" type="text" placeholder="City, State" class="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-400">
+                    </div>
+                    <button type="submit" :disabled="loading" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 py-4 rounded-xl text-white font-black hover:scale-[1.02] transition-all">
+                        Register Organization
+                    </button>
+                </form>
+            </div>
+
+            <!-- College List -->
+            <div class="lg:col-span-2 bg-white/10 border border-white/20 rounded-3xl backdrop-blur-xl overflow-hidden shadow-2xl">
+                <div class="px-6 py-5 border-b border-white/10">
+                    <h3 class="text-xl font-bold text-white">Registered Colleges</h3>
+                </div>
+                <div class="divide-y divide-white/5">
+                    <template x-for="college in colleges" :key="college.id">
+                        <div class="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl">🏫</div>
+                                <div>
+                                    <p class="font-black text-white text-lg" x-text="college.name"></p>
+                                    <p class="text-xs text-blue-300" x-text="college.location || 'Location not set'"></p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-bold text-white" x-text="users.filter(u => u.college === college.name).length + ' Students'"></p>
+                                <button class="text-xs text-pink-400 hover:text-pink-300 mt-1 font-bold">Edit Details</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: User Access Management -->
+        <div x-show="activeTab === 'users'" x-cloak class="space-y-8">
+            <!-- Action Bar -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Bulk CSV Zone -->
+                <div @dragover.prevent="dragOver = true" @dragleave.prevent="dragOver = false" @drop.prevent="handleDrop"
+                    :class="dragOver ? 'border-pink-400 bg-pink-500/10' : 'border-white/20 bg-white/5'"
+                    class="border-2 border-dashed rounded-3xl p-8 flex items-center justify-between transition-all backdrop-blur-xl">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-3xl">📁</div>
+                        <div>
+                            <p class="font-bold text-white">Bulk Student Upload</p>
+                            <p class="text-xs text-blue-300">Drop students.csv here to approve all</p>
+                        </div>
+                    </div>
+                    <input type="file" @change="handleFileSelect" class="hidden" id="csv-upload" accept=".csv">
+                    <label for="csv-upload" class="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-xl font-bold cursor-pointer transition-all">Select CSV</label>
+                </div>
+
+                <!-- Quick Add -->
+                <div class="bg-white/10 border border-white/20 rounded-3xl p-6 backdrop-blur-xl flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-pink-500/20 flex items-center justify-center text-3xl">👤</div>
+                        <div>
+                            <p class="font-bold text-white">Manual Enrollment</p>
+                            <p class="text-xs text-blue-300">Add a single student or employee</p>
+                        </div>
+                    </div>
+                    <button @click="showAddModal = true" class="bg-pink-500 hover:bg-pink-600 text-white px-6 py-2.5 rounded-xl font-black transition-all">Add User</button>
+                </div>
+            </div>
+
+            <!-- Bulk Preview Bar -->
+            <div x-show="csvPreview.length > 0" class="p-4 bg-green-500/20 border border-green-500/50 rounded-2xl flex items-center justify-between animate-pulse">
+                <p class="text-green-200 font-bold">✨ <span x-text="csvPreview.length"></span> students ready to be imported!</p>
+                <button @click="processBulkImport" class="bg-green-500 text-white px-6 py-2 rounded-xl font-black">Upload Now</button>
+            </div>
+
+            <!-- Users List Table -->
+            <div class="bg-white/10 border border-white/20 rounded-3xl backdrop-blur-xl overflow-hidden shadow-2xl">
+                <div class="px-6 py-5 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h3 class="text-xl font-bold text-white">User Directory</h3>
+                    <div class="flex gap-2">
+                        <select x-model="statusFilter" class="bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-pink-400">
+                            <option value="all" class="bg-indigo-900">All Status</option>
+                            <option value="approved" class="bg-indigo-900">Approved Only</option>
+                            <option value="blocked" class="bg-indigo-900">Blocked Only</option>
+                        </select>
+                        <input type="text" x-model="searchQuery" placeholder="Search name, email, roll..." class="bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-pink-400">
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-white/5">
+                                <th class="px-6 py-4 text-xs font-bold text-blue-200 uppercase">Profile</th>
+                                <th class="px-6 py-4 text-xs font-bold text-blue-200 uppercase">Identity</th>
+                                <th class="px-6 py-4 text-xs font-bold text-blue-200 uppercase">College</th>
+                                <th class="px-6 py-4 text-xs font-bold text-blue-200 uppercase text-center">Status</th>
+                                <th class="px-6 py-4 text-xs font-bold text-blue-200 uppercase text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5">
+                            <template x-for="user in filteredUsers" :key="user.id">
+                                <tr class="hover:bg-white/5 transition-colors group">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-white font-bold" x-text="user.name.charAt(0)"></div>
+                                            <div>
+                                                <p class="font-bold text-white" x-text="user.name"></p>
+                                                <span :class="{
+                                                    'text-pink-300': user.role === 'admin',
+                                                    'text-cyan-300': user.role === 'student',
+                                                    'text-yellow-300': user.role === 'employee'
+                                                }" class="text-[10px] font-black uppercase tracking-tighter" x-text="user.role"></span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <p class="text-sm text-white font-medium" x-text="user.roll_number"></p>
+                                        <p class="text-xs text-blue-300" x-text="user.email"></p>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-blue-100" x-text="user.college"></td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span :class="{
+                                            'bg-green-500/20 text-green-300 border-green-500/30': user.status === 'approved',
+                                            'bg-red-500/20 text-red-300 border-red-500/30': user.status === 'blocked',
+                                            'bg-yellow-500/20 text-yellow-300 border-yellow-500/30': user.status === 'pending'
+                                        }" class="px-2 py-1 rounded-lg text-[10px] font-black border uppercase" x-text="user.status || 'approved'"></span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button x-show="user.status !== 'approved'" @click="updateStatus(user.id, 'approved')" class="p-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500 hover:text-white transition-all" title="Approve">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                            </button>
+                                            <button x-show="user.status !== 'blocked'" @click="updateStatus(user.id, 'blocked')" class="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-all" title="Block">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                            </button>
+                                            <button @click="deleteUser(user.id)" class="p-2 bg-white/10 text-white rounded-lg hover:bg-red-600 transition-all" title="Delete Forever">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h14"/></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Add Modal -->
+    <div x-show="showAddModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-indigo-950 border border-white/20 rounded-3xl p-8 max-w-lg w-full shadow-2xl shadow-pink-500/20">
+            <h3 class="text-2xl font-black text-white mb-6">Enroll New Student</h3>
+            <form @submit.prevent="addUser" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-blue-300 mb-1 uppercase">Full Name</label>
+                        <input x-model="newUser.name" type="text" required class="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-blue-300 mb-1 uppercase">Institutional Email</label>
+                        <input x-model="newUser.email" type="email" required pattern=".+@svcet\.edu\.in" class="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-blue-300 mb-1 uppercase">Roll Number</label>
+                        <input x-model="newUser.roll_number" type="text" required class="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-blue-300 mb-1 uppercase">College</label>
+                        <select x-model="newUser.college" class="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-400">
+                            <template x-for="c in colleges" :key="c.id">
+                                <option :value="c.name" x-text="c.name"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-blue-300 mb-1 uppercase">Set Password</label>
+                        <input x-model="newUser.password" type="text" required class="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-400">
+                    </div>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" @click="showAddModal = false" class="flex-1 px-6 py-4 rounded-xl text-white font-bold bg-white/10 hover:bg-white/20 transition-all">Cancel</button>
+                    <button type="submit" class="flex-1 px-6 py-4 rounded-xl text-white font-black bg-pink-500 hover:bg-pink-600 transition-all">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function adminDashboard() {
+    return {
+        activeTab: 'stats',
+        stats: { total_users: 0, total_resumes: 0 },
+        users: [],
+        colleges: [],
+        searchQuery: '',
+        statusFilter: 'all',
+        showAddModal: false,
+        newCollege: { name: '', location: '' },
+        newUser: { name: '', email: '', roll_number: '', role: 'student', college: 'SVCET', password: '' },
+        dragOver: false,
+        csvPreview: [],
+        loading: false,
+
+        async init() {
+            await this.refreshData();
+        },
+
+        async refreshData() {
+            try {
+                const [statsRes, usersRes, collegesRes] = await Promise.all([
+                    fetch('/api/auth/admin/stats'),
+                    fetch('/api/auth/admin/users'),
+                    fetch('/api/auth/admin/colleges')
+                ]);
+                this.stats = await statsRes.json();
+                this.users = await usersRes.json();
+                this.colleges = await collegesRes.json();
+            } catch (e) { console.error("Admin init failed", e); }
+        },
+
+        get filteredUsers() {
+            let filtered = this.users;
+            if (this.statusFilter !== 'all') {
+                filtered = filtered.filter(u => (u.status || 'approved') === this.statusFilter);
+            }
+            if (this.searchQuery) {
+                const q = this.searchQuery.toLowerCase();
+                filtered = filtered.filter(u => 
+                    u.name.toLowerCase().includes(q) || 
+                    u.email.toLowerCase().includes(q) || 
+                    u.roll_number.toLowerCase().includes(q)
+                );
+            }
+            return filtered;
+        },
+
+        async addCollege() {
+            this.loading = true;
+            try {
+                const res = await fetch(`/api/auth/admin/colleges?name=${encodeURIComponent(this.newCollege.name)}&location=${encodeURIComponent(this.newCollege.location)}`, {
+                    method: 'POST'
+                });
+                if (res.ok) {
+                    this.newCollege = { name: '', location: '' };
+                    await this.refreshData();
+                    alert("College registered successfully!");
+                } else {
+                    const errorData = await res.json();
+                    alert("Error: " + (errorData.detail || "Registration failed"));
+                }
+            } catch (e) { 
+                console.error(e);
+                alert("Action failed: " + e.message); 
+            }
+            finally { this.loading = false; }
+        },
+
+        async addUser() {
+            try {
+                const res = await fetch('/api/auth/admin/add-user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.newUser)
+                });
+                if (res.ok) {
+                    this.showAddModal = false;
+                    this.newUser = { name: '', email: '', roll_number: '', role: 'student', college: 'SVCET', password: '' };
+                    await this.refreshData();
+                    alert("User enrolled successfully!");
+                }
+            } catch (e) { alert("Failed to add user"); }
+        },
+
+        async updateStatus(uid, status) {
+            if (!confirm(`Are you sure you want to set this user to ${status}?`)) return;
+            try {
+                const res = await fetch(`/api/auth/admin/users/${uid}/status?status=${status}`, { method: 'POST' });
+                if (res.ok) await this.refreshData();
+            } catch (e) { alert("Status update failed"); }
+        },
+
+        async deleteUser(uid) {
+            if (!confirm("⚠️ PERMANENT DELETE: This cannot be undone. Delete this student?")) return;
+            try {
+                const res = await fetch(`/api/auth/admin/users/${uid}`, { method: 'DELETE' });
+                if (res.ok) await this.refreshData();
+            } catch (e) { alert("Delete failed"); }
+        },
+
+        handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) this.parseCSV(file);
+        },
+
+        handleDrop(e) {
+            this.dragOver = false;
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.toLowerCase().endsWith('.csv')) this.parseCSV(file);
+        },
+
+        parseCSV(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                const rows = text.split('\n').filter(row => row.trim().length > 0);
+                const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
+                this.csvPreview = rows.slice(1).map(row => {
+                    const values = row.split(',').map(v => v.trim());
+                    const obj = {};
+                    headers.forEach((h, i) => obj[h] = values[i]);
+                    // Set defaults for missing fields
+                    if (!obj.role) obj.role = 'student';
+                    if (!obj.college) obj.college = 'SVCET';
+                    if (!obj.roll_number && obj.email) obj.roll_number = obj.email.split('@')[0];
+                    if (!obj.password) obj.password = 'Svcet@2026';
+                    return obj;
+                }).filter(u => u.email && u.email.endsWith('@svcet.edu.in'));
+            };
+            reader.readAsText(file);
+        },
+
+        async processBulkImport() {
+            this.loading = true;
+            try {
+                const res = await fetch('/api/auth/admin/bulk-import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.csvPreview)
+                });
+                if (res.ok) {
+                    this.csvPreview = [];
+                    await this.refreshData();
+                    alert("Bulk import complete!");
+                }
+            } catch (e) { alert("Import failed"); }
+            finally { this.loading = false; }
+        }
+    };
+}
+</script>
+{% endblock %}

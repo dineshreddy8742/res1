@@ -1,0 +1,32 @@
+# Development and IDE files
+.vscode/
+.cline/
+.qwen/
+__pycache__/
+.pytest_cache/
+
+# Documentation
+docs/
+mkdocs.yml
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Scripts
+scripts/
+
+# Resume Matcher (if not needed)
+Resume-Matcher/
+
+# Test and temp files
+data/
+
+# Python cache and virtual environments
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Git
+.github/

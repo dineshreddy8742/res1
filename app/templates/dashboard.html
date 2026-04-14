@@ -1,0 +1,1163 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - DailSmart AI{% endblock %}
+
+{% block content %}
+<!-- Colorful Background -->
+<div class="relative min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div class="absolute top-20 left-10 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+    <div class="absolute top-40 right-10 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8 overflow-hidden" x-data="dashboardApp()" x-init="init()" x-cloak>
+    <!-- Dashboard Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 sm:mb-8">
+        <div class="flex-1 min-w-0 mb-4 md:mb-0">
+            <h1 class="text-3xl sm:text-4xl font-black bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500 bg-clip-text text-transparent">
+                <span x-text="'👋 Welcome, ' + (user?.name || 'User') + '!'"></span>
+            </h1>
+            <p class="text-sm sm:text-base text-blue-200 mt-1 sm:mt-2">Manage your resumes and track optimization progress</p>
+        </div>
+        <div>
+            <a href="/create" class="inline-flex w-full md:w-auto justify-center items-center px-4 sm:px-5 py-2 sm:py-3 border border-transparent text-sm font-bold rounded-xl text-white bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-indigo-500 hover:to-pink-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 shadow-lg shadow-purple-500/50 transition-all duration-200 ease-in-out transform hover:-translate-y-1 hover:scale-105">
+                <span class="text-xl mr-2">✨</span> Create New Resume
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards - Colorful -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <!-- Total Resumes -->
+        <div class="bg-white/10 backdrop-blur-xl rounded-2xl overflow-hidden border-2 border-pink-400/30 p-4 sm:p-5">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-pink-500/30 rounded-xl p-2 sm:p-3">
+                    <span class="text-2xl sm:text-3xl">📄</span>
+                </div>
+                <div class="ml-3 sm:ml-4">
+                    <h2 class="text-xs sm:text-sm font-bold text-pink-300">Total Resumes</h2>
+                    <p class="text-2xl sm:text-3xl font-black text-pink-400" x-text="resumes.length">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Average ATS Score -->
+        <div class="bg-white/10 backdrop-blur-xl rounded-2xl overflow-hidden border-2 border-purple-400/30 p-4 sm:p-5">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-purple-500/30 rounded-xl p-2 sm:p-3">
+                    <span class="text-2xl sm:text-3xl">🎯</span>
+                </div>
+                <div class="ml-3 sm:ml-4">
+                    <h2 class="text-xs sm:text-sm font-bold text-purple-300">Average ATS Score</h2>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <p class="text-2xl sm:text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent" x-text="averageScore + '%'">0%</p>
+                        <template x-if="averageScore < 60">
+                            <span class="text-xs font-bold text-red-300 bg-red-500/30 px-2 py-0.5 rounded-full">Needs Work</span>
+                        </template>
+                        <template x-if="averageScore >= 60 && averageScore < 80">
+                            <span class="text-xs font-bold text-yellow-300 bg-yellow-500/30 px-2 py-0.5 rounded-full">Good</span>
+                        </template>
+                        <template x-if="averageScore >= 80">
+                            <span class="text-xs font-bold text-green-300 bg-green-500/30 px-2 py-0.5 rounded-full">Excellent</span>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Last Updated -->
+        <div class="bg-white/10 backdrop-blur-xl rounded-2xl overflow-hidden border-2 border-cyan-400/30 p-4 sm:p-5">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-cyan-500/30 rounded-xl p-2 sm:p-3">
+                    <span class="text-2xl sm:text-3xl">📅</span>
+                </div>
+                <div class="ml-3 sm:ml-4">
+                    <h2 class="text-xs sm:text-sm font-bold text-cyan-300">Last Updated</h2>
+                    <p class="text-lg sm:text-xl font-black text-cyan-400" x-text="lastUpdated ? formatDate(lastUpdated) : 'Today'"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Feature Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <a href="/build" class="bg-white/10 backdrop-blur-xl rounded-xl border-2 border-green-400/30 p-4 text-center hover:bg-white/20 hover:scale-105 transition-all">
+            <span class="text-3xl">📝</span>
+            <div class="text-sm font-bold text-white mt-2">Build Resume</div>
+            <div class="text-xs text-blue-300">From scratch</div>
+        </a>
+        <a href="/cover-letter" class="bg-white/10 backdrop-blur-xl rounded-xl border-2 border-purple-400/30 p-4 text-center hover:bg-white/20 hover:scale-105 transition-all">
+            <span class="text-3xl">📄</span>
+            <div class="text-sm font-bold text-white mt-2">Cover Letter</div>
+            <div class="text-xs text-blue-300">AI generated</div>
+        </a>
+        <button @click="openEnrichment()" class="bg-white/10 backdrop-blur-xl rounded-xl border-2 border-yellow-400/30 p-4 text-center hover:bg-white/20 hover:scale-105 transition-all">
+            <span class="text-3xl">🔧</span>
+            <div class="text-sm font-bold text-white mt-2">Enrich Resume</div>
+            <div class="text-xs text-blue-300">AI improvements</div>
+        </button>
+        <button @click="checkPhrases()" class="bg-white/10 backdrop-blur-xl rounded-xl border-2 border-orange-400/30 p-4 text-center hover:bg-white/20 hover:scale-105 transition-all">
+            <span class="text-3xl">🤖</span>
+            <div class="text-sm font-bold text-white mt-2">AI Phrase Check</div>
+            <div class="text-xs text-blue-300">Human-sounding</div>
+        </button>
+    </div>
+
+    <!-- Enrichment Modal -->
+    <div x-show="showEnrichment" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showEnrichment = false" x-cloak>
+        <div class="bg-gradient-to-br from-purple-900 to-blue-900 backdrop-blur-xl border-2 border-white/20 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-2xl font-black text-white">🔧 Resume Enrichment Wizard</h3>
+                <button @click="showEnrichment = false" class="text-white/60 hover:text-white text-2xl">&times;</button>
+            </div>
+            
+            <div x-show="enrichmentStep === 1">
+                <p class="text-blue-200 mb-4">Select a resume to analyze. AI will find weak descriptions and ask clarifying questions.</p>
+                <select x-model="enrichmentResumeId" class="w-full bg-white/10 border border-white/30 rounded-xl px-4 py-3 text-white mb-4 focus:outline-none focus:border-purple-400">
+                    <option value="">-- Select resume --</option>
+                    <template x-for="r in resumes" :key="r.id">
+                        <option :value="r.id" class="bg-purple-900" x-text="r.title"></option>
+                    </template>
+                </select>
+                <button @click="analyzeResume()" :disabled="!enrichmentResumeId || enrichmentLoading" class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold py-3 rounded-xl hover:scale-105 transition-all disabled:opacity-50">
+                    <span x-show="!enrichmentLoading">🔍 Find Weak Spots</span>
+                    <span x-show="enrichmentLoading">Analyzing...</span>
+                </button>
+            </div>
+
+            <div x-show="enrichmentStep === 2">
+                <p class="text-blue-200 mb-4">Answer these questions to improve your resume bullets:</p>
+                <template x-for="(item, i) in enrichmentItems" :key="i">
+                    <div class="bg-white/5 border border-white/20 rounded-xl p-4 mb-3">
+                        <p class="text-sm text-red-300 mb-1">❌ <span x-text="item.original_text"></span></p>
+                        <p class="text-xs text-yellow-300 mb-2">💡 <span x-text="item.clarifying_question"></span></p>
+                        <textarea x-model="item.answer" rows="2" class="w-full bg-white/10 border border-white/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-400" placeholder="Your answer..."></textarea>
+                    </div>
+                </template>
+                <button @click="enhanceResume()" :disabled="enrichmentLoading" class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold py-3 rounded-xl hover:scale-105 transition-all disabled:opacity-50">
+                    <span x-show="!enrichmentLoading">✨ Generate Improved Bullets</span>
+                    <span x-show="enrichmentLoading">Generating...</span>
+                </button>
+            </div>
+
+            <div x-show="enrichmentStep === 3">
+                <p class="text-green-300 mb-4">✅ Here are your improved bullets:</p>
+                <template x-for="(item, i) in enhancedItems" :key="i">
+                    <div class="bg-white/5 border border-green-400/30 rounded-xl p-4 mb-3">
+                        <p class="text-xs text-red-300 mb-1">❌ Before: <span x-text="item.original"></span></p>
+                        <p class="text-sm text-green-300">✅ After: <span x-text="item.improved"></span></p>
+                    </div>
+                </template>
+                <button @click="showEnrichment = false; enrichmentStep = 1;" class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 rounded-xl hover:scale-105 transition-all mt-4">Done</button>
+            </div>
+
+            <div x-show="enrichmentError" class="bg-red-500/20 border border-red-400/40 rounded-xl p-3 text-red-200 text-sm mt-3" x-text="enrichmentError"></div>
+        </div>
+    </div>
+
+    <!-- AI Phrase Check Modal -->
+    <div x-show="showPhraseCheck" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showPhraseCheck = false" x-cloak>
+        <div class="bg-gradient-to-br from-purple-900 to-blue-900 backdrop-blur-xl border-2 border-white/20 rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-2xl font-black text-white">🤖 AI Phrase Checker</h3>
+                <button @click="showPhraseCheck = false" class="text-white/60 hover:text-white text-2xl">&times;</button>
+            </div>
+            <textarea x-model="phraseCheckText" rows="6" class="w-full bg-white/10 border border-white/30 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-orange-400 resize-none mb-4" placeholder="Paste your resume text here..."></textarea>
+            <button @click="runPhraseCheck()" :disabled="!phraseCheckText || phraseCheckLoading" class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-3 rounded-xl hover:scale-105 transition-all disabled:opacity-50 mb-4">
+                <span x-show="!phraseCheckLoading">🔍 Check for AI Phrases</span>
+                <span x-show="phraseCheckLoading">Checking...</span>
+            </button>
+            
+            <div x-show="phraseCheckResults.length > 0">
+                <p class="text-red-300 font-bold mb-2">Found <span x-text="phraseCheckResults.length"></span> AI-sounding phrases:</p>
+                <template x-for="(item, i) in phraseCheckResults" :key="i">
+                    <div class="flex items-center justify-between bg-white/5 border border-white/20 rounded-lg p-3 mb-2">
+                        <div>
+                            <span class="text-red-300 line-through text-sm" x-text="item.phrase"></span>
+                            <span class="text-gray-400 mx-2">→</span>
+                            <span class="text-green-300 text-sm" x-text="item.alternative"></span>
+                        </div>
+                    </div>
+                </template>
+                <button @click="phraseCheckText = cleanText; runPhraseCheck()" class="w-full bg-green-500 text-white font-bold py-2 rounded-lg hover:scale-105 transition-all mt-2">✅ Apply All Fixes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Controls & Search -->
+    <div class="flex flex-col sm:flex-row gap-3 mb-4 sm:mb-6">
+        <input type="text" x-model="searchQuery" placeholder="🔍 Search resumes..." class="flex-1 bg-white/10 border border-white/30 rounded-xl px-4 py-2 text-white placeholder-white/40 focus:outline-none focus:border-purple-400">
+        <select x-model="sortBy" @change="sortResumes()" class="bg-white/10 border border-white/30 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-purple-400">
+            <option value="updated_at" class="bg-purple-900">Last Updated</option>
+            <option value="title" class="bg-purple-900">Title A-Z</option>
+            <option value="ats_score" class="bg-purple-900">ATS Score</option>
+        </select>
+        <div class="flex gap-2">
+            <button @click="viewMode = 'table'" :class="viewMode === 'table' ? 'bg-purple-500 text-white' : 'bg-white/10 text-white/60'" class="px-4 py-2 rounded-xl font-bold transition-all">📋 Table</button>
+            <button @click="viewMode = 'grid'" :class="viewMode === 'grid' ? 'bg-purple-500 text-white' : 'bg-white/10 text-white/60'" class="px-4 py-2 rounded-xl font-bold transition-all">📱 Grid</button>
+        </div>
+    </div>
+
+    <!-- Tabbed Interface for Resume View Options -->
+    <div class="mb-4 sm:mb-6">
+        <div class="flex border-b-2 border-white/20">
+            <button @click="viewMode = 'table'" class="flex-1 sm:flex-none py-2 sm:py-3 px-3 sm:px-6 font-bold text-xs sm:text-sm transition-all duration-200 rounded-t-xl" :class="viewMode === 'table' ? 'bg-purple-500/30 text-white border-b-2 border-purple-400' : 'text-white/50 hover:text-white hover:bg-white/10'">
+                <div class="flex items-center justify-center sm:justify-start">📋 List View</div>
+            </button>
+            <button @click="viewMode = 'grid'" class="flex-1 sm:flex-none py-2 sm:py-3 px-3 sm:px-6 font-bold text-xs sm:text-sm transition-all duration-200 rounded-t-xl" :class="viewMode === 'grid' ? 'bg-purple-500/30 text-white border-b-2 border-purple-400' : 'text-white/50 hover:text-white hover:bg-white/10'">
+                <div class="flex items-center justify-center sm:justify-start">📱 Grid View</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Resume List Container - Colorful -->
+    <div class="bg-white/10 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden border-2 border-white/20">
+        <!-- Search and Filter Bar - Colorful -->
+        <div class="px-4 sm:px-6 py-3 sm:py-4 border-b-2 border-white/10 bg-gradient-to-r from-purple-500/10 to-pink-500/10">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                <h2 class="text-base sm:text-lg font-black text-white">📄 Your Resumes</h2>
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center w-full sm:w-auto">
+                    <div class="relative flex-grow sm:flex-grow-0">
+                        <input type="text" x-model="searchQuery" placeholder="🔍 Search resumes..." class="pl-4 pr-3 py-1.5 sm:py-2 bg-white/10 border border-white/30 rounded-xl text-sm text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 w-full">
+                    </div>
+                    <div class="relative flex-grow sm:flex-grow-0">
+                        <select x-model="sortBy" @change="sortResumes()" class="pl-3 pr-8 py-1.5 sm:py-2 bg-white/10 border border-white/30 rounded-xl text-white text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 w-full">
+                            <option value="updated_at" class="bg-purple-900">Sort by: Last Updated</option>
+                            <option value="title" class="bg-purple-900">Sort by: Title</option>
+                            <option value="ats_score" class="bg-purple-900">Sort by: ATS Score</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span class="text-white/60">▼</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State - Colorful -->
+        <template x-if="resumes.length === 0">
+            <div class="py-12 sm:py-16 text-center px-4">
+                <span class="text-6xl sm:text-7xl">📄</span>
+                <h3 class="mt-4 text-base sm:text-lg font-black text-white">No resumes yet</h3>
+                <p class="mt-2 text-sm text-blue-200 max-w-md mx-auto">Start building your professional resume with our AI-powered tools!</p>
+                <div class="mt-6 sm:mt-8">
+                    <a href="/create" class="inline-flex justify-center items-center px-4 sm:px-5 py-2 sm:py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 shadow-md transition-all duration-200 ease-in-out transform hover:-translate-y-1">
+                        <svg class="-ml-1 mr-2 h-4 w-4 sm:h-5 sm:w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Create Your First Resume
+                    </a>
+                </div>
+            </div>
+        </template>
+        
+        <!-- Table View - Fixed mobile responsiveness -->
+        <template x-if="resumes.length > 0 && viewMode === 'table'">
+            <div class="w-full overflow-x-auto overflow-y-hidden" style="scrollbar-width: thin; -webkit-overflow-scrolling: touch;">
+                <table class="min-w-full divide-y divide-gray-200 table-fixed md:table-auto">
+                    <thead class="bg-gradient-to-r from-purple-500/20 to-pink-500/20">
+                        <tr>
+                            <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-purple-200 uppercase tracking-wider w-[40%] md:w-auto">📄 Resume</th>
+                            <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-purple-200 uppercase tracking-wider hidden sm:table-cell w-[20%] md:w-auto">📅 Last Updated</th>
+                            <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-purple-200 uppercase tracking-wider w-[30%] md:w-auto">🎯 ATS Score</th>
+                            <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-purple-200 uppercase tracking-wider hidden md:table-cell">💡 Skills</th>
+                            <th scope="col" class="px-3 sm:px-6 py-3 text-right text-xs font-bold text-purple-200 uppercase tracking-wider w-[30%] md:w-auto">⚡ Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y-2 divide-white/10">
+                        <template x-for="resume in filteredResumes" :key="resume.id">
+                            <tr class="hover:bg-white/10 transition-all duration-200">
+                                <td class="px-3 sm:px-6 py-3 sm:py-4">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-8 w-8 rounded-lg bg-gradient-to-br from-pink-500/30 to-purple-500/30 flex items-center justify-center">
+                                            <span class="text-sm">📄</span>
+                                        </div>
+                                        <div class="ml-2 sm:ml-4 min-w-0">
+                                            <div class="text-sm font-bold text-white truncate max-w-[200px] cursor-pointer hover:text-blue-300 transition-colors" x-text="resume.title" @click.stop="viewResume(resume.id)"></div>
+                                            <div class="text-xs text-blue-300 truncate" x-text="resume.optimized_data?.user_information?.main_job_title || 'Not specified'"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-blue-300 hidden sm:table-cell" x-text="formatDate(resume.updated_at)"></td>
+                                <td class="px-3 sm:px-6 py-3 sm:py-4">
+                                    <template x-if="resume.ats_score !== null">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 w-16 sm:w-20">
+                                                <div class="h-1.5 sm:h-2 w-full rounded-full bg-gray-200">
+                                                    <div class="h-1.5 sm:h-2 rounded-full" 
+                                                         :class="{
+                                                             'bg-red-500': resume.ats_score < 60,
+                                                             'bg-yellow-500': resume.ats_score >= 60 && resume.ats_score < 80,
+                                                             'bg-green-500': resume.ats_score >= 80
+                                                         }" 
+                                                         :style="`width: ${resume.ats_score}%`"></div>
+                                                </div>
+                                            </div>
+                                            <span class="ml-2 text-xs sm:text-sm font-medium" 
+                                                  :class="{
+                                                      'text-red-600': resume.ats_score < 60,
+                                                      'text-yellow-600': resume.ats_score >= 60 && resume.ats_score < 80,
+                                                      'text-green-600': resume.ats_score >= 80
+                                                  }" 
+                                                  x-text="resume.ats_score + '%'"></span>
+                                        </div>
+                                    </template>
+                                    <template x-if="resume.ats_score === null">
+                                        <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">Not Analyzed</span>
+                                    </template>
+                                </td>
+                                <td class="px-3 sm:px-6 py-3 sm:py-4 hidden md:table-cell">
+                                    <div class="flex flex-wrap gap-1">
+                                        <template x-if="resume.optimized_data && resume.optimized_data.user_information && resume.optimized_data.user_information.skills && Array.isArray(resume.optimized_data.user_information.skills.hard_skills) && resume.optimized_data.user_information.skills.hard_skills.length > 0">
+                                            <template x-for="(skill, index) in resume.optimized_data.user_information.skills.hard_skills.slice(0, 3)" :key="index">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-purple-500/30 border border-purple-400/40 text-purple-200" x-text="skill"></span>
+                                            </template>
+                                        </template>
+                                        <template x-if="(!resume.optimized_data?.user_information?.skills?.hard_skills || !resume.optimized_data.user_information.skills.hard_skills.length) && resume.optimized_data && Array.isArray(resume.optimized_data.skills) && resume.optimized_data.skills.length > 0">
+                                            <template x-for="(skill, index) in resume.optimized_data.skills.slice(0, 3)" :key="index">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-purple-500/30 border border-purple-400/40 text-purple-200" x-text="skill"></span>
+                                            </template>
+                                        </template>
+                                        <template x-if="(!resume.optimized_data?.user_information?.skills?.hard_skills || !resume.optimized_data.user_information.skills.hard_skills.length) && (!resume.optimized_data?.skills || !resume.optimized_data.skills.length) && Array.isArray(resume.matching_skills) && resume.matching_skills.length > 0">
+                                            <template x-for="(skill, index) in resume.matching_skills.slice(0, 3)" :key="index">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-purple-500/30 border border-purple-400/40 text-purple-200" x-text="skill"></span>
+                                            </template>
+                                        </template>
+                                        <template x-if="!((resume.optimized_data?.user_information?.skills?.hard_skills && resume.optimized_data.user_information.skills.hard_skills.length > 0) || (resume.optimized_data?.skills && Array.isArray(resume.optimized_data.skills) && resume.optimized_data.skills.length > 0) || (Array.isArray(resume.matching_skills) && resume.matching_skills.length > 0))">
+                                            <span class="text-xs text-white/40">No skills found</span>
+                                        </template>
+                                    </div>
+                                </td>
+                                <td class="px-3 sm:px-6 py-3 sm:py-4 text-right text-xs sm:text-sm font-medium">
+                                    <div class="flex justify-end items-center space-x-2">
+                                        <button @click.stop="scoreResume(resume.id)" class="text-cyan-400 hover:text-cyan-300 focus:outline-none transition-colors" title="Score Resume">
+                                            <span class="text-lg">🎯</span>
+                                        </button>
+                                        <button @click.stop="viewResume(resume.id)" class="text-green-400 hover:text-green-300 focus:outline-none transition-colors" title="View Resume">
+                                            <span class="text-lg">👁️</span>
+                                        </button>
+                                        <button @click.stop="downloadResume(resume.id)" class="text-purple-400 hover:text-purple-300 focus:outline-none transition-colors" title="Download Resume">
+                                            <span class="text-lg">📥</span>
+                                        </button>
+                                        <button @click.stop="deleteResume(resume.id)" class="text-red-400 hover:text-red-300 focus:outline-none transition-colors" title="Delete Resume">
+                                            <span class="text-lg">🗑️</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+        
+        <!-- Grid View - Mobile optimized -->
+        <template x-if="resumes.length > 0 && viewMode === 'grid'">
+            <div class="p-3 sm:p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+                    <template x-for="resume in filteredResumes" :key="resume.id">
+                        <div class="group relative bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
+                            <!-- Resume Content -->
+                            <div class="p-3 sm:p-5">
+                                <div class="flex items-start justify-between mb-3 sm:mb-4">
+                                    <div class="flex items-center">
+                                        <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center mr-2 sm:mr-3">
+                                            <svg class="h-4 w-4 sm:h-5 sm:w-5 text-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-medium text-gray-900 truncate max-w-[120px] sm:max-w-[150px]" x-text="resume.title"></h3>
+                                            <p class="text-xs text-gray-500 mt-0.5 sm:mt-1" x-text="formatDate(resume.updated_at)"></p>
+                                        </div>
+                                    </div>
+                                    <template x-if="resume.ats_score !== null">
+                                        <div>
+                                            <div class="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium" 
+                                                :class="{
+                                                    'bg-green-100 text-green-800': resume.ats_score >= 80,
+                                                    'bg-yellow-100 text-yellow-800': resume.ats_score >= 60 && resume.ats_score < 80,
+                                                    'bg-red-100 text-red-800': resume.ats_score < 60
+                                                }">
+                                                <span x-text="`${resume.ats_score}%`"></span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Progress bar -->
+                                <template x-if="resume.ats_score !== null">
+                                    <div class="w-full bg-gray-100 rounded-full h-1 sm:h-1.5 mb-3 sm:mb-4">
+                                        <div class="h-1 sm:h-1.5 rounded-full" 
+                                            :class="{
+                                                'bg-green-500': resume.ats_score >= 80,
+                                                'bg-yellow-500': resume.ats_score >= 60 && resume.ats_score < 80,
+                                                'bg-red-500': resume.ats_score < 60
+                                            }"
+                                            :style="`width: ${resume.ats_score}%`"></div>
+                                    </div>
+                                </template>
+                                
+                                <!-- Skills - More compact for mobile -->
+                                <div class="flex flex-wrap gap-1 sm:gap-1.5 mb-3 sm:mb-4">
+                                    <!-- Primary structure: hard_skills in user_information.skills -->
+                                    <template x-if="resume.optimized_data && resume.optimized_data.user_information && resume.optimized_data.user_information.skills && Array.isArray(resume.optimized_data.user_information.skills.hard_skills) && resume.optimized_data.user_information.skills.hard_skills.length > 0">
+                                        <template x-for="(skill, index) in resume.optimized_data.user_information.skills.hard_skills.slice(0, 2)" :key="index">
+                                            <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 truncate max-w-[120px] sm:max-w-full" x-text="skill"></span>
+                                        </template>
+                                    </template>
+                                    
+                                    <!-- Secondary structure: direct skills array in optimized_data -->
+                                    <template x-if="(!resume.optimized_data?.user_information?.skills?.hard_skills || !resume.optimized_data.user_information.skills.hard_skills.length) && resume.optimized_data && Array.isArray(resume.optimized_data.skills) && resume.optimized_data.skills.length > 0">
+                                        <template x-for="(skill, index) in resume.optimized_data.skills.slice(0, 2)" :key="index">
+                                            <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 truncate max-w-[120px] sm:max-w-full" x-text="skill"></span>
+                                        </template>
+                                    </template>
+                                    
+                                    <!-- Tertiary structure: matching_skills array at top level -->
+                                    <template x-if="(!resume.optimized_data?.user_information?.skills?.hard_skills || !resume.optimized_data.user_information.skills.hard_skills.length) && (!resume.optimized_data?.skills || !resume.optimized_data.skills.length) && Array.isArray(resume.matching_skills) && resume.matching_skills.length > 0">
+                                        <template x-for="(skill, index) in resume.matching_skills.slice(0, 2)" :key="index">
+                                            <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 truncate max-w-[120px] sm:max-w-full" x-text="skill"></span>
+                                        </template>
+                                    </template>
+                                    
+                                    <!-- No skills found message -->
+                                    <template x-if="!(
+                                                (resume.optimized_data?.user_information?.skills?.hard_skills && resume.optimized_data.user_information.skills.hard_skills.length > 0) || 
+                                                (resume.optimized_data?.skills && Array.isArray(resume.optimized_data.skills) && resume.optimized_data.skills.length > 0) || 
+                                                (Array.isArray(resume.matching_skills) && resume.matching_skills.length > 0)
+                                              )">
+                                        <span class="text-xs text-gray-500">No skills found</span>
+                                    </template>
+                                </div>
+                                
+                                <!-- Main job title - Hidden on smallest screens -->
+                                <template x-if="resume.optimized_data && resume.optimized_data.user_information && resume.optimized_data.user_information.main_job_title">
+                                    <p class="text-xs sm:text-sm text-gray-600 truncate mb-3 sm:mb-4 hidden xs:block" x-text="resume.optimized_data.user_information.main_job_title"></p>
+                                </template>
+                                
+                                <!-- Action buttons - More compact for mobile -->
+                                <div class="flex gap-1 sm:gap-2 justify-between mt-auto">
+                                    <button @click.stop="scoreResume(resume.id)" class="flex-grow-0 inline-flex items-center justify-center px-2 sm:px-3 py-1 sm:py-1.5 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-1 focus:ring-blue-500" title="Score Resume">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        </svg>
+                                        <span class="sr-only">Score</span>
+                                    </button>
+                                    <button @click.stop="viewResume(resume.id)" class="flex-1 inline-flex items-center justify-center px-2 sm:px-3 py-1 sm:py-1.5 border border-transparent text-xs font-medium rounded text-primary-700 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-1 focus:ring-primary-500" title="View Resume">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        <span class="sr-only">View</span>
+                                    </button>
+                                    <button @click.stop="downloadResume(resume.id)" class="flex-1 inline-flex items-center justify-center px-2 sm:px-3 py-1 sm:py-1.5 border border-transparent text-xs font-medium rounded text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-1 focus:ring-green-500" title="Download Resume">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                        <span class="sr-only">Download</span>
+                                    </button>
+                                    <button @click.stop="deleteResume(resume.id)" class="inline-flex items-center justify-center p-1 sm:p-1.5 border border-transparent text-xs font-medium rounded text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-1 focus:ring-red-500" title="Delete Resume">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        <span class="sr-only">Delete</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- Empty Search Results -->
+        <template x-if="resumes.length > 0 && filteredResumes.length === 0">
+            <div class="py-6 sm:py-8 text-center">
+                <svg class="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <h3 class="mt-2 text-sm sm:text-base font-medium text-gray-900">No matching resumes</h3>
+                <p class="mt-1 text-xs sm:text-sm text-gray-500">Try adjusting your search or filter criteria</p>
+            </div>
+        </template>
+    </div>
+
+    <!-- Confirmation Modal with improved design for mobile -->
+    <div x-show="showDeleteModal" class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end sm:items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay with blur effect -->
+            <div x-show="showDeleteModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" aria-hidden="true"></div>
+            <div x-show="showDeleteModal" class="inline-block align-bottom bg-gradient-to-br from-red-900 to-orange-900 rounded-2xl sm:rounded-2xl px-4 pt-5 pb-4 text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6 border-2 border-red-400/30">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-500/30 sm:mx-0 sm:h-12 sm:w-12">
+                        <span class="text-2xl">⚠️</span>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg font-black text-white">Delete Resume</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-red-200">Are you sure you want to delete this resume? This action cannot be undone.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                    <button @click="confirmDelete()" type="button" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-base font-bold text-white hover:from-orange-500 hover:to-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-all duration-200">
+                        🗑️ Delete
+                    </button>
+                    <button @click="cancelDelete()" type="button" class="mt-3 sm:mt-0 w-full inline-flex justify-center rounded-xl border border-white/30 shadow-sm px-4 py-2 bg-white/10 text-base font-bold text-white hover:bg-white/20 sm:w-auto sm:text-sm transition-all duration-200">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Resume Modal -->
+    <div x-show="showScoreModal" class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="score-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end sm:items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="showScoreModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" aria-hidden="true"></div>
+            <div x-show="showScoreModal" class="inline-block align-bottom bg-gradient-to-br from-purple-900 to-blue-900 rounded-2xl sm:rounded-2xl px-4 pt-5 pb-4 text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6 border-2 border-white/20">
+                <div>
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-purple-500/30">
+                        <span class="text-2xl">🎯</span>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-5">
+                        <h3 class="text-xl font-black text-white">Score Resume Against Job Description</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-blue-200">Enter a job description to score your resume. This analyzes how well your resume matches the job requirements.</p>
+                        </div>
+                    </div>
+                </div>
+                <div x-show="isScoring" class="mt-4 flex justify-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
+                </div>
+                <div x-show="!isScoring" class="mt-4">
+                    <div>
+                        <label for="job-description" class="block text-sm font-bold text-blue-200">Job Description</label>
+                        <div class="mt-1">
+                            <textarea x-model="jobDescription" rows="5" id="job-description" class="shadow-sm bg-white/10 border border-white/30 text-white placeholder-white/40 focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm rounded-xl" placeholder="Paste job description here..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                    <button @click="submitScoreResume()" type="button" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-base font-bold text-white hover:from-pink-500 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:col-start-2 sm:text-sm" :disabled="isScoring || !jobDescription.trim()">
+                        🎯 Score Resume
+                    </button>
+                    <button @click="cancelScoreModal()" type="button" class="mt-3 sm:mt-0 w-full inline-flex justify-center rounded-xl border border-white/30 shadow-sm px-4 py-2 bg-white/10 text-base font-bold text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:col-start-1 sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Results Modal -->
+    <div x-show="showScoreResultsModal" class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="score-results-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end sm:items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay with blur effect -->
+            <div x-show="showScoreResultsModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-500 bg-opacity-75 backdrop-filter backdrop-blur-sm transition-opacity" aria-hidden="true"></div>
+            
+            <!-- Modal panel -->
+            <div x-show="showScoreResultsModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white rounded-lg sm:rounded-xl px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-6">
+                <div>
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full" :class="{
+                        'bg-green-100': scoreResults.ats_score >= 80,
+                        'bg-yellow-100': scoreResults.ats_score >= 60 && scoreResults.ats_score < 80,
+                        'bg-red-100': scoreResults.ats_score < 60
+                    }">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" :class="{
+                            'text-green-600': scoreResults.ats_score >= 80,
+                            'text-yellow-600': scoreResults.ats_score >= 60 && scoreResults.ats_score < 80,
+                            'text-red-600': scoreResults.ats_score < 60
+                        }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-5">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="score-results-modal-title">
+                            ATS Score Results
+                        </h3>
+                        <div class="mt-2">
+                            <div class="flex justify-center items-center">
+                                <div class="text-3xl font-bold" :class="{
+                                    'text-green-600': scoreResults.ats_score >= 80,
+                                    'text-yellow-600': scoreResults.ats_score >= 60 && scoreResults.ats_score < 80,
+                                    'text-red-600': scoreResults.ats_score < 60
+                                }" x-text="scoreResults.ats_score + '%'"></div>
+                                <div class="ml-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" :class="{
+                                        'bg-green-100 text-green-800': scoreResults.ats_score >= 80,
+                                        'bg-yellow-100 text-yellow-800': scoreResults.ats_score >= 60 && scoreResults.ats_score < 80,
+                                        'bg-red-100 text-red-800': scoreResults.ats_score < 60
+                                    }">
+                                        <span x-text="scoreResults.ats_score >= 80 ? 'Excellent' : (scoreResults.ats_score >= 60 ? 'Good' : 'Needs Improvement')"></span>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Progress bar -->
+                            <div class="mt-3 w-full bg-gray-200 rounded-full h-2">
+                                <div class="h-2 rounded-full" :class="{
+                                    'bg-green-500': scoreResults.ats_score >= 80,
+                                    'bg-yellow-500': scoreResults.ats_score >= 60 && scoreResults.ats_score < 80,
+                                    'bg-red-500': scoreResults.ats_score < 60
+                                }" :style="`width: ${scoreResults.ats_score}%`"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <!-- Skills Analysis -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Matching Skills -->
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">Matching Skills</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                <template x-for="skill in scoreResults.matching_skills" :key="skill">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <span x-text="skill"></span>
+                                    </span>
+                                </template>
+                                <template x-if="!scoreResults.matching_skills?.length">
+                                    <span class="text-xs text-gray-500">No matching skills found</span>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Missing Skills -->
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">Missing Skills</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                <template x-for="skill in scoreResults.missing_skills" :key="skill">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <span x-text="skill"></span>
+                                    </span>
+                                </template>
+                                <template x-if="!scoreResults.missing_skills?.length">
+                                    <span class="text-xs text-gray-500">No missing skills found</span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendation -->
+                    <div class="mt-4">
+                        <h4 class="text-sm font-medium text-gray-700 mb-2">AI Recommendation</h4>
+                        <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200" x-text="scoreResults.recommendation"></p>
+                    </div>
+                </div>
+                
+                <div class="mt-5 sm:mt-6 grid grid-cols-2 gap-3">
+                    <button @click="optimizeResumeFromScore()" type="button" class="col-span-1 inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:text-sm">
+                        Optimize Resume
+                    </button>
+                    <button @click="closeScoreResultsModal()" type="button" class="col-span-1 inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Details Modal -->
+    <div x-show="showResumeDetailsModal" class="fixed z-10 inset-0 overflow-y-auto" @click.self="showResumeDetailsModal = false" x-cloak>
+        <div class="flex items-end sm:items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="showResumeDetailsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" aria-hidden="true"></div>
+            <div x-show="showResumeDetailsModal" class="inline-block align-bottom bg-gradient-to-br from-purple-900 to-blue-900 backdrop-blur-xl border-2 border-white/20 rounded-2xl px-4 pt-5 pb-4 text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-black text-white" x-text="selectedResume?.title || 'Resume Details'"></h3>
+                    <button @click="showResumeDetailsModal = false" class="text-white/60 hover:text-white text-2xl">&times;</button>
+                </div>
+                <div class="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                    <div class="bg-white/5 border border-white/20 rounded-xl p-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-bold text-blue-300">ATS Score</span>
+                            <span class="text-2xl font-black" :class="(selectedResume?.ats_score || 0) >= 80 ? 'text-green-400' : (selectedResume?.ats_score || 0) >= 60 ? 'text-yellow-400' : 'text-red-400'" x-text="(selectedResume?.ats_score || 0) + '%'"></span>
+                        </div>
+                    </div>
+                    <div class="bg-white/5 border border-white/20 rounded-xl p-4">
+                        <span class="text-sm font-bold text-blue-300">Status: </span>
+                        <span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="selectedResume?.status === 'completed' ? 'bg-green-500/30 text-green-300' : selectedResume?.status === 'processing' ? 'bg-yellow-500/30 text-yellow-300' : 'bg-gray-500/30 text-gray-300'" x-text="selectedResume?.status || 'Pending'"></span>
+                    </div>
+                    <div class="bg-white/5 border border-white/20 rounded-xl p-4">
+                        <h4 class="text-sm font-bold text-green-300 mb-2">Skills</h4>
+                        <div class="flex flex-wrap gap-1.5">
+                            <template x-for="skill in (selectedResume?.matching_skills || [])" :key="skill">
+                                <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500/30 text-green-200" x-text="skill"></span>
+                            </template>
+                            <template x-if="!selectedResume?.matching_skills?.length">
+                                <span class="text-xs text-white/40">No skills found</span>
+                            </template>
+                        </div>
+                    </div>
+                    <div x-show="selectedResume?.recommendation" class="bg-white/5 border border-white/20 rounded-xl p-4">
+                        <h4 class="text-sm font-bold text-blue-300 mb-2">Recommendation</h4>
+                        <p class="text-sm text-blue-200" x-text="selectedResume?.recommendation"></p>
+                    </div>
+                    <div class="bg-white/5 border border-white/20 rounded-xl p-4">
+                        <span class="text-sm font-bold text-blue-300">Last Updated: </span>
+                        <span class="text-sm text-white" x-text="formatDate(selectedResume?.updated_at)"></span>
+                    </div>
+                </div>
+                <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-3 sm:gap-3">
+                    <button @click="downloadResume(selectedResume.id)" class="w-full inline-flex justify-center rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold py-2 px-4 hover:scale-105 transition-all">📥 Download</button>
+                    <button @click="showResumeDetailsModal = false; scoreResume(selectedResume.id)" class="mt-2 sm:mt-0 w-full inline-flex justify-center rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold py-2 px-4 hover:scale-105 transition-all">🎯 Score</button>
+                    <button @click="showResumeDetailsModal = false" class="mt-2 sm:mt-0 w-full inline-flex justify-center rounded-xl bg-white/10 border border-white/30 text-white font-bold py-2 px-4 hover:bg-white/20 transition-all">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function dashboardApp() {
+        return {
+            user: null,
+            resumes: [],
+            filteredResumes: [],
+            searchQuery: '',
+            isLoading: true,
+            averageScore: 0,
+            lastUpdated: null,
+            showDeleteModal: false,
+            resumeToDelete: null,
+            pageLeaving: false,
+            viewMode: 'table', // 'table' or 'grid'
+            sortBy: 'updated_at', // Default sort by last updated
+            showScoreModal: false,
+            showScoreResultsModal: false,
+            isScoring: false,
+            jobDescription: '',
+            scoreResults: {},
+            showResumeDetailsModal: false,
+            selectedResume: null,
+
+            // Initialize the component and fetch data
+            async init() {
+                // Set initial state to prevent operations during initialization
+                this.pageLeaving = false;
+                this.showDeleteModal = false;
+                this.resumeToDelete = null;
+
+                // Fetch user info
+                try {
+                    const res = await fetch('/api/auth/me');
+                    if (res.ok) {
+                        this.user = await res.json();
+                    }
+                } catch(e) { console.error('Failed to fetch user:', e); }
+
+                // Initialize view mode from localStorage if available
+                const savedViewMode = localStorage.getItem('resumeDashboardViewMode');
+                if (savedViewMode) {
+                    this.viewMode = savedViewMode;
+                }
+
+                // Add multiple event listeners for different browser behaviors
+                window.addEventListener('beforeunload', () => {
+                    this.pageLeaving = true;
+                    this.showDeleteModal = false;
+                    this.resumeToDelete = null;
+                });
+                
+                // For Chromium-based browsers (Edge, Brave, Chrome)
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'hidden') {
+                        this.pageLeaving = true;
+                        this.showDeleteModal = false;
+                        this.resumeToDelete = null;
+                    }
+                });
+                
+                // Cache navigation actions to prevent race conditions
+                const originalPushState = history.pushState;
+                history.pushState = function() {
+                    // Set the global variable that Alpine.js can access
+                    window.alpinePageTransition = true;
+                    
+                    // Call the original function
+                    return originalPushState.apply(this, arguments);
+                };
+                
+                await this.loadResumes();
+                this.calculateStats();
+                this.sortResumes();
+
+                this.$watch('searchQuery', value => { this.filterResumes(); this.sortResumes(); });
+                this.$watch('viewMode', value => { localStorage.setItem('resumeDashboardViewMode', value); });
+            },
+
+            async loadResumes() {
+                try {
+                    // Try authenticated endpoint first
+                    const res = await fetch('/api/auth/my-resumes');
+                    if (res.ok) { this.resumes = await res.json(); return; }
+                } catch(e) {}
+                // Fallback
+                try {
+                    const res = await fetch('/api/resume/user/temp-user-id');
+                    if (res.ok) this.resumes = await res.json();
+                } catch(e) {}
+            },
+
+            // Filter resumes based on search query
+            filterResumes() {
+                if (!this.searchQuery.trim()) {
+                    this.filteredResumes = [...this.resumes]; // Create a copy for sorting
+                    this.sortResumes();
+                    return;
+                }
+                
+                const query = this.searchQuery.toLowerCase().trim();
+                this.filteredResumes = this.resumes.filter(resume => 
+                    resume.title.toLowerCase().includes(query) || 
+                    this.getResumeMainProfession(resume).toLowerCase().includes(query) ||
+                    this.getResumeSkills(resume).some(skill => skill.toLowerCase().includes(query))
+                );
+                
+                // Apply sorting to filtered results
+                this.sortResumes();
+            },
+            
+            // Sort resumes based on selected criteria
+            sortResumes() {
+                if (this.sortBy === 'title') {
+                    this.filteredResumes.sort((a, b) => a.title.localeCompare(b.title));
+                } else if (this.sortBy === 'ats_score') {
+                    // Handle null scores by placing them at the end
+                    this.filteredResumes.sort((a, b) => {
+                        if (a.ats_score === null && b.ats_score === null) return 0;
+                        if (a.ats_score === null) return 1;
+                        if (b.ats_score === null) return -1;
+                        return b.ats_score - a.ats_score;
+                    });
+                } else { // 'updated_at' (default)
+                    this.filteredResumes.sort((a, b) => 
+                        new Date(b.updated_at) - new Date(a.updated_at)
+                    );
+                }
+            },
+            
+            // Get main profession from resume data
+            getResumeMainProfession(resume) {
+                if (resume.optimized_data && 
+                    resume.optimized_data.user_information && 
+                    resume.optimized_data.user_information.main_job_title) {
+                    return resume.optimized_data.user_information.main_job_title;
+                }
+                return "Not specified";
+            },
+            
+            // Extract skills from resume data
+            getResumeSkills(resume) {
+                if (resume.optimized_data && 
+                    resume.optimized_data.user_information && 
+                    resume.optimized_data.user_information.skills) {
+                    const skills = resume.optimized_data.user_information.skills;
+                    return [...(skills.hard_skills || []), ...(skills.soft_skills || [])];
+                }
+                return [];
+            },
+            
+            // Load resumes from the API
+            async loadResumes() {
+                try {
+                    this.isLoading = true;
+                    // In a real app, you'd get the user ID from auth state
+                    // Here we're using a placeholder user ID
+                    const userId = 'temp-user-id';
+                    const response = await fetch(`/api/resume/user/${userId}`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.resumes = data;
+                        this.filteredResumes = [...data]; // Initialize filtered resumes
+                    } else {
+                        console.error('Failed to load resumes');
+                        // Show a notification for error
+                        this.showNotification('Error loading resumes', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error loading resumes:', error);
+                    this.showNotification('Error connecting to server', 'error');
+                } finally {
+                    this.isLoading = false;
+                }
+            },
+            
+            // Calculate dashboard statistics
+            calculateStats() {
+                // Calculate average score
+                if (this.resumes.length > 0) {
+                    const scoresWithValues = this.resumes.filter(r => r.ats_score !== null && r.ats_score !== undefined);
+                    if (scoresWithValues.length > 0) {
+                        const sum = scoresWithValues.reduce((total, resume) => total + resume.ats_score, 0);
+                        this.averageScore = Math.round(sum / scoresWithValues.length);
+                    }
+                    
+                    // Find the most recently updated resume
+                    const sortedByDate = [...this.resumes].sort((a, b) => 
+                        new Date(b.updated_at) - new Date(a.updated_at)
+                    );
+                    
+                    if (sortedByDate.length > 0) {
+                        this.lastUpdated = this.formatDate(sortedByDate[0].updated_at);
+                    }
+                }
+            },
+            
+            // Format date for display
+            formatDate(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            },
+            
+            // Show notification toast (could be implemented with a library or custom component)
+            showNotification(message, type = 'info') {
+                // This is a placeholder - implement with your preferred notification system
+                console.log(`Notification (${type}): ${message}`);
+                // Example implementation could use a toast library or custom Alpine component
+            },
+            
+            // View resume details (open modal)
+            viewResume(resumeId) {
+                const resume = this.resumes.find(r => r.id === resumeId);
+                if (resume) {
+                    this.selectedResume = resume;
+                    this.showResumeDetailsModal = true;
+                }
+            },
+
+            // Download resume PDF
+            downloadResume(resumeId) {
+                const downloadUrl = `/api/resume/${resumeId}/download?use_optimized=true`;
+                const downloadLink = document.createElement('a');
+                downloadLink.href = downloadUrl;
+                downloadLink.setAttribute('download', '');
+                downloadLink.setAttribute('target', '_blank');
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                this.showNotification('Resume download started', 'success');
+            },
+
+            // Delete resume (show confirmation modal)
+            deleteResume(resumeId) {
+                this.resumeToDelete = resumeId;
+                this.showDeleteModal = true;
+            },
+
+            // Confirm delete action
+            async confirmDelete() {
+                if (!this.resumeToDelete) {
+                    this.showDeleteModal = false;
+                    this.resumeToDelete = null;
+                    return;
+                }
+                
+                try {
+                    const resumeId = this.resumeToDelete; // Store ID locally
+                    
+                    const response = await fetch(`/api/resume/${resumeId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        // Remove from local state
+                        this.resumes = this.resumes.filter(r => r.id !== resumeId);
+                        this.filterResumes(); // Update filtered resumes
+                        this.calculateStats();
+                        this.showNotification('Resume deleted successfully', 'success');
+                    } else {
+                        console.error('Failed to delete resume');
+                        this.showNotification('Failed to delete resume', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error deleting resume:', error);
+                    this.showNotification('Error connecting to server', 'error');
+                } finally {
+                    // Reset state variables
+                    this.showDeleteModal = false;
+                    this.resumeToDelete = null;
+                }
+            },
+            
+            // Cancel delete action
+            cancelDelete() {
+                this.showDeleteModal = false;
+                this.resumeToDelete = null;
+            },
+
+            // Score resume (show score modal)
+            scoreResume(resumeId) {
+                this.resumeToScore = resumeId;
+                this.showScoreModal = true;
+            },
+
+            // Submit score resume
+            async submitScoreResume() {
+                if (!this.jobDescription.trim()) return;
+
+                this.isScoring = true;
+
+                try {
+                    const response = await fetch(`/api/resume/${this.resumeToScore}/score`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ job_description: this.jobDescription }),
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.scoreResults = data;
+                        this.showScoreModal = false;
+                        this.showScoreResultsModal = true;
+                    } else {
+                        console.error('Failed to score resume');
+                        this.showNotification('Failed to score resume', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error scoring resume:', error);
+                    this.showNotification('Error connecting to server', 'error');
+                } finally {
+                    this.isScoring = false;
+                }
+            },
+
+            // Cancel score modal
+            cancelScoreModal() {
+                this.showScoreModal = false;
+                this.jobDescription = '';
+            },
+
+            // Close score results modal
+            closeScoreResultsModal() {
+                this.showScoreResultsModal = false;
+                this.scoreResults = {};
+            },
+
+            // Optimize resume from score
+            optimizeResumeFromScore() {
+                window.location.href = `/resume/${this.resumeToScore}/optimize`;
+            },
+
+            // ===== ENRICHMENT WIZARD =====
+            showEnrichment: false,
+            enrichmentStep: 1,
+            enrichmentResumeId: '',
+            enrichmentLoading: false,
+            enrichmentItems: [],
+            enhancedItems: [],
+            enrichmentError: '',
+
+            openEnrichment() { this.showEnrichment = true; this.enrichmentStep = 1; this.enrichmentError = ''; },
+
+            async analyzeResume() {
+                this.enrichmentLoading = true;
+                this.enrichmentError = '';
+                try {
+                    const res = await fetch('/api/resume/enrichment/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ resume_id: this.enrichmentResumeId, job_description: '' })
+                    });
+                    if (!res.ok) throw new Error('Analysis failed');
+                    const data = await res.json();
+                    if (data.items && data.items.length > 0) {
+                        this.enrichmentItems = data.items.map(item => ({ ...item, answer: '' }));
+                        this.enrichmentStep = 2;
+                    } else {
+                        this.enrichmentError = 'Your resume looks great! No weak spots found.';
+                    }
+                } catch(e) { this.enrichmentError = e.message; }
+                finally { this.enrichmentLoading = false; }
+            },
+
+            async enhanceResume() {
+                this.enrichmentLoading = true;
+                this.enrichmentError = '';
+                try {
+                    const qaPairs = this.enrichmentItems.map(item => ({
+                        original: item.original_text,
+                        answer: item.answer || 'No answer provided'
+                    }));
+                    const res = await fetch('/api/resume/enrichment/enhance', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ resume_id: this.enrichmentResumeId, qa_pairs: qaPairs })
+                    });
+                    if (!res.ok) throw new Error('Enhancement failed');
+                    const data = await res.json();
+                    if (data.enhancements && data.enhancements.length > 0) {
+                        this.enhancedItems = data.enhancements;
+                        this.enrichmentStep = 3;
+                    } else {
+                        this.enrichmentError = 'No improvements could be generated.';
+                    }
+                } catch(e) { this.enrichmentError = e.message; }
+                finally { this.enrichmentLoading = false; }
+            },
+
+            // ===== AI PHRASE CHECK =====
+            showPhraseCheck: false,
+            phraseCheckText: '',
+            phraseCheckLoading: false,
+            phraseCheckResults: [],
+            cleanText: '',
+
+            checkPhrases() { this.showPhraseCheck = true; this.phraseCheckResults = []; this.phraseCheckText = ''; },
+
+            async runPhraseCheck() {
+                this.phraseCheckLoading = true;
+                try {
+                    const res = await fetch('/api/resume/phrases/check', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: this.phraseCheckText })
+                    });
+                    if (!res.ok) throw new Error('Check failed');
+                    const data = await res.json();
+                    this.phraseCheckResults = data.ai_phrases || [];
+                    this.cleanText = data.clean_text || this.phraseCheckText;
+                } catch(e) { alert('Error: ' + e.message); }
+                finally { this.phraseCheckLoading = false; }
+            },
+        }
+    }
+</script>
+
+<style>
+@keyframes blob { 0% { transform: translate(0,0) scale(1); } 33% { transform: translate(30px,-50px) scale(1.1); } 66% { transform: translate(-20px,20px) scale(0.9); } 100% { transform: translate(0,0) scale(1); } }
+.animate-blob { animation: blob 7s infinite; }
+.animation-delay-2000 { animation-delay: 2s; }
+
+/* Colorful styling for all dashboard elements */
+.bg-gray-50, .bg-white { background: transparent !important; }
+.text-gray-500, .text-gray-600, .text-gray-700, .text-gray-900 { color: #e2e8f0 !important; }
+.text-gray-300, .text-gray-400 { color: #94a3b8 !important; }
+.border-gray-200, .border-gray-100, .divide-gray-200 { border-color: rgba(255,255,255,0.1) !important; }
+.bg-primary-600, .bg-blue-600 { background: linear-gradient(135deg, #a855f7, #ec4899) !important; }
+.bg-blue-100, .bg-green-100, .bg-yellow-100, .bg-red-100, .bg-emerald-100, .bg-amber-100, .bg-violet-100 { background: rgba(168,85,247,0.2) !important; }
+.text-blue-600, .text-primary-600 { color: #a78bfa !important; }
+.text-emerald-600 { color: #34d399 !important; }
+.text-violet-600 { color: #a78bfa !important; }
+.text-red-600 { color: #f87171 !important; }
+.text-amber-600, .text-yellow-600 { color: #fbbf24 !important; }
+.bg-primary-700 { background: linear-gradient(135deg, #9333ea, #db2777) !important; }
+.bg-red-700, .hover\:bg-red-700:hover { background: linear-gradient(135deg, #dc2626, #ea580c) !important; }
+.bg-red-600 { background: linear-gradient(135deg, #ef4444, #f97316) !important; }
+.bg-green-500 { background: #22c55e !important; }
+.bg-yellow-500 { background: #eab308 !important; }
+.bg-emerald-600 { background: #059669 !important; }
+.bg-emerald-700 { background: #047857 !important; }
+</style>
+{% endblock %}

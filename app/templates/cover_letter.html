@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Cover Letter - DailSmart AI{% endblock %}
+
+{% block content %}
+<div class="relative min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div class="absolute top-20 left-10 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+    <div class="absolute top-40 right-10 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+    
+    <div class="relative z-10 max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8" x-data="coverLetterApp()" x-init="init()">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-black bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500 bg-clip-text text-transparent mb-3">📝 Cover Letter Generator</h1>
+            <p class="text-lg text-blue-200">Generate tailored cover letters that get you interviews</p>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-8">
+            <!-- Form -->
+            <div class="bg-white/10 backdrop-blur-xl border-2 border-pink-400/30 rounded-2xl p-6">
+                <h2 class="text-xl font-bold text-white mb-4 flex items-center">✏️ Generate Cover Letter</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-blue-200 mb-1">Select Resume *</label>
+                        <select x-model="resumeId" class="w-full bg-white/10 border border-white/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-400">
+                            <option value="">-- Select a resume --</option>
+                            <template x-for="r in resumes" :key="r.id">
+                                <option :value="r.id" class="bg-purple-900" x-text="r.title"></option>
+                            </template>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-blue-200 mb-1">Job Title *</label>
+                        <input x-model="jobTitle" type="text" class="w-full bg-white/10 border border-white/30 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-pink-400" placeholder="e.g. Software Engineer">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-blue-200 mb-1">Job Description *</label>
+                        <textarea x-model="jobDescription" rows="6" class="w-full bg-white/10 border border-white/30 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-pink-400 resize-none" placeholder="Paste the job description here..."></textarea>
+                    </div>
+
+                    <button @click="generate()" :disabled="loading || !canGenerate()" 
+                            class="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100">
+                        <span x-show="!loading">✨ Generate Cover Letter</span>
+                        <span x-show="loading">Generating...</span>
+                    </button>
+
+                    <!-- Error -->
+                    <div x-show="error" class="bg-red-500/20 border border-red-400/40 rounded-xl p-4 text-red-200 text-sm" x-text="error"></div>
+                </div>
+            </div>
+
+            <!-- Output -->
+            <div class="bg-white/10 backdrop-blur-xl border-2 border-cyan-400/30 rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-white flex items-center">📄 Cover Letter</h2>
+                    <button x-show="coverLetter" @click="copyToClipboard()" class="text-sm text-blue-300 hover:text-blue-200 font-bold">📋 Copy</button>
+                </div>
+
+                <!-- Empty State -->
+                <div x-show="!coverLetter && !loading" class="text-center py-16 text-white/40">
+                    <div class="text-7xl mb-4">📝</div>
+                    <p class="text-lg">Your cover letter will appear here</p>
+                </div>
+
+                <!-- Loading -->
+                <div x-show="loading" class="text-center py-16">
+                    <div class="animate-spin inline-block h-12 w-12 border-4 border-purple-500 border-t-transparent rounded-full mb-4"></div>
+                    <p class="text-lg text-blue-200">AI is writing your cover letter...</p>
+                </div>
+
+                <!-- Generated Letter -->
+                <div x-show="coverLetter" class="bg-white rounded-xl p-6 text-gray-900 min-h-[400px]">
+                    <div class="whitespace-pre-wrap text-sm leading-relaxed" x-text="coverLetter"></div>
+                </div>
+
+                <!-- Word Count -->
+                <div x-show="wordCount > 0" class="mt-4 text-center text-blue-300 text-sm">
+                    📊 <span x-text="wordCount"></span> words
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes blob { 0% { transform: translate(0,0) scale(1); } 33% { transform: translate(30px,-50px) scale(1.1); } 66% { transform: translate(-20px,20px) scale(0.9); } 100% { transform: translate(0,0) scale(1); } }
+.animate-blob { animation: blob 7s infinite; }
+.animation-delay-2000 { animation-delay: 2s; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function coverLetterApp() {
+    return {
+        resumes: [], resumeId: '', jobTitle: '', jobDescription: '',
+        coverLetter: '', wordCount: 0, loading: false, error: '',
+        async init() {
+            try {
+                const res = await fetch('/api/resume/user/temp-user-id');
+                if (res.ok) this.resumes = await res.json();
+            } catch(e) { console.error(e); }
+        },
+        canGenerate() { return this.resumeId && this.jobTitle && this.jobDescription.trim().length > 10; },
+        async generate() {
+            this.loading = true; this.error = ''; this.coverLetter = '';
+            try {
+                const res = await fetch('/api/resume/cover-letter', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ resume_id: this.resumeId, job_title: this.jobTitle, job_description: this.jobDescription })
+                });
+                if (!res.ok) throw new Error('Generation failed');
+                const data = await res.json();
+                this.coverLetter = data.cover_letter;
+                this.wordCount = data.word_count;
+            } catch(e) { this.error = e.message; }
+            finally { this.loading = false; }
+        },
+        copyToClipboard() { navigator.clipboard.writeText(this.coverLetter); alert('✅ Copied!'); }
+    };
+}
+</script>
+{% endblock %}

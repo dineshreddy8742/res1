@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Register - DailSmart AI{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex items-center justify-center px-4 py-12 relative overflow-hidden">
+    <!-- Fluid background elements -->
+    <div class="absolute top-1/4 -left-20 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-blob"></div>
+    <div class="absolute bottom-1/4 -right-20 w-80 h-80 bg-pink-500/20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+    
+    <div class="relative z-10 max-w-lg w-full">
+        <div class="text-center mb-10">
+            <a href="/" class="inline-flex items-center gap-3 text-white mb-6 hover:scale-105 transition-transform">
+                <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-500 text-lg font-black text-white shadow-lg">🚀</span>
+                <span class="text-2xl font-black bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">DailSmart AI</span>
+            </a>
+            <h1 class="text-4xl font-black text-white mb-3">Join the Future! ✨</h1>
+            <p class="text-blue-200">Create your account and land your dream job</p>
+        </div>
+
+        <div class="bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-[2.5rem] overflow-hidden shadow-2xl">
+            <div x-data="registerForm()" class="p-8 md:p-10">
+                <form @submit.prevent="handleRegister()">
+                    <div class="space-y-6">
+                        <div x-show="error" class="bg-red-500/20 border border-red-400/40 rounded-2xl p-4 text-red-200 text-sm flex items-center gap-3 animate-shake">
+                            <span>⚠️</span>
+                            <span x-text="error"></span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-blue-200 mb-2 ml-1">Full Name</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">👤</span>
+                                    <input x-model="name" type="text" required 
+                                           class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-400/10 transition-all font-medium" 
+                                           placeholder="John Doe">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-blue-200 mb-2 ml-1">Roll Number</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">🆔</span>
+                                    <input x-model="roll_number" type="text" required 
+                                           class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-400/10 transition-all font-medium" 
+                                           placeholder="21ABC1234">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-blue-200 mb-2 ml-1">College/Institution</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">🏫</span>
+                                <input x-model="college" type="text" required 
+                                       class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-400/10 transition-all font-medium" 
+                                       placeholder="Your University Name">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-blue-200 mb-2 ml-1">Secure Password</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">🔒</span>
+                                <input x-model="password" type="password" required 
+                                       class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-400/10 transition-all font-medium" 
+                                       placeholder="••••••••">
+                            </div>
+                        </div>
+
+                        <button type="submit" :disabled="loading" 
+                                class="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white font-black py-4 rounded-2xl shadow-xl shadow-purple-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3">
+                            <span x-show="!loading" class="text-lg">Create My Account 🚀</span>
+                            <span x-show="loading" class="animate-spin text-xl">⏳</span>
+                            <span x-show="loading">Building Workspace...</span>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-8 text-center pt-8 border-t border-white/10">
+                    <p class="text-blue-200 text-sm">
+                        Already have an account? 
+                        <a href="/login" class="text-pink-400 font-black hover:text-pink-300 ml-1">Sign In instead →</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function registerForm() {
+    return {
+        name: '',
+        roll_number: '',
+        college: '',
+        password: '',
+        error: '',
+        loading: false,
+
+        async handleRegister() {
+            this.error = '';
+            this.loading = true;
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        roll_number: this.roll_number,
+                        name: this.name,
+                        college: this.college,
+                        password: this.password
+                    })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    window.location.href = '/dashboard';
+                } else {
+                    this.error = data.detail || 'Registration failed';
+                }
+            } catch (error) {
+                this.error = 'Network error. Please try again.';
+            } finally {
+                this.loading = false;
+            }
+        }
+    };
+}
+</script>
+
+<style>
+@keyframes blob {
+    0% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(30px, -50px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+    100% { transform: translate(0px, 0px) scale(1); }
+}
+.animate-blob { animation: blob 7s infinite; }
+.animation-delay-2000 { animation-delay: 2s; }
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+.animate-shake { animation: shake 0.2s ease-in-out 0s 2; }
+</style>
+{% endblock %}

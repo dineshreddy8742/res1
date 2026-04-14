@@ -1,0 +1,98 @@
+"""Security module for password hashing and JWT authentication."""
+
+import os
+import bcrypt
+import jwt
+from datetime import datetime, timedelta
+from fastapi import Request, HTTPException, status
+from fastapi.responses import RedirectResponse
+
+# JWT Configuration
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "myresumo-secret-key-change-in-production-2024")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_DAYS = 30
+
+
+def hash_password(password: str) -> str:
+    """Hash a password using bcrypt."""
+    pwd_bytes = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(pwd_bytes, salt)
+    return hashed.decode('utf-8')
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a password against its hash."""
+    try:
+        return bcrypt.checkpw(
+            plain_password.encode('utf-8'),
+            hashed_password.encode('utf-8')
+        )
+    except Exception:
+        return False
+
+
+def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
+    """Create a JWT access token."""
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def decode_access_token(token: str) -> dict:
+    """Decode and validate a JWT token. Returns payload or raises exception."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired. Please login again.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token. Please login again.")
+
+
+async def get_current_user(request: Request) -> str:
+    """FastAPI dependency to get current logged-in user ID from session cookie."""
+    token = request.cookies.get("auth_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    payload = decode_access_token(token)
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return user_id
+
+
+async def get_current_user_optional(request: Request) -> str:
+    """Get current user ID or None if not logged in."""
+    token = request.cookies.get("auth_token")
+    if not token:
+        return None
+    try:
+        payload = decode_access_token(token)
+        return payload.get("sub")
+    except Exception:
+        return None
+
+
+def require_login_redirect(request: Request) -> RedirectResponse | None:
+    """Redirect to login if not authenticated (for web routes)."""
+    token = request.cookies.get("auth_token")
+    if not token:
+        return RedirectResponse(url="/login", status_code=303)
+    try:
+        decode_access_token(token)
+        return None
+    except Exception:
+        return RedirectResponse(url="/login", status_code=303)
+
+
+async def require_admin(request: Request) -> bool:
+    """Check if current user is an admin."""
+    user_id = await get_current_user(request)
+    from app.database.repositories.user_repository import UserRepository
+    repo = UserRepository()
+    user = await repo.get_user_by_id(user_id)
+    if not user or not user.get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return True
