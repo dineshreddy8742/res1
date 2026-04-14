@@ -12,8 +12,17 @@ from pathlib import Path
 from typing import Optional
 
 import PyPDF2
-import pytesseract
-from pdf2image import convert_from_path
+
+# Optional OCR - requires system packages (poppler, tesseract)
+# Not available on serverless platforms like Vercel
+try:
+    import pytesseract
+    from pdf2image import convert_from_path
+    OCR_AVAILABLE = True
+except ImportError:
+    pytesseract = None  # type: ignore
+    convert_from_path = None  # type: ignore
+    OCR_AVAILABLE = False
 
 
 def extract_text_from_pdf(pdf_path: str) -> str:
@@ -46,6 +55,11 @@ def extract_text_from_pdf(pdf_path: str) -> str:
         text = ""
 
     # If direct extraction failed or didn't get enough text, try OCR
+    if not OCR_AVAILABLE:
+        if text:
+            return text
+        return "OCR not available. Direct text extraction yielded no results."
+
     try:
         # Convert PDF to images
         images = convert_from_path(pdf_path)
