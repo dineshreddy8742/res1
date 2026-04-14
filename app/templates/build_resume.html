@@ -796,12 +796,12 @@ function resumeBuilder() {
             finally { this.importLoading = false; }
         },
 
-        updatePreview() { clearTimeout(this._saveTimeout); this._saveTimeout = setTimeout(() => this.saveToLocalStorage(), 500); },
+        updatePreview() { clearTimeout(this._saveTimeout); this._saveTimeout = setTimeout(() => this.saveToLocalStorage(false), 500); },
         
-        saveToLocalStorage() {
+        saveToLocalStorage(notify = true) {
             localStorage.setItem('draftResume', JSON.stringify(this.data));
             localStorage.setItem('resume_formatting', JSON.stringify(this.formatting));
-            alert('✅ Resume saved to browser!');
+            if (notify) alert('✅ Resume saved to browser!');
         },
         resetResume() { if (confirm('Reset all fields?')) { localStorage.removeItem('draftResume'); this.data = { name: '', title: '', phone: '', email: '', linkedin: '', github: '', profile: '', experience: [], education: [], skills: { programming: [], ai_ml: [], cloud_devops: [], frontend_backend: [], tools_frameworks: [], soft_skills: [] }, projects: [], certifications: [], languages: [], achievements: [], interests: [], customSections: [] }; this.addEducation(); this.addSkill('programming'); this.addSkill('ai_ml'); this.addSkill('tools_frameworks'); } },
 
