@@ -219,12 +219,14 @@ async def login(req: LoginRequest, response: Response):
 
         # 5. Set Session Cookie
         response.set_cookie(
-            key="user_id",
-            value=str(user.get("id", "")),
+            key="auth_token",
+            value=create_access_token(data={"sub": str(user.get("id", "")), "role": user.get("role", "student")}),
             httponly=True,
             samesite="lax",
             max_age=ACCESS_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
+
+        print(f"DEBUG: Cookie set with user_id={user.get('id')}, role={user.get('role')}")
 
         return LoginResponse(
             success=True,
