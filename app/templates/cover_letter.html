@@ -55,7 +55,10 @@
             <div class="bg-white/10 backdrop-blur-xl border-2 border-cyan-400/30 rounded-2xl p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-bold text-white flex items-center">📄 Cover Letter</h2>
-                    <button x-show="coverLetter" @click="copyToClipboard()" class="text-sm text-blue-300 hover:text-blue-200 font-bold">📋 Copy</button>
+                    <div class="flex gap-2" x-show="coverLetter">
+                        <button @click="copyToClipboard()" class="text-sm bg-white/10 hover:bg-white/20 text-blue-300 px-3 py-1.5 rounded-lg font-bold transition-all">📋 Copy</button>
+                        <button @click="downloadPDF()" class="text-sm bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-3 py-1.5 rounded-lg font-bold transition-all shadow-lg">📥 Download PDF</button>
+                    </div>
                 </div>
 
                 <!-- Empty State -->
@@ -88,6 +91,25 @@
 @keyframes blob { 0% { transform: translate(0,0) scale(1); } 33% { transform: translate(30px,-50px) scale(1.1); } 66% { transform: translate(-20px,20px) scale(0.9); } 100% { transform: translate(0,0) scale(1); } }
 .animate-blob { animation: blob 7s infinite; }
 .animation-delay-2000 { animation-delay: 2s; }
+@media (max-width: 768px) {
+    .grid.lg\:grid-cols-2 { grid-template-columns: 1fr !important; }
+    .text-5xl { font-size: 28px !important; }
+    .p-6 { padding: 16px !important; }
+    .gap-8 { gap: 16px !important; }
+    .text-xl { font-size: 18px !important; }
+    .min-h-\[400px\] { min-height: 300px !important; }
+}
+@media (max-width: 480px) {
+    .text-5xl { font-size: 24px !important; }
+    .text-lg { font-size: 14px !important; }
+    .p-6 { padding: 12px !important; }
+    .text-sm { font-size: 12px !important; }
+    .py-3 { padding-top: 8px !important; padding-bottom: 8px !important; }
+    .px-4 { padding-left: 8px !important; padding-right: 8px !important; }
+    textarea { font-size: 14px !important; }
+    input { font-size: 14px !important; }
+    select { font-size: 14px !important; }
+}
 </style>
 {% endblock %}
 
@@ -125,7 +147,68 @@ function coverLetterApp() {
             } catch(e) { this.error = e.message; }
             finally { this.loading = false; }
         },
-        copyToClipboard() { navigator.clipboard.writeText(this.coverLetter); alert('✅ Copied!'); }
+        copyToClipboard() { navigator.clipboard.writeText(this.coverLetter); alert('✅ Copied!'); },
+        downloadPDF() {
+            if (!this.coverLetter) return;
+            
+            // Create a new window with formatted cover letter
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Cover Letter - ${this.jobTitle || 'AuraRise'}</title>
+                    <style>
+                        body {
+                            font-family: 'Georgia', 'Times New Roman', serif;
+                            max-width: 700px;
+                            margin: 40px auto;
+                            padding: 40px;
+                            line-height: 1.8;
+                            color: #1a1a1a;
+                            font-size: 12pt;
+                        }
+                        .header {
+                            text-align: center;
+                            border-bottom: 2px solid #333;
+                            padding-bottom: 20px;
+                            margin-bottom: 30px;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            font-size: 24pt;
+                            color: #1a1a1a;
+                        }
+                        .header p {
+                            margin: 5px 0 0;
+                            color: #666;
+                            font-size: 11pt;
+                        }
+                        .content {
+                            white-space: pre-wrap;
+                        }
+                        @media print {
+                            body { margin: 0; padding: 20px; }
+                            @page { margin: 1in; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>Cover Letter</h1>
+                        <p>${this.jobTitle || ''} • ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    </div>
+                    <div class="content">${this.coverLetter}</div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            
+            // Wait for content to load, then trigger print
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
+        }
     };
 }
 </script>
