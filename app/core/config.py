@@ -23,7 +23,7 @@ class Settings(BaseSettings):
         API_BASE (Optional[str]): Base URL for the AI API.
     """
 
-    PROJECT_NAME: str = "DailSmart AI"
+    PROJECT_NAME: str = "AuraRise"
     VERSION: str = "2.0.0"
 
     # Supabase Configuration

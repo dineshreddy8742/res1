@@ -1,4 +1,4 @@
-"""Main application entry point for DailSmart AI.
+"""Main application entry point for AuraRise.
 
 This module initializes the FastAPI application, configures routers, middleware,
 and handles application startup and shutdown events. It serves as the central
@@ -186,7 +186,7 @@ async def custom_swagger_ui_html():
             template = f.read()
 
         return HTMLResponse(
-            template.replace("{{ title }}", "DailSmart AI API Documentation").replace(
+            template.replace("{{ title }}", "AuraRise API Documentation").replace(
                 "{{ openapi_url }}", "/openapi.json"
             )
         )
@@ -209,7 +209,7 @@ async def health_check():
         JSONResponse: Status information about the application.
     """
     return JSONResponse(
-        content={"status": "healthy", "version": app.version, "service": "dailsmart-ai"}
+        content={"status": "healthy", "version": app.version, "service": "aurarise"}
     )
 
 

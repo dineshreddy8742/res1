@@ -1,4 +1,4 @@
-"""Vercel serverless entry point for DailSmart AI.
+"""Vercel serverless entry point for AuraRise.
 
 This file is specifically created for Vercel deployment to import and expose the FastAPI application.
 """

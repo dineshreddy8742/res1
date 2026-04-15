@@ -24,7 +24,7 @@ core_web_router = WebRouter()
 @core_web_router.get(
     "/",
     summary="Homepage",
-    response_description="Welcome to DailSmart AI",
+    response_description="Welcome to AuraRise",
     response_class=HTMLResponse,
 )
 async def home(
@@ -41,7 +41,7 @@ async def home(
 @core_web_router.get(
     "/about",
     summary="About Us",
-    response_description="Learn more about DailSmart AI",
+    response_description="Learn more about AuraRise",
     response_class=HTMLResponse,
 )
 async def about(
@@ -58,7 +58,7 @@ async def about(
 @core_web_router.get(
     "/contribution",
     summary="Contribution",
-    response_description="Get involved with DailSmart AI development",
+    response_description="Get involved with AuraRise development",
     response_class=HTMLResponse,
 )
 async def contribution(
