@@ -49,7 +49,62 @@
 .cursor-text { cursor: text; }
 [contenteditable="true"]:focus { outline: 2px solid rgba(168,85,247,0.5); outline-offset: 2px; border-radius: 4px; background: rgba(168,85,247,0.05); }
 
-/* Mobile Responsiveness */
+/* Theme Layout Designs */
+#resume-content { display: flex; flex-direction: column; }
+
+/* Modern / Creative: Left Sidebar Layout */
+#resume-content.theme-modern, #resume-content.theme-creative { 
+    display: grid; 
+    grid-template-columns: 1fr 2fr; 
+    column-gap: 32px;
+}
+#resume-content.theme-modern .header-section, #resume-content.theme-creative .header-section { grid-column: 1 / 3; border-bottom-width: 4px !important; margin-bottom: 24px !important; }
+#resume-content.theme-modern .profile-section, #resume-content.theme-creative .profile-section { grid-column: 2 / 3; order: 1; }
+#resume-content.theme-modern .experience-section, #resume-content.theme-creative .experience-section { grid-column: 2 / 3; order: 2; }
+#resume-content.theme-modern .projects-section, #resume-content.theme-creative .projects-section { grid-column: 2 / 3; order: 3; }
+#resume-content.theme-modern .achievements-section, #resume-content.theme-creative .achievements-section { grid-column: 2 / 3; order: 4; }
+#resume-content.theme-modern .custom-section, #resume-content.theme-creative .custom-section { grid-column: 2 / 3; order: 5; }
+
+#resume-content.theme-modern .skills-section, #resume-content.theme-creative .skills-section { grid-column: 1 / 2; order: 10; padding: 16px; background: rgba(0,0,0,0.03); border-radius: 8px;}
+#resume-content.theme-modern .education-section, #resume-content.theme-creative .education-section { grid-column: 1 / 2; order: 11; padding: 16px; background: rgba(0,0,0,0.03); border-radius: 8px;}
+#resume-content.theme-modern .certifications-section, #resume-content.theme-creative .certifications-section { grid-column: 1 / 2; order: 12; padding: 16px; background: rgba(0,0,0,0.03); border-radius: 8px;}
+#resume-content.theme-modern .languages-section, #resume-content.theme-creative .languages-section { grid-column: 1 / 2; order: 13; padding: 16px; background: rgba(0,0,0,0.03); border-radius: 8px;}
+#resume-content.theme-modern .interests-section, #resume-content.theme-creative .interests-section { grid-column: 1 / 2; order: 14; padding: 16px; background: rgba(0,0,0,0.03); border-radius: 8px;}
+
+/* Startup: Right Sidebar Layout */
+#resume-content.theme-startup { 
+    display: grid; 
+    grid-template-columns: 2.2fr 1fr; 
+    column-gap: 32px;
+}
+#resume-content.theme-startup .header-section { grid-column: 1 / 3; border-bottom: 2px solid #ddd !important; }
+#resume-content.theme-startup .profile-section { grid-column: 1 / 2; order: 1; }
+#resume-content.theme-startup .experience-section { grid-column: 1 / 2; order: 2; }
+#resume-content.theme-startup .projects-section { grid-column: 1 / 2; order: 3; }
+
+#resume-content.theme-startup .skills-section { grid-column: 2 / 3; order: 10; border-left: 2px dashed #ddd; padding-left: 20px;}
+#resume-content.theme-startup .education-section { grid-column: 2 / 3; order: 11; border-left: 2px dashed #ddd; padding-left: 20px;}
+#resume-content.theme-startup .certifications-section { grid-column: 2 / 3; order: 12; border-left: 2px dashed #ddd; padding-left: 20px;}
+
+/* Executive: Bordered and Centered Header */
+#resume-content.theme-executive { border: 8px solid; margin: 16px; padding: 40px !important; }
+#resume-content.theme-executive .header-section { flex-direction: column !important; text-align: center; justify-content: center; border-bottom-width: 4px !important; border-bottom-style: double !important; padding-bottom: 24px; margin-bottom: 32px;}
+#resume-content.theme-executive .header-section .flex-wrap { justify-content: center !important; }
+
+/* Bold: Giant Accent Banner */
+#resume-content.theme-bold .header-section { 
+    padding: 32px; 
+    margin: -24px -24px 32px -24px;
+    border-radius: 4px;
+}
+#resume-content.theme-bold .header-section * { color: white !important; }
+
+/* Mobile grid fallbacks (Do NOT collapse grids on print, we want the PDFs to look like the exact layout!) */
+@media (max-width: 768px) {
+    #resume-content.theme-modern, #resume-content.theme-creative, #resume-content.theme-startup { display: flex; flex-direction: column; }
+    #resume-content.theme-modern .header-section, #resume-content.theme-startup .header-section { margin-bottom: 16px !important; }
+    #resume-content.theme-modern > div, #resume-content.theme-startup > div { padding: 0 !important; border: none !important; background: transparent !important; margin-bottom: 16px !important; }
+}/* Mobile Responsiveness */
 @media (max-width: 768px) {
     #resume-nav { flex-direction: column !important; gap: 8px !important; padding: 12px !important; }
     #resume-nav > div:first-child { margin-bottom: 4px; }
@@ -172,7 +227,7 @@
                     <label class="block text-sm font-bold text-blue-200 mb-2">🎨 Accent Color</label>
                     <div class="grid grid-cols-4 gap-2">
                         <template x-for="color in accentColors" :key="color.id">
-                            <button @click="formatting.accentColor = color.id" :class="formatting.accentColor === color.id ? 'ring-2 ring-white scale-110' : ''" class="w-8 h-8 rounded-full mx-auto transition-all hover:scale-110" :style="'background-color: ' + color.hex" :title="color.name"></button>
+                            <button @click="formatting.accentColor = color.id; updatePreview()" :class="formatting.accentColor === color.id ? 'ring-2 ring-white scale-110 shadow-[0_0_10px_rgba(255,255,255,0.5)]' : ''" class="w-8 h-8 rounded-full mx-auto transition-all hover:scale-110" :style="'background-color: ' + color.hex" :title="color.name"></button>
                         </template>
                     </div>
                 </div>
@@ -231,6 +286,36 @@
                 <!-- Personal Info -->
                 <div class="bg-white/10 backdrop-blur-xl border-2 border-pink-400/30 rounded-2xl p-5">
                     <h2 class="text-lg font-bold text-white mb-3">👤 Personal Information</h2>
+                    
+                    <!-- Profile Picture Upload & Alignment -->
+                    <div class="mb-4 space-y-3">
+                        <div class="flex items-center gap-4 p-3 bg-white/5 rounded-xl border border-white/10">
+                            <div class="relative w-16 h-16 rounded-full bg-white/10 border-2 border-pink-400/50 overflow-hidden flex-shrink-0">
+                                <template x-if="data.image">
+                                    <img :src="data.image" class="w-full h-full object-cover">
+                                </template>
+                                <template x-if="!data.image">
+                                    <span class="w-full h-full flex items-center justify-center text-2xl">👤</span>
+                                </template>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-xs font-bold text-pink-300 mb-1">Profile Picture</label>
+                                <input type="file" @change="handleImageUpload" accept="image/*" class="text-xs text-white/70 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-pink-500 file:text-white hover:file:bg-pink-600 transition-all">
+                                <button x-show="data.image" @click="data.image = ''; updatePreview()" class="mt-1 text-[10px] text-red-300 hover:text-red-200 underline">Remove Image</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Image Alignment Options -->
+                        <div x-show="data.image" class="bg-white/5 p-3 rounded-xl border border-white/10">
+                            <label class="block text-xs font-bold text-blue-300 mb-2">📷 Image Alignment</label>
+                            <div class="flex gap-2">
+                                <button @click="formatting.imageAlign = 'left'; updatePreview()" :class="formatting.imageAlign === 'left' ? 'bg-blue-500 border-blue-400' : 'bg-white/10 border-white/20'" class="flex-1 border py-1.5 rounded-lg text-xs font-bold text-white transition-all">Left</button>
+                                <button @click="formatting.imageAlign = 'center'; updatePreview()" :class="formatting.imageAlign === 'center' ? 'bg-blue-500 border-blue-400' : 'bg-white/10 border-white/20'" class="flex-1 border py-1.5 rounded-lg text-xs font-bold text-white transition-all">Middle</button>
+                                <button @click="formatting.imageAlign = 'right'; updatePreview()" :class="formatting.imageAlign === 'right' ? 'bg-blue-500 border-blue-400' : 'bg-white/10 border-white/20'" class="flex-1 border py-1.5 rounded-lg text-xs font-bold text-white transition-all">Right</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-3">
                         <input x-model="data.name" @input="updatePreview()" type="text" class="col-span-2 bg-white/10 border border-white/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-pink-400" placeholder="Full Name">
                         <input x-model="data.title" @input="updatePreview()" type="text" class="col-span-2 bg-white/10 border border-white/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-pink-400" placeholder="Job Title (e.g. Software Engineer)">
@@ -526,20 +611,28 @@
                     
                     <!-- Resume Preview Container -->
                     <div id="resume-preview-container" class="bg-white rounded-xl overflow-hidden" :style="previewStyles" style="min-height: 700px;">
-                        <div id="resume-content" class="p-6 leading-relaxed" :class="{
-                            'font-mono': formatting.template === 'tech',
-                            'font-serif': formatting.template === 'elegant' || formatting.template === 'academic',
-                            'bg-gray-50': formatting.template === 'startup',
-                        }" :style="'font-size: ' + fontSize + '; font-family: ' + fontFamily + '; color: ' + textColor + ';'"
+                        <div id="resume-content" class="p-6 leading-relaxed" :class="[
+                            'theme-' + formatting.template,
+                            formatting.template === 'tech' ? 'font-mono' : '',
+                            (formatting.template === 'elegant' || formatting.template === 'academic') ? 'font-serif' : '',
+                            formatting.template === 'startup' ? 'bg-gray-50' : ''
+                        ]" :style="'font-size: ' + fontSize + '; font-family: ' + fontFamily + '; color: ' + textColor + ';'"
                         :data-ats-mode="formatting.atsMode">
                             
                             <!-- Header -->
-                            <div class="text-center pb-3 mb-3" :class="formatting.atsMode ? 'border-b-2 border-gray-300' : ''" :style="!formatting.atsMode ? 'border-bottom: 2px solid ' + accentColor + ';' : ''">
-                                <h1 class="font-bold tracking-wide cursor-text hover:bg-gray-50 rounded px-1"
-                                    :style="'color: ' + textColor + '; font-size: ' + headerScale + 'em; font-weight: ' + (formatting.template === 'bold' ? '900' : formatting.template === 'elegant' ? '700' : 'bold') + ';'"
-                                    x-text="data.name || 'YOUR NAME'" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.name = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()"></h1>
-                                <p class="mt-0.5" :class="formatting.atsMode ? 'text-gray-600' : ''" style="color: #666;" x-text="data.title || 'YOUR JOB PROFILE'" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.title = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()"></p>
-                                <div class="flex flex-wrap justify-center gap-x-3 gap-y-1 mt-1.5 text-xs" :class="formatting.atsMode ? 'text-gray-600' : ''" style="color: #555;">
+                            <div class="header-section pb-3 mb-3 flex items-center gap-4" :class="[formatting.imageAlign === 'right' ? 'flex-row-reverse' : formatting.imageAlign === 'center' ? 'flex-col text-center justify-center' : 'flex-row']" :style="'border-bottom: 2px solid ' + accentColor + ';'">
+                                <div x-show="data.image" class="flex-shrink-0">
+                                    <div class="w-20 h-20 rounded-full border-2 overflow-hidden" :style="'border-color: ' + accentColor">
+                                        <img :src="data.image" class="w-full h-full object-cover">
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <h1 class="font-bold tracking-wide cursor-text hover:bg-gray-50 rounded px-1"
+                                        :style="'color: ' + textColor + '; font-size: ' + headerScale + 'em; font-weight: ' + (formatting.template === 'bold' ? '900' : formatting.template === 'elegant' ? '700' : 'bold') + ';'"
+                                        x-text="data.name || 'YOUR NAME'" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.name = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()"></h1>
+                                    <p class="mt-0.5" :class="formatting.atsMode ? 'text-gray-600' : ''" style="color: #666;" x-text="data.title || 'YOUR JOB PROFILE'" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.title = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()"></p>
+                                </div>
+                                <div class="flex flex-wrap gap-x-3 gap-y-1 mt-1.5 text-xs w-full" :class="[formatting.imageAlign === 'right' ? 'justify-end' : formatting.imageAlign === 'center' ? 'justify-center' : 'justify-start']" style="color: #555;">
                                     <span x-show="data.phone" x-text="data.phone" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.phone = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()" class="hover:underline cursor-text"></span>
                                     <span x-show="data.email" x-text="data.email" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.email = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()" class="hover:underline cursor-text"></span>
                                     <span x-show="data.linkedin" x-text="'linkedin.com/in/' + data.linkedin" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.linkedin = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()" class="hover:underline cursor-text"></span>
@@ -548,13 +641,13 @@
                             </div>
 
                             <!-- Profile -->
-                            <div class="mb-3" x-show="data.profile" :style="sectionStyle">
+                            <div class="profile-section mb-3" x-show="data.profile" :style="sectionStyle">
                                 <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Summary</h3>
                                 <p class="text-gray-700 text-xs cursor-text hover:bg-gray-50 rounded px-1 -mx-1" x-text="data.profile" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.profile = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()"></p>
                             </div>
 
                             <!-- Experience -->
-                            <div class="mb-3" x-show="data.experience.length > 0" :style="sectionStyle">
+                            <div class="experience-section mb-3" x-show="data.experience.length > 0" :style="sectionStyle">
                                 <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Experience</h3>
                                 <template x-for="(exp, i) in data.experience" :key="i">
                                     <div class="mb-2" :style="itemStyle">
@@ -575,7 +668,7 @@
                             </div>
 
                             <!-- Education -->
-                            <div class="mb-3" x-show="data.education.length > 0" :style="sectionStyle">
+                            <div class="education-section mb-3" x-show="data.education.length > 0" :style="sectionStyle">
                                 <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Education</h3>
                                 <template x-for="(edu, i) in data.education" :key="i">
                                     <div class="mb-2" :style="itemStyle">
@@ -589,7 +682,7 @@
                             </div>
 
                             <!-- Skills (ATS-friendly) -->
-                            <div class="mb-3" x-show="hasAnySkills()" :style="sectionStyle">
+                            <div class="skills-section mb-3" x-show="hasAnySkills()" :style="sectionStyle">
                                 <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Skills</h3>
                                 
                                 <template x-if="data.skills.programming && data.skills.programming.some(s => s.text)">
@@ -648,7 +741,7 @@
                             </div>
 
                             <!-- Projects -->
-                            <div class="mb-3" x-show="data.projects.length > 0" :style="sectionStyle">
+                            <div class="projects-section mb-3" x-show="data.projects.length > 0" :style="sectionStyle">
                                 <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Projects</h3>
                                 <template x-for="(proj, i) in data.projects" :key="i">
                                     <div class="mb-2" :style="itemStyle">
@@ -666,7 +759,7 @@
                             </div>
 
                             <!-- Certifications -->
-                            <div class="mb-3" x-show="data.certifications.length > 0" :style="sectionStyle">
+                            <div class="certifications-section mb-3" x-show="data.certifications.length > 0" :style="sectionStyle">
                                 <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Certifications</h3>
                                 <template x-for="(cert, i) in data.certifications" :key="i">
                                     <div class="mb-1.5" :style="itemStyle">
@@ -680,7 +773,7 @@
                             </div>
 
                             <!-- Languages -->
-                            <div class="mb-3" x-show="data.languages.length > 0" :style="sectionStyle">
+                            <div class="languages-section mb-3" x-show="data.languages.length > 0" :style="sectionStyle">
                                 <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Languages</h3>
                                 <div class="space-y-0.5">
                                     <template x-for="(lang, i) in data.languages.filter(l => l.name)" :key="i">
@@ -690,7 +783,7 @@
                             </div>
 
                             <!-- Achievements -->
-                            <div class="mb-3" x-show="data.achievements.length > 0" :style="sectionStyle">
+                            <div class="achievements-section mb-3" x-show="data.achievements.length > 0" :style="sectionStyle">
                                 <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Achievements</h3>
                                 <div class="space-y-0.5">
                                     <template x-for="(ach, i) in data.achievements.filter(a => a.text)" :key="i">
@@ -700,7 +793,7 @@
                             </div>
 
                             <!-- Interests -->
-                            <div class="mb-3" x-show="data.interests.length > 0" :style="sectionStyle">
+                            <div class="interests-section mb-3" x-show="data.interests.length > 0" :style="sectionStyle">
                                 <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Interests</h3>
                                 <div class="space-y-0.5">
                                     <template x-for="(interest, i) in data.interests.filter(int => int.text)" :key="i">
@@ -711,7 +804,7 @@
 
                             <!-- Custom Sections -->
                             <template x-for="(sec, i) in data.customSections.filter(s => s.title)" :key="i">
-                                <div class="mb-3" :style="sectionStyle">
+                                <div class="custom-section mb-3" :style="sectionStyle">
                                     <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';" x-text="sec.title"></h3>
                                     <p class="text-gray-700 text-xs whitespace-pre-line" x-text="sec.description"></p>
                                 </div>
@@ -721,38 +814,38 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Download Modal -->
-    <div x-show="showDownloadModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showDownloadModal = false" x-cloak>
-        <div class="bg-gradient-to-br from-purple-900 to-blue-900 backdrop-blur-xl border-2 border-white/20 rounded-2xl max-w-md w-full p-6 shadow-2xl">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-black text-white">📥 Download or Print</h3>
-                <button @click="showDownloadModal = false" class="text-white/60 hover:text-white text-2xl">&times;</button>
+        <!-- Download Modal -->
+        <div x-show="showDownloadModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showDownloadModal = false" x-cloak>
+            <div class="bg-gradient-to-br from-purple-900 to-blue-900 backdrop-blur-xl border-2 border-white/20 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-black text-white">📥 Download or Print</h3>
+                    <button @click="showDownloadModal = false" class="text-white/60 hover:text-white text-2xl">&times;</button>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <button @click="downloadNativePDF()" class="flex flex-col items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg border-2 border-white/20">
+                        <span class="text-4xl mb-2">🚀</span>
+                        <span>Stable PDF</span>
+                        <span class="text-[10px] opacity-70">(High Quality)</span>
+                    </button>
+                    <button @click="downloadPDF()" class="flex flex-col items-center justify-center bg-gradient-to-r from-red-500 to-pink-500 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
+                        <span class="text-4xl mb-2">📄</span>
+                        <span>Quick PDF</span>
+                        <span class="text-[10px] opacity-70">(Client-side)</span>
+                    </button>
+                    <button @click="downloadCoverLetterPDF()" class="flex flex-col items-center justify-center bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
+                        <span class="text-4xl mb-2">✉️</span>
+                        <span>Cover Letter</span>
+                        <span class="text-[10px] opacity-70">(Print view)</span>
+                    </button>
+                    <button @click="printResume()" class="flex flex-col items-center justify-center bg-gradient-to-r from-green-500 to-emerald-500 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
+                        <span class="text-4xl mb-2">🖨️</span>
+                        <span>System Print</span>
+                        <span class="text-[10px] opacity-70">(Legacy)</span>
+                    </button>
+                </div>
+                <p class="text-xs text-blue-300 text-center">💡 For best print results, use Chrome or Edge browsers.</p>
             </div>
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <button @click="downloadNativePDF()" class="flex flex-col items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg border-2 border-white/20">
-                    <span class="text-4xl mb-2">🚀</span>
-                    <span>Stable PDF</span>
-                    <span class="text-[10px] opacity-70">(High Quality)</span>
-                </button>
-                <button @click="downloadPDF()" class="flex flex-col items-center justify-center bg-gradient-to-r from-red-500 to-pink-500 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
-                    <span class="text-4xl mb-2">📄</span>
-                    <span>Quick PDF</span>
-                    <span class="text-[10px] opacity-70">(Client-side)</span>
-                </button>
-                <button @click="downloadCoverLetterPDF()" class="flex flex-col items-center justify-center bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
-                    <span class="text-4xl mb-2">✉️</span>
-                    <span>Cover Letter</span>
-                    <span class="text-[10px] opacity-70">(Print view)</span>
-                </button>
-                <button @click="printResume()" class="flex flex-col items-center justify-center bg-gradient-to-r from-green-500 to-emerald-500 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
-                    <span class="text-4xl mb-2">🖨️</span>
-                    <span>System Print</span>
-                    <span class="text-[10px] opacity-70">(Legacy)</span>
-                </button>
-            </div>
-            <p class="text-xs text-blue-300 text-center">💡 For best print results, use Chrome or Edge browsers.</p>
         </div>
     </div>
 </div>
@@ -789,7 +882,7 @@ function resumeBuilder() {
             { id: 'pink', name: 'Pink', hex: '#DB2777' },
             { id: 'gray', name: 'Gray', hex: '#4B5563' }
         ],
-        formatting: { template: 'classic', accentColor: 'blue', fontFamily: 'sans-serif', fontSize: 3, sectionGap: 3, itemGap: 2, compactMode: false, atsMode: true },
+        formatting: { template: 'classic', accentColor: 'blue', fontFamily: 'sans-serif', fontSize: 3, sectionGap: 3, itemGap: 2, compactMode: false, atsMode: true, imageAlign: 'center' },
         accentColorMap: { blue: '#1D4ED8', green: '#15803D', orange: '#EA580C', red: '#DC2626', purple: '#7C3AED', teal: '#0D9488', pink: '#DB2777', gray: '#4B5563' },
         accentLightMap: { blue: '#DBEAFE', green: '#DCFCE7', orange: '#FED7AA', red: '#FEE2E2', purple: '#EDE9FE', teal: '#CCFBF1', pink: '#FCE7F3', gray: '#F3F4F6' },
         fontFamilyMap: { 'sans-serif': 'system-ui, -apple-system, sans-serif', 'serif': 'Georgia, Cambria, "Times New Roman", serif', 'mono': 'SFMono-Regular, "SF Mono", Menlo, Consolas, monospace' },
@@ -797,7 +890,7 @@ function resumeBuilder() {
         spacingMap: { 1: 6, 2: 10, 3: 16, 4: 20, 5: 24 },
         itemSpacingMap: { 1: 2, 2: 4, 3: 8, 4: 12, 5: 16 },
         data: {
-            name: '', title: '', phone: '', email: '', linkedin: '', github: '', profile: '',
+            name: '', title: '', phone: '', email: '', linkedin: '', github: '', profile: '', image: '',
             experience: [], education: [],
             skills: { programming: [], ai_ml: [], cloud_devops: [], frontend_backend: [], tools_frameworks: [], soft_skills: [] },
             projects: [], certifications: [],
@@ -857,6 +950,7 @@ function resumeBuilder() {
                 const resume = await res.json();
                 const ui = resume.optimized_data?.user_information || {};
                 this.data.name = ui.name || ''; this.data.title = ui.main_job_title || ''; this.data.email = ui.email || '';
+                this.data.image = ui.image || this.data.image || '';
                 this.data.profile = ui.profile_description || '';
                 this.data.experience = (ui.experiences || []).map(e => ({ title: e.job_title, company: e.company, location: e.location || '', startDate: e.start_date, endDate: e.end_date, description: (e.four_tasks || []).join('\n'), _selected: false }));
                 this.data.education = (ui.education || []).map(e => ({ degree: e.degree, school: e.institution, startDate: e.start_date, endDate: e.end_date, gpa: e.description || '', _selected: false }));
@@ -916,6 +1010,7 @@ function resumeBuilder() {
                         phone: this.data.phone || '',
                         linkedin: this.data.linkedin || '',
                         github: this.data.github || '',
+                        image: this.data.image || '',
                         experiences: this.data.experience.map(exp => ({
                             job_title: exp.title || 'Role',
                             company: exp.company || 'Company',
@@ -994,6 +1089,89 @@ function resumeBuilder() {
                 this.isSaving = false;
             }
         },
+        saveToServerSilently() {
+            // Non-blocking, no UI changes, strictly background sync
+            try {
+                const mappedData = {
+                    user_information: {
+                        name: this.data.name || 'Resume Owner',
+                        main_job_title: this.data.title || 'Professional',
+                        profile_description: this.data.profile || '',
+                        email: this.data.email || 'user@example.com',
+                        phone: this.data.phone || '',
+                        linkedin: this.data.linkedin || '',
+                        github: this.data.github || '',
+                        image: this.data.image || '',
+                        experiences: this.data.experience.map(exp => ({
+                            job_title: exp.title || 'Role',
+                            company: exp.company || 'Company',
+                            location: exp.location || '',
+                            start_date: exp.startDate || 'N/A',
+                            end_date: exp.endDate || 'Present',
+                            four_tasks: (exp.description || '').split('\n').filter(l => l.trim()).slice(0, 4)
+                        })),
+                        education: this.data.education.map(edu => ({
+                            institution: edu.school || 'School',
+                            degree: edu.degree || 'Degree',
+                            description: edu.gpa || '',
+                            start_date: edu.startDate || 'N/A',
+                            end_date: edu.endDate || 'N/A'
+                        })),
+                        skills: {
+                            hard_skills: [
+                                ...this.data.skills.programming.map(s => s.text),
+                                ...this.data.skills.ai_ml.map(s => s.text),
+                                ...this.data.skills.cloud_devops.map(s => s.text),
+                                ...this.data.skills.frontend_backend.map(s => s.text),
+                                ...this.data.skills.tools_frameworks.map(s => s.text)
+                            ].filter(s => s),
+                            soft_skills: this.data.skills.soft_skills.map(s => s.text).filter(s => s)
+                        }
+                    },
+                    projects: this.data.projects.map(p => ({
+                        project_name: p.name || 'Project',
+                        two_goals_of_the_project: (p.description || '').split('\n').filter(l => l.trim()).slice(0, 2),
+                        project_end_result: p.techStack || '',
+                        tech_stack: (p.techStack || '').split(',').map(s => s.trim())
+                    })),
+                    certificate: this.data.certifications.map(c => ({
+                        name: c.name || 'Cert',
+                        institution: c.issuer || 'Issuer',
+                        date: c.date || 'N/A'
+                    })),
+                    extra_curricular_activities: this.data.languages.map(l => ({
+                        name: l.name,
+                        description: `Proficiency: ${l.level}`
+                    }))
+                };
+
+                mappedData.user_information.experiences.forEach(e => { while (e.four_tasks.length < 4) e.four_tasks.push('.'); });
+                mappedData.projects.forEach(p => { while (p.two_goals_of_the_project.length < 2) p.two_goals_of_the_project.push('.'); });
+
+                fetch('/api/resume/save-manual', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: this.data.name ? `${this.data.name}'s Resume` : 'Draft Resume',
+                        data: mappedData,
+                        resume_id: this.selectedResumeId,
+                        selected_template: this.formatting.template === 'modern' ? 'modern_pro' : 'ats_standard'
+                    })
+                }).then(res => res.json()).then(result => { if(result.id) this.selectedResumeId = result.id; }).catch(() => {});
+            } catch(e) {}
+        },
+        handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) { alert('Image too large (max 2MB)'); return; }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.data.image = e.target.result;
+                this.updatePreview();
+            };
+            reader.readAsDataURL(file);
+        },
         resetResume() { if (confirm('Reset all fields?')) { localStorage.removeItem('draftResume'); this.data = { name: '', title: '', phone: '', email: '', linkedin: '', github: '', profile: '', experience: [], education: [], skills: { programming: [], ai_ml: [], cloud_devops: [], frontend_backend: [], tools_frameworks: [], soft_skills: [] }, projects: [], certifications: [], languages: [], achievements: [], interests: [], customSections: [] }; this.addEducation(); this.addSkill('programming'); this.addSkill('ai_ml'); this.addSkill('tools_frameworks'); } },
 
         get accentColor() { return this.accentColorMap[this.formatting.accentColor] || '#1D4ED8'; },
@@ -1041,15 +1219,19 @@ function resumeBuilder() {
         },
         removeSkill(category, index) { this.data.skills[category].splice(index, 1); this.updatePreview(); },
 
-        async downloadNativePDF() {
+        downloadNativePDF() {
             this.showDownloadModal = false;
-            // 1. Save to server first
-            try { await this.saveToServer(); } catch(e) { console.log('Save failed, continuing.'); }
+            // Fire and forget save so it doesn't block popup
+            this.saveToServerSilently();
 
             const element = document.getElementById('resume-content');
             if (!element) return;
 
             const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                alert('⚠️ Please allow popups for this site to download the PDF.');
+                return;
+            }
             const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
                 .map(s => s.outerHTML).join('\n');
             
@@ -1091,12 +1273,8 @@ function resumeBuilder() {
         async downloadPDF() {
             this.showDownloadModal = false;
 
-            // 1. Save to server first
-            try {
-                await this.saveToServer();
-            } catch(e) {
-                console.log('Save before download failed, continuing with local download.');
-            }
+            // Fire and forget save
+            this.saveToServerSilently();
 
             const element = document.getElementById('resume-content');
             if (!element) {
