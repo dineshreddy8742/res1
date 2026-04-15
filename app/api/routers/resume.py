@@ -13,6 +13,7 @@ import os
 import secrets
 import tempfile
 import traceback
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -464,6 +465,47 @@ async def get_resume(
 
 
 @resume_router.get(
+    "/mine",
+    response_model=List[ResumeSummary],
+    summary="Get all resumes for the current logged-in user",
+    response_description="Resumes retrieved successfully",
+)
+async def get_my_resumes(
+    request: Request,
+    user_id: str = Depends(get_current_user),
+    repo: ResumeRepository = Depends(get_resume_repository),
+):
+    """Get all resumes for the currently authenticated user.
+
+    Args:
+        request: The incoming request
+        user_id: ID of the current authenticated user
+        repo: Resume repository instance
+
+    Returns:
+    -------
+        List of resume summaries for the current user
+    """
+    resumes = await repo.get_resumes_by_user_id(user_id)
+    formatted_resumes = []
+    for resume in resumes:
+        # Handle both MongoDB (_id) and Supabase (id) field names
+        resume_id = resume.get("_id") or resume.get("id", "")
+        if resume_id and hasattr(resume_id, '__str__'):
+            resume_id = str(resume_id)
+        formatted_resumes.append(
+            {
+                "id": resume_id,
+                "title": resume.get("title"),
+                "ats_score": resume.get("ats_score"),
+                "created_at": resume.get("created_at"),
+                "updated_at": resume.get("updated_at"),
+            }
+        )
+    return formatted_resumes
+
+
+@resume_router.get(
     "/user/{user_id}",
     response_model=List[ResumeSummary],
     summary="Get all resumes for a user",
@@ -529,24 +571,37 @@ async def save_manual_resume(
                 "title": request.title,
                 "optimized_data": request.data.model_dump(),
                 "selected_template": request.selected_template,
-                "status": "completed"
+                "status": "completed",
+                "updated_at": datetime.now().isoformat()
             }
-            success = await repo.update_resume(request.resume_id, update_data)
-            return {"status": "success", "id": request.resume_id} if success else {"status": "error"}
-        else:
-            new_resume = Resume(
-                user_id=user_id,
-                title=request.title,
-                original_content="Manually built resume",
-                job_description="N/A",
-                optimized_data=request.data,
-                status="completed",
-                selected_template=request.selected_template or "ats_standard"
-            )
-            created_id = await repo.create_resume(new_resume)
-            return {"status": "success", "id": created_id}
+            success = await repo.update_one({"id": request.resume_id, "user_id": user_id}, update_data)
+            if success:
+                return {"id": request.resume_id, "message": "Resume updated successfully"}
+            else:
+                # Fallback: maybe it's a new one or wrong user
+                request.resume_id = None
+        
+        if not request.resume_id:
+            resume_id = str(uuid.uuid4())
+            new_resume = {
+                "id": resume_id,
+                "user_id": user_id,
+                "title": request.title,
+                "original_content": "Manually built",
+                "job_description": "N/A",
+                "optimized_data": request.data.model_dump(),
+                "selected_template": request.selected_template or "ats_standard",
+                "status": "completed",
+                "created_at": datetime.now().isoformat(),
+                "updated_at": datetime.now().isoformat()
+            }
+            result_id = await repo.insert_one(new_resume)
+            return {"id": result_id or resume_id, "message": "Resume created successfully"}
+            
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error saving manual resume: {e}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Failed to save resume: {str(e)}")
 
 
 @resume_router.put(
