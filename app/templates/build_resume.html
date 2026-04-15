@@ -128,21 +128,15 @@
                     <label class="block text-sm font-bold text-blue-200 mb-2">📄 Template (10 Options)</label>
                     <div class="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
                         <template x-for="tpl in templates" :key="tpl.id">
-                            <div class="border-2 rounded-lg p-2 text-left transition-all relative"
-                                 :class="formatting.template === tpl.id ? 'bg-purple-500 border-purple-400 ring-2 ring-purple-400' : 'bg-white/5 border-white/20 hover:bg-white/10'">
-                                <button @click="formatting.template = tpl.id" class="w-full text-left">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-lg" x-text="tpl.icon"></span>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="text-xs font-bold text-white" x-text="tpl.name"></div>
-                                            <div class="text-[10px] text-white/50 truncate" x-text="tpl.desc"></div>
-                                        </div>
+                            <button @click="formatting.template = tpl.id" :class="formatting.template === tpl.id ? 'bg-purple-500 border-purple-400 ring-2 ring-purple-400' : 'bg-white/5 border-white/20 hover:bg-white/10'" class="border-2 rounded-lg p-2 text-left transition-all">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg" x-text="tpl.icon"></span>
+                                    <div>
+                                        <div class="text-xs font-bold text-white" x-text="tpl.name"></div>
+                                        <div class="text-[10px] text-white/50" x-text="tpl.desc"></div>
                                     </div>
-                                </button>
-                                <button @click.stop="previewTemplate(tpl)" 
-                                        class="absolute top-1 right-1 w-6 h-6 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center text-xs transition-all"
-                                        title="Preview Demo">👁️</button>
-                            </div>
+                                </div>
+                            </button>
                         </template>
                     </div>
                 </div>
@@ -712,23 +706,19 @@
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <button @click="downloadPDF()" class="flex flex-col items-center justify-center bg-gradient-to-r from-red-500 to-pink-500 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
                     <span class="text-4xl mb-2">📄</span>
-                    <span>Quick PDF</span>
-                    <span class="text-[10px] opacity-70">(Client-side)</span>
-                </button>
-                <button @click="downloadBackendPDF()" class="flex flex-col items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
-                    <span class="text-4xl mb-2">🚀</span>
-                    <span>Stable PDF</span>
-                    <span class="text-[10px] opacity-70">(Server-side)</span>
+                    Resume PDF
                 </button>
                 <button @click="downloadCoverLetterPDF()" class="flex flex-col items-center justify-center bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
                     <span class="text-4xl mb-2">✉️</span>
-                    <span>Cover Letter</span>
-                    <span class="text-[10px] opacity-70">(Print view)</span>
+                    Cover Letter PDF
                 </button>
                 <button @click="printResume()" class="flex flex-col items-center justify-center bg-gradient-to-r from-green-500 to-emerald-500 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
                     <span class="text-4xl mb-2">🖨️</span>
-                    <span>Print/Save</span>
-                    <span class="text-[10px] opacity-70">(System Print)</span>
+                    Print Resume
+                </button>
+                <button @click="printCoverLetter()" class="flex flex-col items-center justify-center bg-gradient-to-r from-orange-500 to-amber-500 text-white py-6 rounded-xl font-bold hover:scale-105 transition-all shadow-lg">
+                    <span class="text-4xl mb-2">📋</span>
+                    Print Cover Letter
                 </button>
             </div>
             <p class="text-xs text-blue-300 text-center">💡 For best print results, use Chrome or Edge browsers.</p>
@@ -801,11 +791,8 @@ function resumeBuilder() {
             const hasSeenTour = localStorage.getItem('hasSeenResumeTour');
             if (!hasSeenTour) { this.$nextTick(() => { setTimeout(() => { this.startTour(); localStorage.setItem('hasSeenResumeTour', 'true'); }, 1000); }); }
         },
-            const hasSeenTour = localStorage.getItem('hasSeenResumeTour');
-            if (!hasSeenTour) { this.$nextTick(() => { setTimeout(() => { this.startTour(); localStorage.setItem('hasSeenResumeTour', 'true'); }, 1000); }); }
-        },
 
-        async loadExistingResumes() { try { const res = await fetch('/api/resume/mine'); if (res.ok) this.existingResumes = await res.json(); } catch(e) { console.error('Error loading resumes:', e); } },
+        async loadExistingResumes() { try { const res = await fetch('/api/resume/user/temp-user-id'); if (res.ok) this.existingResumes = await res.json(); } catch(e) {} },
 
         async importSelectedResume() {
             this.importLoading = true;
@@ -940,27 +927,17 @@ function resumeBuilder() {
                 if (res.ok) {
                     const result = await res.json();
                     this.selectedResumeId = result.id;
-                    // Show non-blocking toast instead of alert
-                    this._showToast('✅ Resume saved to your profile!', 'success');
+                    alert('✅ Resume saved to your profile successfully!');
                 } else {
-                    const err = await res.json().catch(() => ({}));
+                    const err = await res.json();
                     throw new Error(err.detail || 'Failed to save');
                 }
             } catch(e) {
-                console.error('Save error:', e);
-                this._showToast('❌ Error saving: ' + e.message, 'error');
+                console.error(e);
+                alert('❌ Error saving to server: ' + e.message);
             } finally {
                 this.isSaving = false;
             }
-        },
-
-        _showToast(msg, type = 'info') {
-            const toast = document.createElement('div');
-            const colors = { success: '#166534', error: '#991b1b', info: '#1e1b4b' };
-            toast.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:${colors[type] || colors.info};color:#fff;padding:12px 24px;border-radius:12px;z-index:9999;font-weight:bold;box-shadow:0 4px 20px rgba(0,0,0,0.4);transition:opacity 0.3s;`;
-            toast.textContent = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
         },
         resetResume() { if (confirm('Reset all fields?')) { localStorage.removeItem('draftResume'); this.data = { name: '', title: '', phone: '', email: '', linkedin: '', github: '', profile: '', experience: [], education: [], skills: { programming: [], ai_ml: [], cloud_devops: [], frontend_backend: [], tools_frameworks: [], soft_skills: [] }, projects: [], certifications: [], languages: [], achievements: [], interests: [], customSections: [] }; this.addEducation(); this.addSkill('programming'); this.addSkill('ai_ml'); this.addSkill('tools_frameworks'); } },
 
@@ -1009,139 +986,46 @@ function resumeBuilder() {
         },
         removeSkill(category, index) { this.data.skills[category].splice(index, 1); this.updatePreview(); },
 
-        async downloadBackendPDF() {
-            this.showDownloadModal = false;
-            
-            // 1. Save to server first
-            try {
-                this._showToast('⏳ Saving to server...', 'info');
-                const saveRes = await this._saveToServerPromise();
-                if (!saveRes.id) throw new Error('Failed to get resume ID');
-                
-                this._showToast('⏳ Generating Stable PDF...', 'info');
-                // Use the backend download endpoint
-                const downloadUrl = `/api/resume/${saveRes.id}/download?use_optimized=true`;
-                const a = document.createElement('a');
-                a.href = downloadUrl;
-                a.download = (this.data.name || 'Resume').replace(/[^a-z0-9]/gi, '_') + '.pdf';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                
-                this._showToast('✅ Download started!', 'success');
-            } catch (e) {
-                console.error('Backend PDF error:', e);
-                this._showToast('❌ Error: ' + e.message, 'error');
-            }
-        },
-
-        // Helper to save to server and return promise with result
-        async _saveToServerPromise() {
-            const mappedData = {
-                user_information: {
-                    name: this.data.name || 'Resume Owner',
-                    main_job_title: this.data.title || 'Professional',
-                    profile_description: this.data.profile || '',
-                    email: this.data.email || 'user@example.com',
-                    phone: this.data.phone || '',
-                    linkedin: this.data.linkedin || '',
-                    github: this.data.github || '',
-                    experiences: this.data.experience.map(exp => ({
-                        job_title: exp.title || 'Role',
-                        company: exp.company || 'Company',
-                        location: exp.location || '',
-                        start_date: exp.startDate || 'N/A',
-                        end_date: exp.endDate || 'Present',
-                        four_tasks: (exp.description || '').split('\n').filter(l => l.trim()).slice(0, 4)
-                    })),
-                    education: this.data.education.map(edu => ({
-                        institution: edu.school || 'School',
-                        degree: edu.degree || 'Degree',
-                        description: edu.gpa || '',
-                        start_date: edu.startDate || 'N/A',
-                        end_date: edu.endDate || 'N/A'
-                    })),
-                    skills: {
-                        hard_skills: [
-                            ...this.data.skills.programming.map(s => s.text),
-                            ...this.data.skills.ai_ml.map(s => s.text),
-                            ...this.data.skills.cloud_devops.map(s => s.text),
-                            ...this.data.skills.frontend_backend.map(s => s.text),
-                            ...this.data.skills.tools_frameworks.map(s => s.text)
-                        ].filter(s => s),
-                        soft_skills: this.data.skills.soft_skills.map(s => s.text).filter(s => s)
-                    }
-                },
-                projects: this.data.projects.map(p => ({
-                    project_name: p.name || 'Project',
-                    two_goals_of_the_project: (p.description || '').split('\n').filter(l => l.trim()).slice(0, 2),
-                    project_end_result: p.techStack || '',
-                    tech_stack: (p.techStack || '').split(',').map(s => s.trim())
-                })),
-                certificate: this.data.certifications.map(c => ({
-                    name: c.name || 'Cert',
-                    institution: c.issuer || 'Issuer',
-                    date: c.date || 'N/A'
-                }))
-            };
-
-            const res = await fetch('/api/resume/save-manual', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title: this.data.name ? `${this.data.name}'s Resume` : 'Draft Resume',
-                    data: mappedData,
-                    resume_id: this.selectedResumeId,
-                    selected_template: this.formatting.template === 'modern' ? 'modern_pro' : 'ats_standard'
-                })
-            });
-
-            if (!res.ok) throw new Error('Server save failed');
-            const result = await res.json();
-            this.selectedResumeId = result.id;
-            return result;
-        },
-
         async downloadPDF() {
             this.showDownloadModal = false;
 
+            // 1. Save to server first
+            try {
+                await this.saveToServer();
+            } catch(e) {
+                console.log('Save before download failed, continuing with local download.');
+            }
+
             const element = document.getElementById('resume-content');
             if (!element) {
-                this._showToast('❌ Resume preview not found!', 'error');
+                alert('Resume preview not found. Please refresh the page.');
                 return;
             }
 
-            // Check if html2pdf is loaded
-            if (typeof html2pdf === 'undefined') {
-                if (confirm('PDF library not loaded yet. Use System Print or try Stable PDF instead?')) {
-                    window.print();
-                }
-                return;
-            }
-
-            const filename = (this.data.name ? this.data.name.replace(/[^a-z0-9]/gi, '_') : 'Resume') + '.pdf';
             const opt = {
-                margin: [0.3, 0.3, 0.3, 0.3],
-                filename: filename,
+                margin: 0,
+                filename: (this.data.name || 'Resume') + '.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, letterRendering: true, backgroundColor: '#ffffff', logging: false },
+                html2canvas: { scale: 2, useCORS: true, letterRendering: true, backgroundColor: '#ffffff' },
                 jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
 
             try {
+                // Check if html2pdf is loaded
+                if (typeof html2pdf === 'undefined') {
+                    alert('PDF library is loading. Please wait a moment and try again, or use Ctrl+P to Print and Save as PDF.');
+                    return;
+                }
+
                 this.isSaving = true;
-                this._showToast('⏳ Generating Quick PDF...', 'info');
-
                 await html2pdf().set(opt).from(element).save();
-
-                this._showToast('✅ PDF downloaded!', 'success');
-                
-                // Silently try to save to server in background
-                this.saveToServer().catch(() => {});
+                alert('✅ PDF downloaded successfully!');
             } catch (e) {
                 console.error('PDF Generation error:', e);
-                this._showToast('❌ Quick PDF failed. Using System Print.', 'error');
-                window.print();
+                // Fallback: use browser print
+                if (confirm('PDF generation failed. Use Print dialog to Save as PDF instead?')) {
+                    window.print();
+                }
             } finally {
                 this.isSaving = false;
             }
