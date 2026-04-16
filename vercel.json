@@ -15,6 +15,6 @@
   "env": {
     "PYTHONUNBUFFERED": "1",
     "APP_ENV": "production",
-    "DEPLOYMENT_ID": "stateless-deployment-v3"
+    "AURA_SYNC_PULSE": "v3-final-ignition"
   }
 }
