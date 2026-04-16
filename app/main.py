@@ -23,6 +23,7 @@ from app.web.base_router import WebRouter
 from app.web.dashboard import web_router as dashboard_web_router
 from app.utils.openrouter_maintenance import start_self_healing_service
 import asyncio
+import os
 
 web_router = WebRouter()
 from fastapi.templating import Jinja2Templates
@@ -39,9 +40,12 @@ async def lifespan(app: FastAPI):
         print(f"Started {settings.PROJECT_NAME} v{settings.VERSION}")
         
         # Start the Self-Healing Guardian (checks every 5 minutes)
-        if settings.OPENROUTER_MANAGEMENT_KEY:
+        # Skip background loop if on Vercel (stateless environment)
+        if settings.OPENROUTER_MANAGEMENT_KEY and not os.environ.get("VERCEL"):
             asyncio.create_task(start_self_healing_service(interval_seconds=300))
             print("Self-Healing Guardian Protocol: [INITIATED]")
+        elif os.environ.get("VERCEL"):
+            print("Vercel Detected: Scaling to Stateless Mode (On-Demand Healing enabled)")
     except Exception as e:
         print(f"Error during startup: {e}")
         raise

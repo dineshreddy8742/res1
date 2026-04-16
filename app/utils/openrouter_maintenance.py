@@ -87,3 +87,12 @@ async def start_self_healing_service(interval_seconds: int = 300):
         except Exception as e:
             logger.error(f"Self-healing service error: {e}")
         await asyncio.sleep(interval_seconds)
+
+async def run_maintenance_on_demand():
+    """Run a single maintenance pass (useful for serverless cold starts)."""
+    maintenance = OpenRouterMaintenance()
+    try:
+        return await maintenance.run_maintenance()
+    except Exception as e:
+        logger.error(f"On-demand maintenance error: {e}")
+        return 0

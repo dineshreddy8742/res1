@@ -792,6 +792,11 @@ async def optimize_resume(
             detail="Job description is required for optimization",
         )
 
+    # On Vercel: Trigger a quick on-demand key healing pass if keys are disabled
+    if os.environ.get("VERCEL") and settings.OPENROUTER_MANAGEMENT_KEY:
+        from app.utils.openrouter_maintenance import run_maintenance_on_demand
+        background_tasks.add_task(run_maintenance_on_demand)
+
     # Resolve API config at request time (not inside background task)
     api_key = settings.API_KEYS[0] if hasattr(settings, 'API_KEYS') and settings.API_KEYS else settings.API_KEY
     api_base_url = settings.API_BASE
