@@ -793,14 +793,14 @@ async def optimize_resume(
         )
 
     # Resolve API config at request time (not inside background task)
-    api_key = settings.API_KEY
+    api_key = settings.API_KEYS[0] if hasattr(settings, 'API_KEYS') and settings.API_KEYS else settings.API_KEY
     api_base_url = settings.API_BASE
     model_name = settings.MODEL_NAME
 
     if not api_key:
         raise HTTPException(
             status_code=500,
-            detail="AI API key is not configured. Set API_KEY in .env file.",
+            detail="AI API key is not configured. Set API_KEY/API_KEYS in .env file.",
         )
 
     # Fire and forget — returns 202 instantly
