@@ -21,6 +21,6 @@
   "env": {
     "PYTHONUNBUFFERED": "1",
     "APP_ENV": "production",
-    "DEPLOYMENT_ID": "sync-pulse-final-0853"
+    "DEPLOYMENT_ID": "deployment-override-launch-phase"
   }
 }
