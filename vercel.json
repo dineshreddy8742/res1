@@ -1,20 +1,24 @@
 {
   "version": 2,
-  "rewrites": [
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "api/index.py"
+      "src": "api/index.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxDuration": 60,
+        "memory": 1024
+      }
     }
   ],
-  "functions": {
-    "api/**": {
-      "maxDuration": 60,
-      "memory": 1024
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/index.py"
     }
-  },
+  ],
   "env": {
     "PYTHONUNBUFFERED": "1",
     "APP_ENV": "production",
-    "AURA_SYNC_PULSE": "v6-glob-pattern"
+    "AURA_SYNC_PULSE": "v7-legacy-build-config"
   }
 }
