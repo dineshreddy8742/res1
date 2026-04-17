@@ -21,6 +21,15 @@
                 <button @click="activeTab = 'stats'" :class="activeTab === 'stats' ? 'bg-white text-purple-900 shadow-xl' : 'bg-white/10 text-white hover:bg-white/20'" class="px-5 py-2.5 rounded-xl font-bold transition-all">Overview</button>
                 <button @click="activeTab = 'colleges'" :class="activeTab === 'colleges' ? 'bg-white text-purple-900 shadow-xl' : 'bg-white/10 text-white hover:bg-white/20'" class="px-5 py-2.5 rounded-xl font-bold transition-all">🏫 Organizations</button>
                 <button @click="activeTab = 'users'" :class="activeTab === 'users' ? 'bg-white text-purple-900 shadow-xl' : 'bg-white/10 text-white hover:bg-white/20'" class="px-5 py-2.5 rounded-xl font-bold transition-all">👤 Student Access</button>
+                <button @click="activeTab = 'feedback'" :class="activeTab === 'feedback' ? 'bg-white text-purple-900 shadow-xl' : 'bg-white/10 text-white hover:bg-white/20'" class="px-5 py-2.5 rounded-xl font-bold transition-all relative">
+                    📬 Feedback
+                    <template x-if="feedback.filter(f => f.status === 'pending').length > 0">
+                        <span class="absolute -top-1 -right-1 flex h-4 w-4">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-4 w-4 bg-pink-500 text-[10px] items-center justify-center font-bold" x-text="feedback.filter(f => f.status === 'pending').length"></span>
+                        </span>
+                    </template>
+                </button>
                 <button @click="activeTab = 'blocked'" :class="activeTab === 'blocked' ? 'bg-red-500 text-white shadow-xl shadow-red-500/20' : 'bg-white/10 text-red-300 hover:bg-white/20'" class="px-5 py-2.5 rounded-xl font-bold transition-all">🚫 Blocked Agents</button>
             </div>
         </div>
@@ -186,7 +195,99 @@
             </div>
 
             <!-- Users List Table -->
-            <div class="bg-white/10 border border-white/20 rounded-3xl backdrop-blur-xl overflow-hidden shadow-2xl">
+            <!-- ... table content ... -->
+        </div>
+
+        <!-- Tab 4: Feedback & Enquiries -->
+        <div x-show="activeTab === 'feedback'" x-cloak class="space-y-8">
+            <div class="flex items-center justify-between mb-2">
+                <div>
+                    <h3 class="text-2xl font-black text-white">📬 User Feedback & Enquiries</h3>
+                    <p class="text-blue-300 text-sm">Monitor bug reports, feature requests, and general messages</p>
+                </div>
+                <div class="flex gap-2">
+                    <div class="bg-indigo-500/20 text-indigo-300 px-4 py-2 rounded-xl border border-indigo-500/30 font-bold text-sm">
+                        Pending: <span x-text="feedback.filter(f => f.status === 'pending').length"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6">
+                <template x-for="item in filteredFeedback" :key="item.id">
+                    <div class="bg-white/10 border border-white/20 rounded-3xl backdrop-blur-xl overflow-hidden shadow-2xl transition-all hover:border-indigo-500/40">
+                        <div class="p-6">
+                            <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                <div class="flex gap-4">
+                                    <div :class="{
+                                        'bg-red-500/20 text-red-400': item.type === 'bug',
+                                        'bg-blue-500/20 text-blue-400': item.type === 'general',
+                                        'bg-green-500/20 text-green-400': item.type === 'suggestion',
+                                        'bg-yellow-500/20 text-yellow-400': item.type === 'issue'
+                                    }" class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl h-fit">
+                                        <template x-if="item.type === 'bug'"><span>🐞</span></template>
+                                        <template x-if="item.type === 'suggestion'"><span>💡</span></template>
+                                        <template x-if="item.type === 'issue'"><span>⚠️</span></template>
+                                        <template x-if="item.type === 'general'"><span>✉️</span></template>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border" 
+                                                  :class="item.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' : 'bg-green-500/20 text-green-300 border-green-500/30'"
+                                                  x-text="item.status"></span>
+                                            <p class="text-xs text-blue-300" x-text="new Date(item.created_at).toLocaleString()"></p>
+                                        </div>
+                                        <h4 class="text-xl font-black text-white" x-text="item.title"></h4>
+                                        <p class="text-blue-100 mt-2 text-sm leading-relaxed" x-text="item.content"></p>
+                                        
+                                        <template x-if="item.image">
+                                            <div class="mt-4">
+                                                <button @click="viewImage(item.image)" class="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1">
+                                                    🖼️ View Attached Image
+                                                </button>
+                                            </div>
+                                        </template>
+
+                                        <div class="mt-4 flex items-center gap-4 border-t border-white/5 pt-4">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px]">👤</div>
+                                                <p class="text-xs font-bold text-white" x-text="item.user_name || 'Anonymous'"></p>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px]">📧</div>
+                                                <p class="text-xs text-blue-300" x-text="item.user_email || 'Not provided'"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-2 min-w-[150px]">
+                                    <template x-if="item.status === 'pending'">
+                                        <button @click="resolveFeedback(item.id)" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-black text-xs transition-all shadow-lg shadow-emerald-500/20">
+                                            MARK RESOLVED ✅
+                                        </button>
+                                    </template>
+                                    <template x-if="item.status !== 'pending'">
+                                        <button @click="updateFeedbackStatus(item.id, 'pending')" class="w-full bg-white/10 hover:bg-white/20 text-white py-2.5 rounded-xl font-bold text-xs transition-all">
+                                            RE-OPEN 📂
+                                        </button>
+                                    </template>
+                                    <button @click="deleteFeedback(item.id)" class="w-full bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white py-2.5 rounded-xl font-bold text-xs transition-all border border-red-500/30">
+                                        DELETE 🗑️
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                
+                <template x-if="filteredFeedback.length === 0">
+                    <div class="bg-white/5 border border-white/10 rounded-3xl p-12 text-center backdrop-blur-xl">
+                        <div class="text-6xl mb-4 opacity-20">📭</div>
+                        <h3 class="text-xl font-bold text-white mb-2">Inbox Empty</h3>
+                        <p class="text-blue-300">No feedback matching your current filters.</p>
+                    </div>
+                </template>
+            </div>
+        </div>
                 <div class="px-6 py-5 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h3 class="text-xl font-bold text-white">User Directory</h3>
                     <div class="flex gap-2">
@@ -429,6 +530,8 @@ function adminDashboard() {
         targetUserId: '',
         targetUserName: '',
         newPassword: '',
+        feedback: [],
+        feedbackFilter: 'all',
         tempLimit: 5,
         newCollege: { name: '', email: '' },
         showEditModal: false,
@@ -484,21 +587,64 @@ function adminDashboard() {
 
         async refreshData() {
             try {
-                const [statsRes, usersRes, collegesRes, activityRes] = await Promise.all([
+                const [statsRes, usersRes, collegesRes, activityRes, feedbackRes] = await Promise.all([
                     fetch('/api/auth/admin/stats'),
                     fetch('/api/auth/admin/users'),
                     fetch('/api/auth/admin/colleges'),
-                    fetch('/api/auth/admin/activity')
+                    fetch('/api/auth/admin/activity'),
+                    fetch('/api/feedback/admin/all')
                 ]);
                 this.stats = await statsRes.json();
                 this.users = await usersRes.json();
                 this.colleges = await collegesRes.json();
                 this.recentActivity = await activityRes.json();
+                this.feedback = await feedbackRes.json();
+
                 console.log("Admin Dashboard Context Refreshed:", {
                     total_users: this.users.length,
-                    blocked: this.users.filter(u => u.is_active === false).length
+                    blocked: this.users.filter(u => u.is_active === false).length,
+                    feedback: this.feedback.length
                 });
             } catch (e) { console.error("Admin Refresh Failed", e); }
+        },
+
+        get filteredFeedback() {
+            if (this.feedbackFilter === 'all') return this.feedback;
+            return this.feedback.filter(f => f.status === this.feedbackFilter);
+        },
+
+        async resolveFeedback(id) {
+            this.updateFeedbackStatus(id, 'resolved');
+        },
+
+        async updateFeedbackStatus(id, status) {
+            try {
+                const res = await fetch(`/api/feedback/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                if (res.ok) {
+                    await this.refreshData();
+                    window.showNotification?.(`Feedback ${status}`, 'success');
+                }
+            } catch (e) { console.error(e); }
+        },
+
+        async deleteFeedback(id) {
+            if (!confirm("Are you sure you want to delete this feedback?")) return;
+            try {
+                const res = await fetch(`/api/feedback/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    await this.refreshData();
+                    window.showNotification?.('Feedback deleted', 'info');
+                }
+            } catch (e) { console.error(e); }
+        },
+
+        viewImage(base64) {
+            const win = window.open();
+            win.document.write(`<img src="${base64}" style="max-width:100%">`);
         },
 
         get filteredUsers() {
