@@ -41,8 +41,9 @@ async def lifespan(app: FastAPI):
         
         # Start the Self-Healing Guardian (checks every 5 minutes)
         # Skip background loop if on Vercel (stateless environment)
+        app.state.guardian_task = None
         if settings.OPENROUTER_MANAGEMENT_KEY and not os.environ.get("VERCEL"):
-            asyncio.create_task(start_self_healing_service(interval_seconds=300))
+            app.state.guardian_task = asyncio.create_task(start_self_healing_service(interval_seconds=300))
             print("Self-Healing Guardian Protocol: [INITIATED]")
         elif os.environ.get("VERCEL"):
             print("Vercel Detected: Scaling to Stateless Mode (On-Demand Healing enabled)")
@@ -53,6 +54,14 @@ async def lifespan(app: FastAPI):
     yield
     
     # Shutdown: Clean up resources
+    if app.state.guardian_task:
+        app.state.guardian_task.cancel()
+        try:
+            await app.state.guardian_task
+        except asyncio.CancelledError:
+            pass
+        print("Self-Healing Guardian Protocol: [HIBERNATING]")
+    
     print("Shutting down and cleaning up.")
 
 app = FastAPI(
