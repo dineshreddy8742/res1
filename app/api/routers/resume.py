@@ -595,6 +595,51 @@ async def get_resume(
 
 
 @resume_router.get(
+    "/{resume_id}/status",
+    summary="Get the current status of a resume optimization job",
+)
+async def get_resume_status(
+    resume_id: str,
+    repo: ResumeRepository = Depends(get_resume_repository),
+):
+    """Get the real-time status of a resume optimization task.
+    
+    This is used for polling from the frontend during the AI generation phase.
+    """
+    # First check the live in-memory status (fastest)
+    job_status = get_job_status(resume_id)
+    
+    if job_status:
+        # If it's completed, we want to make sure we return some metadata if available
+        if job_status.get("status") == "completed":
+            resume = await repo.get_resume_by_id(resume_id)
+            if resume:
+                return {
+                    "status": "completed",
+                    "ats_score": resume.get("ats_score"),
+                    "original_ats_score": resume.get("original_ats_score"),
+                    "matching_skills": resume.get("matching_skills", []),
+                    "missing_skills": resume.get("missing_skills", []),
+                    "recommendation": resume.get("recommendation", "")
+                }
+        return job_status
+        
+    # Fallback to database status if not in memory
+    resume = await repo.get_resume_by_id(resume_id)
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+        
+    return {
+        "status": resume.get("status", "unknown"),
+        "ats_score": resume.get("ats_score"),
+        "original_ats_score": resume.get("original_ats_score"),
+        "matching_skills": resume.get("matching_skills", []),
+        "missing_skills": resume.get("missing_skills", []),
+        "recommendation": resume.get("recommendation", "")
+    }
+
+
+@resume_router.get(
     "/user/{user_id}",
     response_model=List[ResumeSummary],
     summary="Get all resumes for a user",

@@ -132,7 +132,7 @@
     .col-span-2 { grid-column: span 1 !important; }
 }
 @media (max-width: 480px) {
-    h1.text-4xl { font-size: 20px !important; }
+    h1.text-4xl { font-size: 22px !important; }
     .text-xl { font-size: 16px !important; }
     #resume-nav .nav-btn { font-size: 10px !important; padding: 4px 6px !important; }
     .px-4 { padding-left: 8px !important; padding-right: 8px !important; }
@@ -140,6 +140,9 @@
     .gap-6 { gap: 12px !important; }
     .p-5 { padding: 12px !important; }
     .text-lg { font-size: 16px !important; }
+    /* Navigation Bar Mobile Tweaks */
+    #resume-nav { border-radius: 12px !important; margin-bottom: 12px !important; }
+    .nav-btn { flex: 1 1 45% !important; min-width: 100px; }
 }
 </style>
 {% endblock %}
@@ -170,16 +173,16 @@
             </div>
         </div>
 
-        <!-- Builder Header Era -->
+        <!-- Builder Header -->
         <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-8 gap-8">
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-3 mb-4">
-                    <span class="px-3 py-1 bg-pink-500/20 border border-pink-500/30 rounded-full text-[10px] font-black text-pink-400 uppercase tracking-widest animate-pulse">Architect Era ✨</span>
+                    <span class="px-3 py-1 bg-pink-500/20 border border-pink-500/30 rounded-full text-[10px] font-black text-pink-400 uppercase tracking-widest animate-pulse">Resume Engine ✨</span>
                 </div>
                 <h1 class="text-4xl sm:text-6xl font-black text-white italic tracking-tighter uppercase leading-none">
                     Resume Builder
                 </h1>
-                <p class="text-sm font-bold text-blue-300/60 uppercase tracking-[0.4em] mt-4">Crafting professional rizz from the ground up.</p>
+                <p class="text-sm font-bold text-blue-300/60 uppercase tracking-[0.4em] mt-4">Crafting professional profiles from the ground up.</p>
             </div>
             <div class="flex gap-4">
                 <div class="flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-500/30 rounded-xl">
@@ -254,7 +257,7 @@
                     </select>
                     <div class="mt-3">
                         <label class="block text-xs font-bold text-blue-200 mb-1">Size: <span x-text="['11px','12px','14px','15px','16px'][formatting.fontSize - 1]"></span></label>
-                        <input x-model.number="formatting.fontSize" @input="updatePreview()" type="range" min="1" max="5" class="w-full accent-yellow-400">
+                        <input x-model.number="formatting.fontSize" @input="updatePreview()" type="range" min="1" max="7" class="w-full accent-yellow-400">
                     </div>
                 </div>
                 <!-- Spacing -->
@@ -263,17 +266,28 @@
                     <div class="space-y-2">
                         <div>
                             <label class="block text-xs text-blue-300">Section: <span x-text="formatting.sectionGap"></span></label>
-                            <input x-model.number="formatting.sectionGap" @input="updatePreview()" type="range" min="1" max="5" class="w-full accent-green-400">
+                            <input x-model.number="formatting.sectionGap" @input="updatePreview()" type="range" min="1" max="7" class="w-full accent-green-400">
                         </div>
                         <div>
                             <label class="block text-xs text-blue-300">Item: <span x-text="formatting.itemGap"></span></label>
-                            <input x-model.number="formatting.itemGap" @input="updatePreview()" type="range" min="1" max="5" class="w-full accent-green-400">
+                            <input x-model.number="formatting.itemGap" @input="updatePreview()" type="range" min="1" max="7" class="w-full accent-green-400">
                         </div>
                     </div>
                     <div class="mt-3 space-y-2">
                         <div class="flex items-center gap-2">
                             <input x-model="formatting.compactMode" @change="updatePreview()" type="checkbox" class="rounded bg-white/10 border-white/30 text-green-500 focus:ring-green-400">
                             <span class="text-xs text-white">Compact Mode</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button @click="formatting.autoFit = !formatting.autoFit; if(formatting.autoFit) autoAdjustFontSize()" 
+                                    class="flex-1 py-3 rounded-xl border-2 font-black text-[10px] uppercase tracking-widest transition-all"
+                                    :class="formatting.autoFit ? 'bg-yellow-400 border-yellow-500 text-black' : 'bg-white/5 border-white/10 text-white/40'">
+                                <span x-text="formatting.autoFit ? '✨ Auto-fit: ON' : '✨ Auto-fit: OFF'"></span>
+                            </button>
+                            <button @click="localStorage.clear(); window.location.reload()" 
+                                    class="p-3 rounded-xl border-2 border-red-500/30 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all">
+                                🔄
+                            </button>
                         </div>
                         <div class="flex items-center gap-2">
                             <input x-model="formatting.atsMode" @change="updatePreview()" type="checkbox" class="rounded bg-white/10 border-white-300 text-blue-500 focus:ring-blue-400" checked>
@@ -638,7 +652,7 @@
                     </div>
                     
                     <!-- Resume Preview Container -->
-                    <div id="resume-preview-container" class="bg-white rounded-xl overflow-hidden" :style="previewStyles" style="min-height: 700px;">
+                    <div id="resume-preview-container" class="bg-white rounded-xl overflow-hidden shadow-inner" :style="previewStyles">
                         <div id="resume-content" class="p-6 leading-relaxed" :class="[
                             'theme-' + formatting.template,
                             formatting.template === 'tech' ? 'font-mono' : '',
@@ -670,17 +684,17 @@
 
                             <!-- Profile -->
                             <div class="profile-section mb-3 flex flex-col" x-show="data.profile" :style="sectionStyle + ' order: ' + getOrder('profile') + ';'">
-                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Summary</h3>
+                                <h3 class="text-xs font-black mb-2 uppercase tracking-widest" :class="formatting.atsMode ? 'text-gray-900 border-b-2 border-gray-400 pb-1' : 'border-bottom: 2px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Summary</h3>
                                 <p class="text-gray-700 text-xs cursor-text hover:bg-gray-50 rounded px-1 -mx-1" x-text="data.profile" @click="$event.target.contentEditable=true; $event.target.focus()" @blur="data.profile = $event.target.textContent.trim(); $event.target.contentEditable=false; updatePreview()"></p>
                             </div>
 
                             <!-- Experience -->
                             <div class="experience-section mb-3 flex flex-col" x-show="data.experience.length > 0" :style="sectionStyle + ' order: ' + getOrder('experience') + ';'">
-                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Experience</h3>
+                                <h3 class="text-xs font-black mb-2 uppercase tracking-widest" :class="formatting.atsMode ? 'text-gray-900 border-b-2 border-gray-400 pb-1' : 'border-bottom: 2px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Experience</h3>
                                 <template x-for="(exp, i) in data.experience" :key="i">
                                     <div class="mb-2" :style="itemStyle">
                                         <div class="flex justify-between items-baseline">
-                                            <span class="font-bold text-gray-900 text-xs" x-text="exp.title"></span>
+                                            <span class="font-black text-gray-900 text-xs" x-text="exp.title"></span>
                                             <span class="text-gray-600 text-xs" x-text="exp.startDate + ' - ' + exp.endDate"></span>
                                         </div>
                                         <div class="text-gray-700 italic text-xs" x-text="exp.company + (exp.location ? ', ' + exp.location : '')"></div>
@@ -697,11 +711,11 @@
 
                             <!-- Education -->
                             <div class="education-section mb-3 flex flex-col" x-show="data.education.length > 0" :style="sectionStyle + ' order: ' + getOrder('education') + ';'">
-                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Education</h3>
+                                <h3 class="text-xs font-black mb-2 uppercase tracking-widest" :class="formatting.atsMode ? 'text-gray-900 border-b-2 border-gray-400 pb-1' : 'border-bottom: 2px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Education</h3>
                                 <template x-for="(edu, i) in data.education" :key="i">
                                     <div class="mb-2" :style="itemStyle">
                                         <div class="flex justify-between items-baseline">
-                                            <span class="font-bold text-gray-900 text-xs" x-text="edu.degree"></span>
+                                            <span class="font-black text-gray-900 text-xs" x-text="edu.degree"></span>
                                             <span class="text-gray-600 text-xs" x-text="edu.startDate + ' - ' + edu.endDate"></span>
                                         </div>
                                         <p class="text-gray-700 text-xs" x-text="edu.school + (edu.gpa ? ' | GPA: ' + edu.gpa : '')"></p>
@@ -711,7 +725,7 @@
 
                             <!-- Skills (ATS-friendly) -->
                             <div class="skills-section mb-3 flex flex-col" x-show="hasAnySkills()" :style="sectionStyle + ' order: ' + getOrder('skills') + ';'">
-                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Skills</h3>
+                                <h3 class="text-xs font-black mb-2 uppercase tracking-widest" :class="formatting.atsMode ? 'text-gray-900 border-b-2 border-gray-400 pb-1' : 'border-bottom: 2px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Skills</h3>
                                 
                                 <template x-if="data.skills.programming && data.skills.programming.some(s => s.text)">
                                     <div class="mb-1" :style="itemStyle">
@@ -770,10 +784,10 @@
 
                             <!-- Projects -->
                             <div class="projects-section mb-3 flex flex-col" x-show="data.projects.length > 0" :style="sectionStyle + ' order: ' + getOrder('projects') + ';'">
-                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Projects</h3>
+                                <h3 class="text-xs font-black mb-2 uppercase tracking-widest" :class="formatting.atsMode ? 'text-gray-900 border-b-2 border-gray-400 pb-1' : 'border-bottom: 2px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Projects</h3>
                                 <template x-for="(proj, i) in data.projects" :key="i">
                                     <div class="mb-2" :style="itemStyle">
-                                        <span class="font-bold text-gray-900 text-xs" x-text="proj.name"></span>
+                                        <span class="font-black text-gray-900 text-xs" x-text="proj.name"></span>
                                         <template x-if="proj.description">
                                             <div class="mt-1">
                                                 <template x-for="(line, j) in proj.description.split('\n').filter(l => l.trim())" :key="j">
@@ -788,11 +802,11 @@
 
                             <!-- Certifications -->
                             <div class="certifications-section mb-3 flex flex-col" x-show="data.certifications.length > 0" :style="sectionStyle + ' order: ' + getOrder('certifications') + ';'">
-                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Certifications</h3>
+                                <h3 class="text-xs font-black mb-2 uppercase tracking-widest" :class="formatting.atsMode ? 'text-gray-900 border-b-2 border-gray-400 pb-1' : 'border-bottom: 2px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Certifications</h3>
                                 <template x-for="(cert, i) in data.certifications" :key="i">
                                     <div class="mb-1.5" :style="itemStyle">
                                         <div class="flex justify-between items-baseline">
-                                            <span class="font-bold text-gray-900 text-xs" x-text="cert.name"></span>
+                                            <span class="font-black text-gray-900 text-xs" x-text="cert.name"></span>
                                             <span class="text-gray-600 text-xs" x-text="cert.date"></span>
                                         </div>
                                         <p class="text-gray-700 text-xs" x-text="cert.issuer + (cert.id ? ' | ID: ' + cert.id : '')"></p>
@@ -802,7 +816,7 @@
 
                             <!-- Languages -->
                             <div class="languages-section mb-3 flex flex-col" x-show="data.languages.length > 0" :style="sectionStyle + ' order: ' + getOrder('languages') + ';'">
-                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Languages</h3>
+                                <h3 class="text-xs font-black mb-2 uppercase tracking-widest" :class="formatting.atsMode ? 'text-gray-900 border-b-2 border-gray-400 pb-1' : 'border-bottom: 2px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Languages</h3>
                                 <div class="space-y-0.5">
                                     <template x-for="(lang, i) in data.languages.filter(l => l.name)" :key="i">
                                         <p class="text-gray-700 text-xs" x-text="'• ' + lang.name + (lang.level ? ' - ' + lang.level : '')"></p>
@@ -812,7 +826,7 @@
 
                             <!-- Achievements -->
                             <div class="achievements-section mb-3 flex flex-col" x-show="data.achievements.length > 0" :style="sectionStyle + ' order: ' + getOrder('achievements') + ';'">
-                                <h3 class="text-xs font-bold mb-2 uppercase" :class="formatting.atsMode ? 'text-gray-900 border-b border-gray-300 pb-1' : 'border-bottom: 1px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Achievements</h3>
+                                <h3 class="text-xs font-black mb-2 uppercase tracking-widest" :class="formatting.atsMode ? 'text-gray-900 border-b-2 border-gray-400 pb-1' : 'border-bottom: 2px solid ' + accentLight + '; padding-bottom: 2px; color: ' + accentColor + ';'">Achievements</h3>
                                 <div class="space-y-0.5">
                                     <template x-for="(ach, i) in data.achievements.filter(a => a.text)" :key="i">
                                         <p class="text-gray-700 text-xs" x-text="'• ' + ach.text"></p>
@@ -910,13 +924,13 @@ function resumeBuilder() {
             { id: 'pink', name: 'Pink', hex: '#DB2777' },
             { id: 'gray', name: 'Gray', hex: '#4B5563' }
         ],
-        formatting: { template: 'classic', accentColor: 'blue', fontFamily: 'sans-serif', fontSize: 3, sectionGap: 3, itemGap: 2, compactMode: false, atsMode: true, imageAlign: 'center' },
+        formatting: { template: 'classic', accentColor: 'blue', fontFamily: 'sans-serif', fontSize: 3, sectionGap: 3, itemGap: 2, compactMode: false, atsMode: true, imageAlign: 'center', autoFit: true },
         accentColorMap: { blue: '#1D4ED8', green: '#15803D', orange: '#EA580C', red: '#DC2626', purple: '#7C3AED', teal: '#0D9488', pink: '#DB2777', gray: '#4B5563' },
         accentLightMap: { blue: '#DBEAFE', green: '#DCFCE7', orange: '#FED7AA', red: '#FEE2E2', purple: '#EDE9FE', teal: '#CCFBF1', pink: '#FCE7F3', gray: '#F3F4F6' },
         fontFamilyMap: { 'sans-serif': 'system-ui, -apple-system, sans-serif', 'serif': 'Georgia, Cambria, "Times New Roman", serif', 'mono': 'SFMono-Regular, "SF Mono", Menlo, Consolas, monospace' },
-        fontSizeMap: { 1: '11px', 2: '12px', 3: '14px', 4: '15px', 5: '16px' },
-        spacingMap: { 1: 6, 2: 10, 3: 16, 4: 20, 5: 24 },
-        itemSpacingMap: { 1: 2, 2: 4, 3: 8, 4: 12, 5: 16 },
+        fontSizeMap: { 1: '10px', 2: '12px', 3: '14px', 4: '16px', 5: '18px', 6: '21px', 7: '24px' },
+        spacingMap: { 1: 4, 2: 8, 3: 16, 4: 28, 5: 42, 6: 60, 7: 80 },
+        itemSpacingMap: { 1: 2, 2: 4, 3: 8, 4: 14, 5: 22, 6: 32, 7: 45 },
         data: {
             name: '', title: '', phone: '', email: '', linkedin: '', github: '', profile: '', image: '',
             experience: [], education: [],
@@ -943,6 +957,7 @@ function resumeBuilder() {
             if (this.data.skills.programming.length === 0) { this.addSkill('programming'); this.addSkill('ai_ml'); this.addSkill('tools_frameworks'); }
             const hasSeenTour = localStorage.getItem('hasSeenResumeTour');
             if (!hasSeenTour) { this.$nextTick(() => { setTimeout(() => { this.startTour(); localStorage.setItem('hasSeenResumeTour', 'true'); }, 1000); }); }
+            if (this.formatting.autoFit) this.$nextTick(() => this.autoAdjustFontSize());
         },
 
         async loadExistingResumes() { 
@@ -1012,12 +1027,57 @@ function resumeBuilder() {
                 this.data.skills = categorized;
                 this.data.projects = []; this.data.certifications = []; this.data.languages = []; this.data.achievements = []; this.data.interests = []; this.data.customSections = [];
                 this.updatePreview();
+                if (this.formatting.autoFit) this.$nextTick(() => this.autoAdjustFontSize());
                 alert('✅ Resume imported! You can now customize it.');
             } catch(e) { alert('❌ Error: ' + e.message); }
             finally { this.importLoading = false; }
         },
 
-        updatePreview() { clearTimeout(this._saveTimeout); this._saveTimeout = setTimeout(() => this.saveToLocalStorage(false), 500); },
+        updatePreview() { 
+            clearTimeout(this._saveTimeout); 
+            this._saveTimeout = setTimeout(() => {
+                this.saveToLocalStorage(false);
+                if (this.formatting.autoFit) this.autoAdjustFontSize();
+            }, 500); 
+        },
+        
+        isAdjusting: false,
+        autoAdjustFontSize() {
+            if (!this.formatting.autoFit || this.isAdjusting) return;
+            
+            // A4 page height target (~1056px). We target slightly less for safety.
+            const targetPageHeight = 1020; 
+            const tolerance = 30; 
+            
+            this.isAdjusting = true;
+            
+            this.$nextTick(() => {
+                const element = document.getElementById('resume-content');
+                if (!element) { this.isAdjusting = false; return; }
+                
+                const currentHeight = element.scrollHeight;
+                let changed = false;
+                
+                // Content too short -> Grow
+                if (currentHeight < (targetPageHeight - tolerance)) {
+                    if (this.formatting.fontSize < 7) { this.formatting.fontSize++; changed = true; }
+                    else if (this.formatting.sectionGap < 7) { this.formatting.sectionGap++; changed = true; }
+                    else if (this.formatting.itemGap < 7) { this.formatting.itemGap++; changed = true; }
+                } 
+                // Content too long -> Shrink
+                else if (currentHeight > (targetPageHeight + tolerance)) {
+                    if (this.formatting.sectionGap > 1) { this.formatting.sectionGap--; changed = true; }
+                    else if (this.formatting.itemGap > 1) { this.formatting.itemGap--; changed = true; }
+                    else if (this.formatting.fontSize > 1) { this.formatting.fontSize--; changed = true; }
+                }
+
+                this.isAdjusting = false;
+                if (changed) {
+                    // Recursive call with a small delay for DOM stability
+                    setTimeout(() => this.autoAdjustFontSize(), 100);
+                }
+            });
+        },
         
         saveToLocalStorage(notify = true) {
             localStorage.setItem('draftResume', JSON.stringify(this.data));
@@ -1365,10 +1425,10 @@ function resumeBuilder() {
 
             sectionOrder: [
                 { id: 'profile', label: 'Summary' },
-                { id: 'experience', label: 'Experience' },
-                { id: 'education', label: 'Education' },
-                { id: 'skills', label: 'Skills' },
                 { id: 'projects', label: 'Projects' },
+                { id: 'experience', label: 'Experience' },
+                { id: 'skills', label: 'Skills' },
+                { id: 'education', label: 'Education' },
                 { id: 'certifications', label: 'Certifications' },
                 { id: 'languages', label: 'Languages' },
                 { id: 'achievements', label: 'Achievements' },

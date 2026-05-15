@@ -70,9 +70,23 @@
         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 20px; }
         .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+        /* Global Mobile Responsiveness Fixes */
+        @media (max-width: 640px) {
+            .p-12 { padding: 1.5rem !important; }
+            .p-10 { padding: 1.25rem !important; }
+            .px-8 { padding-left: 1rem !important; padding-right: 1rem !important; }
+            .pt-16 { padding-top: 2.5rem !important; }
+            .pb-12 { padding-bottom: 2rem !important; }
+            .rounded-\[4rem\] { border-radius: 1.5rem !important; }
+            .rounded-\[3rem\] { border-radius: 1.25rem !important; }
+            .space-y-16 > :not([hidden]) ~ :not([hidden]) { --tw-space-y-reverse: 0; margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse))); margin-bottom: calc(2rem * var(--tw-space-y-reverse)); }
+        }
     </style>
 
     <!-- Custom CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@8.3.1/dist/css/shepherd.css"/>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
 
     <!-- Additional head content -->
@@ -131,12 +145,12 @@
                         <div class="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
                         <div class="relative flex items-center gap-3 px-4 py-4 bg-white/5 rounded-2xl border border-white/10 transition-all group-hover:bg-white/10">
                             <span class="text-xl">💬</span>
-                            <span class="text-[10px] font-black text-pink-400 uppercase tracking-[0.2em] italic">Support Protocol</span>
+                            <span class="text-[10px] font-black text-pink-400 uppercase tracking-[0.2em] italic">Contact Support</span>
                         </div>
                     </button>
                 </div>
 
-                <div class="text-[9px] font-black text-white/20 tracking-[0.4em] uppercase mb-4 px-6 italic" x-show="!sidebarCollapsed">Main Sequence</div>
+                <div class="text-[9px] font-black text-white/20 tracking-[0.4em] uppercase mb-4 px-6 italic" x-show="!sidebarCollapsed">Menu</div>
 
                 <template x-for="item in navItems" :key="item.href">
                     <a :href="item.href" 
@@ -147,7 +161,7 @@
                            'justify-center px-0': sidebarCollapsed
                        }" 
                        class="flex items-center gap-4 px-6 py-4 mx-2 rounded-2xl border transition-all duration-300 group relative">
-                        <span class="text-2xl transition-transform group-hover:scale-125 duration-500" x-text="item.icon" :class="currentPath === item.href ? 'filter drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : ''"></span>
+                        <span class="text-2xl transition-transform group-hover:scale-125 duration-500" x-text="item.icon"></span>
                         <span x-show="!sidebarCollapsed" x-text="item.label" class="text-xs font-black uppercase italic tracking-widest transition-all duration-300"></span>
                         
                         <!-- Tooltip -->
@@ -162,7 +176,7 @@
                            :class="sidebarCollapsed ? 'justify-center px-0 mx-2' : 'mx-4'"
                            class="flex items-center gap-4 px-6 py-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 font-black uppercase italic tracking-widest text-[10px] hover:bg-amber-500/20 transition-all group relative">
                             <span class="text-2xl group-hover:scale-125 duration-500">🛡️</span>
-                            <span x-show="!sidebarCollapsed">Admin Era</span>
+                            <span x-show="!sidebarCollapsed">Admin Area</span>
                         </a>
                     </div>
                 </template>
@@ -183,50 +197,50 @@
                             class="w-full mt-4 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-black uppercase italic tracking-tighter text-[10px] transition-all border border-red-500/10 group overflow-hidden"
                             :class="sidebarCollapsed ? 'px-0 py-3 mt-4' : ''">
                         <span class="group-hover:-translate-x-1 transition-transform">🚪</span>
-                        <span x-show="!sidebarCollapsed">Exit Sequence</span>
+                        <span x-show="!sidebarCollapsed">Logout</span>
                     </button>
                 </div>
             </div>
         </aside>
 
-        <!-- Content Area ERA -->
+        <!-- Main Content Area -->
         <div :class="showNav ? 'lg:m-4 lg:my-6 lg:mr-6 lg:ml-2 lg:rounded-[3rem] border-0 lg:border border-white/10 bg-indigo-950/20 backdrop-blur-3xl shadow-2xl overflow-x-hidden w-full' : 'w-full'" class="flex-1 flex flex-col min-w-0 transition-all duration-500 min-h-screen sm:min-h-0">
-            <!-- Global Top Bar Protocol -->
-            <header :class="showNav ? 'bg-white/5' : 'bg-transparent backdrop-blur-3xl'" class="h-20 lg:h-24 flex-shrink-0 z-30 border-b border-white/5 transition-all">
+            <!-- Global Header -->
+            <header :class="showNav ? 'bg-white/5' : 'bg-transparent backdrop-blur-3xl'" class="h-16 sm:h-20 lg:h-24 flex-shrink-0 z-30 border-b border-white/5 transition-all">
                 <div class="flex items-center justify-between h-full px-4 lg:px-12">
-                    <div class="flex items-center gap-4 lg:gap-6">
+                    <div class="flex items-center gap-2 sm:gap-4 lg:gap-6">
                         <!-- Menu Toggle -->
                         <button x-show="showNav" @click="mobileMenuOpen = true" 
-                                class="lg:hidden p-3 rounded-xl bg-white/5 border border-white/10 text-white shadow-xl active:scale-90 transition-all">
+                                class="lg:hidden p-2.5 rounded-xl bg-white/5 border border-white/10 text-white shadow-xl active:scale-90 transition-all">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 6h16M4 12h16M4 18h16"/></svg>
                         </button>
 
-                        <div class="flex items-center gap-4 lg:gap-8">
+                        <div class="flex items-center gap-2 sm:gap-4 lg:gap-8">
                             <!-- Header Logo (Non-app pages) -->
                             <a href="/" x-show="!showNav" class="flex items-center gap-2 lg:gap-3 group transition-transform hover:scale-105">
-                                <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-xl lg:text-2xl shadow-2xl shadow-pink-500/30 group-hover:rotate-12 transition-transform duration-500">🚀</div>
-                                <span class="text-xl lg:text-3xl font-black italic tracking-tighter uppercase bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 bg-clip-text text-transparent hidden sm:block">AuraRise</span>
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-lg lg:text-2xl shadow-2xl shadow-pink-500/30 group-hover:rotate-12 transition-transform duration-500">🚀</div>
+                                <span class="text-lg lg:text-3xl font-black italic tracking-tighter uppercase bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 bg-clip-text text-transparent hidden sm:block">AuraRise</span>
                             </a>
 
                             <div class="hidden sm:flex flex-col">
-                                <h1 class="text-2xl font-black text-white uppercase italic tracking-tighter leading-none" x-show="pageTitle" x-text="pageTitle"></h1>
-                                <p class="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mt-1" x-show="pageTitle">System Protocol Active</p>
+                                <h1 class="text-xl lg:text-2xl font-black text-white uppercase italic tracking-tighter leading-none" x-show="pageTitle" x-text="pageTitle"></h1>
+                                <p class="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mt-1" x-show="pageTitle">System Active</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Identity Flare -->
-                    <div class="flex items-center gap-6">
+                    <div class="flex items-center gap-3 sm:gap-6">
                         <template x-if="!$store.auth.isLoggedIn">
-                            <a href="/login" class="px-10 py-4 bg-white text-black font-black uppercase italic tracking-tighter rounded-2xl shadow-2xl hover:bg-pink-500 hover:text-white transition-all hover:-translate-y-1 active:scale-95 text-xs">
-                                Enter Protocol →
+                            <a href="/login" class="px-6 sm:px-10 py-3 sm:py-4 bg-white text-black font-black uppercase italic tracking-tighter rounded-xl sm:rounded-2xl shadow-2xl hover:bg-pink-500 hover:text-white transition-all hover:-translate-y-1 active:scale-95 text-[10px] sm:text-xs">
+                                Get Started →
                             </a>
                         </template>
                         <template x-if="$store.auth.isLoggedIn">
-                            <div class="flex items-center gap-4 bg-white/5 rounded-2xl pl-6 pr-2 py-2 border border-white/10 relative group">
-                                <span class="hidden md:inline text-[10px] font-black text-white/60 uppercase tracking-widest italic" x-text="'Active: ' + $store.auth.userName"></span>
-                                <a href="/profile" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 group-hover:scale-110 transition-all shadow-lg">
-                                    <span class="text-sm text-white font-black" x-text="$store.auth.userInitial"></span>
+                            <div class="flex items-center gap-2 sm:gap-4 bg-white/5 rounded-xl sm:rounded-2xl pl-3 sm:pl-6 pr-2 py-1 sm:py-2 border border-white/10 relative group">
+                                <span class="hidden sm:inline text-[9px] sm:text-[10px] font-black text-white/60 uppercase tracking-widest italic" x-text="'Active: ' + $store.auth.userName"></span>
+                                <a href="/profile" class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 group-hover:scale-110 transition-all shadow-lg">
+                                    <span class="text-[10px] sm:text-sm text-white font-black" x-text="$store.auth.userInitial"></span>
                                 </a>
                             </div>
                         </template>
@@ -239,7 +253,7 @@
                 {% block content %}{% endblock %}
 
                 {% block footer %}
-                <!-- Final Boss Footer -->
+                <!-- Main Footer -->
                 <footer class="mt-auto border-t border-white/10 bg-indigo-950/40 backdrop-blur-3xl pt-16 pb-12 px-8 overflow-hidden relative">
                     <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-pink-500/10 rounded-full blur-[100px]"></div>
                     <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px]"></div>
@@ -253,7 +267,7 @@
                                     <span class="text-2xl font-black bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 bg-clip-text text-transparent italic tracking-tighter uppercase">AuraRise</span>
                                 </div>
                                 <p class="text-xs font-bold text-white/40 uppercase tracking-widest leading-relaxed">
-                                    Revolutionizing the corporate grind with AI-powered rizz. Secure the bag, don't fumble the interview.
+                                    Advanced AI-powered resume optimization for modern professionals. Precision-engineered for ATS compliance and career success.
                                 </p>
                             </div>
 
@@ -267,17 +281,17 @@
                                 </div>
                             </div>
 
-                            <!-- Alpha Quote -->
+                            <!-- Philosophy -->
                             <div class="text-left lg:text-right">
                                 <h4 class="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-4 italic">Core Philosophy</h4>
                                 <p class="text-base sm:text-lg font-black text-white italic uppercase tracking-tighter leading-tight">
-                                    "Your resume is mid, <br><span class="text-pink-500">AuraRise</span> makes it peak." ✨
+                                    "Elevate your career <br>with <span class="text-pink-500">AuraRise</span> optimization." ✨
                                 </p>
                             </div>
                         </div>
 
                         <div class="flex flex-col sm:flex-row justify-between items-center py-8 border-t border-white/5 gap-4">
-                            <p class="text-[9px] font-black text-white/20 uppercase tracking-[0.5em]">© 2026 AuraRise Protocol • Built for the elite</p>
+                            <p class="text-[9px] font-black text-white/20 uppercase tracking-[0.5em]">© 2026 AuraRise • Career Optimization Platform</p>
                             <div class="flex gap-6">
                                 <a href="#" class="text-[9px] font-black text-white/20 uppercase tracking-widest hover:text-white transition-colors">Privacy</a>
                                 <a href="#" class="text-[9px] font-black text-white/20 uppercase tracking-widest hover:text-white transition-colors">Terms</a>
@@ -353,6 +367,7 @@
             <div class="flex-1 overflow-y-auto p-12 space-y-16 sidebar-scroll">
                 <!-- Input Segment -->
                 <div x-show="!feedbackAdminMode || showFeedbackForm" class="bg-white/5 rounded-[3rem] p-10 border border-white/10 relative overflow-hidden group">
+                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2ZicG5zZ3NueXNqOHRndXp3Z3NueXNqOHRndXp3Z3NueXNqOHRndXp3Z3MmbXA9Zw/3o7TKSjP8gZ6F9p5vW/giphy.gif" alt="AI Optimization" class="w-full opacity-60 group-hover:scale-105 transition-transform duration-700">
                     <div class="absolute -right-16 -top-16 text-[10rem] text-white/5 font-black uppercase italic italic pointer-events-none group-hover:scale-110 transition-transform duration-1000">FORM</div>
                     
                     <h3 class="text-xl font-black text-white italic tracking-tighter uppercase mb-10 flex items-center gap-4">

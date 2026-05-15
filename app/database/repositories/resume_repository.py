@@ -43,7 +43,10 @@ class ResumeRepository(BaseRepository):
             str: ID of the created resume document, or empty string if operation fails.
         """
         resume_dict = resume.model_dump(by_alias=True)
-        return await self.insert_one(resume_dict)
+        res_id, error = await self.insert_one(resume_dict)
+        if error:
+            print(f"❌ Resume creation failed: {error}")
+        return res_id if res_id else ""
 
     async def get_resume_by_id(self, resume_id: str) -> Optional[Dict]:
         """Retrieve a resume record by its ID.

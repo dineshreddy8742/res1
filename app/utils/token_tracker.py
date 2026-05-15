@@ -1,8 +1,8 @@
 """Token usage tracking utility for monitoring LLM API consumption.
 
 This module provides utilities for tracking and analyzing token usage
-across OpenAI API calls throughout the application, supporting cost
-monitoring, usage optimization, and analytics.
+across OpenAI-compatible API calls (like OpenRouter) throughout the 
+application, supporting cost monitoring, usage optimization, and analytics.
 """
 
 import json
@@ -167,7 +167,8 @@ class TokenTracker:
     """Utility for tracking, analyzing, and optimizing token usage.
     
     This class provides methods to track token usage across different
-    OpenAI API calls, calculate costs, and generate usage reports.
+    OpenAI-compatible API calls (e.g., OpenRouter), calculate costs, 
+    and generate usage reports.
     """
     
     # In-memory store for token usage data
@@ -251,7 +252,7 @@ class TokenTracker:
             max_retries=2,
             default_headers={
                 "HTTP-Referer": "https://aurarise.app",
-                "X-Title": "AuraRise Protocol"
+                "X-Title": "AuraRise Protocol (OpenRouter)"
             },
             **kwargs
         )

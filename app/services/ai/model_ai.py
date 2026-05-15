@@ -1,8 +1,8 @@
 """AI-powered resume optimization module.
 
 This module provides the AtsResumeOptimizer class that leverages AI language models
-to analyze and optimize resumes based on job descriptions, improving compatibility
-with Applicant Tracking Systems (ATS).
+(primarily via OpenRouter's OpenAI-compatible API) to analyze and optimize resumes 
+based on job descriptions, improving compatibility with Applicant Tracking Systems (ATS).
 """
 
 import json
@@ -39,10 +39,10 @@ class AtsResumeOptimizer:
         """Initialize the AI model for resume processing.
 
         Args:
-            model_name: The name of the OpenAI model to use.
+            model_name: The name of the model to use (e.g., 'google/gemini-2.0-flash-001' via OpenRouter).
             resume: The resume text to be optimized.
-            api_key: OpenAI API key for authentication.
-            api_base: Base URL for the OpenAI API.
+            api_key: OpenRouter API key (OpenAI-compatible).
+            api_base: Base URL for the API (e.g., 'https://openrouter.ai/api/v1').
             user_id: Optional user ID for token tracking.
         """
         self.model_name = model_name or settings.MODEL_NAME
@@ -71,10 +71,10 @@ class AtsResumeOptimizer:
         self._setup_chain()
 
     def _get_openai_model(self) -> ChatOpenAI:
-        """Initialize the OpenAI model with appropriate settings.
+        """Initialize the model with appropriate settings.
         
         Returns:
-            ChatOpenAI: Configured language model instance with token tracking
+            ChatOpenAI: Configured language model instance (OpenRouter compatible)
         """
         if self.model_name:
             # Create LLM instance with token tracking for usage monitoring
@@ -95,7 +95,7 @@ class AtsResumeOptimizer:
                 openai_api_base=self.api_base,
                 default_headers={
                     "HTTP-Referer": "https://aurarise.app",
-                    "X-Title": "AuraRise Protocol"
+                    "X-Title": "AuraRise Protocol (OpenRouter)"
                 }
             )
 
@@ -130,91 +130,56 @@ class AtsResumeOptimizer:
         """
         
         template = f"""
-        # ROLE: Expert ATS Resume Optimization Specialist
-        You are an expert ATS (Applicant Tracking System) Resume Optimizer with specialized knowledge in resume writing, keyword optimization, and applicant tracking systems. Your task is to transform the candidate's existing resume into a highly optimized version tailored specifically to the provided job description, maximizing the candidate's chances of passing through ATS filters while maintaining honesty and accuracy.
+        # ROLE: Elite ATS Resume Architect & Career Strategist
+        You are a world-class ATS (Applicant Tracking System) Specialist specializing in high-performance career optimization. Your mission is to re-engineer the candidate's raw resume into a surgically precise, ATS-dominating master document.
         
+        ## TARGET AUDIENCE: FRESHERS & STUDENTS
+        For candidates with < 2 years of industry experience (Freshers/Students), you MUST:
+        - **Aggressively Surface Potential**: Transform academic projects, hackathon wins, and internships into "Professional Experience" or high-impact "Project" narratives.
+        - **Highlight Hackathons**: Treat major hackathon wins (especially Google Cloud, Smart India Hackathon, etc.) as critical proof of delivery and technical prowess.
+        - **Technical Density**: Ensure the "Skills" and "Projects" sections are dense with industry-standard keywords from the Job Description.
+        - **Resilience & Leadership**: Showcase leadership roles (e.g., Campus Ambassador, Team Lead) as evidence of soft-skill maturity.
+
         ## INPUT DATA:
         
-        ### JOB DESCRIPTION:
+        ### TARGET JOB DESCRIPTION:
         {{job_description}}
 
-        ### CANDIDATE'S CURRENT RESUME:
+        ### CANDIDATE'S SOURCE DATA:
         {{resume}}
         
         {recommended_skills_section}
 
-        ## OPTIMIZATION PROCESS:
+        ## STRICT ARCHITECTURAL CONSTRAINTS:
 
-        1. **ANALYZE THE JOB DESCRIPTION**
-            - Extract key requirements, skills, qualifications, and responsibilities
-            - Identify primary keywords, secondary keywords, and industry-specific terminology
-            - Note the exact phrasing and terminology used by the employer
-            - Identify technical requirements (software, tools, frameworks, etc.)
-            - Detect company values and culture indicators
-            - Determine desired experience level and specific metrics/achievements valued
-            - Pay special attention to both hard skills (technical) and soft skills (interpersonal)
+        1. **SURGICAL ALIGNMENT (JD-FIRST)**
+            - Every single bullet point MUST map to a core requirement in the Job Description.
+            - Use the EXACT terminology found in the JD (e.g., if it says 'LLMs', don't just say 'Large Language Models').
+            - If a skill is missing from the resume but hinted at (e.g., Python is there but 'FastAPI' is needed), bridge the gap through project descriptions where valid.
 
-        2. **EVALUATE THE CURRENT RESUME**
-            - Compare existing content against job requirements
-            - Identify skills and experiences that align with the job
-            - Detect terminology mismatches and missing keywords
-            - Assess the presentation of achievements and results
-            - Calculate an initial "match score" to identify improvement areas
-            - Note transferable skills that could be reframed for the target position
-            - Look for implied skills that might not be explicitly stated
+        2. **THE 'RESULT-FIRST' FORMULA**
+            - Every task/goal MUST follow: [Strong Action Verb] + [Quantifiable Impact/Metric] + [Technical Tool Used].
+            - Example: "Engineered a RAG-based chatbot using LangChain that reduced query latency by 40%."
+            - Avoid weak phrases like "Responsible for", "Helped with", "Knowledge of".
 
-        3. **CREATE AN ATS-OPTIMIZED RESUME**
-            - Use a clean, ATS-friendly format with standard section headings
-            - Include the candidate's name, contact information, and professional profiles
-            - Create a targeted professional summary highlighting relevant qualifications
-            - Incorporate exact keywords and phrases from the job description throughout the resume
-            - Prioritize and emphasize experiences most relevant to the target position
-            - Reorder content to place most relevant experiences and skills first
-            - Use industry-standard terminology that ATS systems recognize
-            - Quantify achievements with metrics where possible (numbers, percentages, dollar amounts)
-            - Remove irrelevant information that doesn't support this application
-            - Ensure job titles, company names, dates, and locations are clearly formatted
-            - Include a skills section with relevant hard and soft skills using job description terminology
-            - Highlight both technical capabilities and relevant soft skills like communication, teamwork, leadership
-            - Emphasize transferable skills and reframe related experience to match job requirements, even if not an exact match
-            - Be assertive in surfacing all relevant experience, including implied or adjacent skills, as long as it is truthful
+        3. **FRESHER ENHANCEMENT PROTOCOL**
+            - Transform "Student Hackathon Winner" into "Grand Finalist & Team Lead - Gen AI Exchange Hackathon (Google Cloud)".
+            - Expand internships (e.g., L&T AI Intern) to show production-level impact (Agentic AI, Workflow Orchestration).
+            - Ensure the 'Education' section highlights the CGPA and relevant specializations clearly.
 
-        4. **ATS OPTIMIZATION TECHNIQUES**
-            - Use standard section headings (e.g., "Work Experience" not "Career Adventures")
-            - Avoid tables, columns, headers, footers, images, and special characters
-            - Use standard bullet points (• or - only)
-            - Use common file formats and fonts (Arial, Calibri, Times New Roman)
-            - Include keywords in context rather than keyword stuffing
-            - Use both spelled-out terms and acronyms where applicable (e.g., "Search Engine Optimization (SEO)")
-            - Keep formatting consistent throughout the document
-            - For technical positions, include relevant projects with clear descriptions
-            - Limit project listings to 3-4 most relevant examples
-            - Use synonyms and related terms for key skills to maximize keyword matching
-            - Make connections between past experience and job requirements clear and explicit
+        4. **FORMATTING & ATS HYGIENE**
+            - No tables, no columns, no fancy symbols.
+            - Standard Headings: "Professional Experience", "Education", "Projects", "Skills", "Extra-Curricular Activities".
+            - Precise Dates: MM/YYYY - MM/YYYY or MM/YYYY - Present.
+            - **NO PLACEHOLDERS**: If a field (like LinkedIn, GitHub, Portfolio, or specific dates) is missing from the source data, leave it as an empty string ("") or omit it. DO NOT use "Not Specified", "N/A", or other negative placeholders.
 
-        5. **ATS SCORING LOGIC (For `ats_metrics`)**:
-            - **Strictness**: Be objective. Don't just give 100%.
-            - **90-100**: Well-tailored, strong keyword alignment, all core requirements met.
-            - **80-89**: Solid match, maybe missing 1-2 minor secondary skills.
-            - **70-79**: Good attempt but clear gaps in experience or specific tools.
-            - **Below 70**: Mismatch in seniority or core technical stack.
-            - **Generosity**: For students/interns, reward relevant projects and courses at 85+ if they show potential.
+        5. **STRICT DATA VALIDATION**:
+            - **EXPERIENCES**: Exactly 4 high-impact tasks per role. No more, no less.
+            - **PROJECTS**: Exactly 2 strategic goals + 1 end result per project.
+            - **SKILLS**: Group into 'Hard Skills' (Technical) and 'Soft Skills' (Leadership/Communication).
+            - **METRICS**: Aim for at least 2 bullet points with numbers (%, $, hours, or counts) per experience.
 
-        ## QUALITY & ALIGNMENT CONSTRAINTS:
-        - **Impact Verbs**: Use strong action verbs (e.g., 'Engineered', 'Orchestrated', 'Optimized', 'Spearheaded') at the start of every bullet point.
-        - **JD Alignment**: For every single bullet point, ask yourself: 'How does this directly address a requirement in the Job Description?'
-        - **Neat & Professional**: Write descriptions that are concise but descriptive. Avoid vague phrases like 'responsible for'. Focus on what you DID and the RESULT you achieved.
-        - **Fill the Space**: Expand on the most relevant experiences to ensure the resume looks full, professional, and dense.
-        - **No Hallucination**: Do not invent new jobs, but feel free to rephrase existing tasks to be 100% aligned with the JD keywords.
-
-        2. **STRICT CONSTRAINTS**:
-        - Each experience MUST have PRECISELY 4 tasks in the `four_tasks` list. Not 3, not 5. Exactly 4.
-        - Each project MUST have PRECISELY 2 goals in the `two_goals_of_the_project` list. Exactly 2.
-        - Each experience MUST include a valid string for job_title, company, start_date, and end_date. Use "Not Specified" or "Pending" if unknown, but NEVER use null/None.
-        - `experiences` and `education` must stay inside `user_information`.
-        - `projects` and `certificate` are top-level keys.
-
-        ## OUTPUT FORMAT:
+        ## OUTPUT SCHEMA (STRICT JSON ONLY):
 
         You MUST return ONLY a valid JSON object with NO additional text, explanation, or commentary.
         The JSON must follow this EXACT structure:

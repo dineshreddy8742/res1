@@ -12,13 +12,13 @@
         <!-- Header Protocol -->
         <div class="text-center mb-20">
             <div class="flex items-center justify-center gap-4 mb-6">
-                <span class="px-5 py-2 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-[10px] font-black text-indigo-400 uppercase tracking-widest italic animate-pulse shadow-2xl">Signal Manifestation Protocol ✨</span>
+                <span class="px-5 py-2 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-[10px] font-black text-indigo-400 uppercase tracking-widest italic animate-pulse shadow-2xl">Cover Letter Generator ✨</span>
             </div>
             <h1 class="text-4xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white italic tracking-tighter leading-none mb-6 uppercase">
-                Cover Letter <span class="bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">Architect</span>
+                Cover Letter <span class="bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">Generator</span>
             </h1>
             <p class="text-[12px] font-bold text-white/40 uppercase tracking-[0.4em] max-w-3xl mx-auto italic">
-                Slaying the application era with high-performance professional rizz.
+                Craft professional, high-impact cover letters optimized for modern applications.
             </p>
         </div>
 
@@ -30,13 +30,13 @@
                         <div class="absolute -right-12 -top-12 text-[10rem] text-white/5 font-black uppercase italic pointer-events-none group-hover:scale-110 transition-transform duration-1000">INPUT</div>
                         
                         <div class="relative z-10">
-                            <h2 class="text-3xl font-black text-white italic tracking-tighter uppercase mb-2">Alpha Parameters</h2>
-                            <p class="text-[10px] font-black text-blue-300 uppercase tracking-[0.4em]">Feed the terminal your career energy</p>
+                            <h2 class="text-3xl font-black text-white italic tracking-tighter uppercase mb-2">Application Details</h2>
+                            <p class="text-[10px] font-black text-blue-300 uppercase tracking-[0.4em]">Enter your target career parameters</p>
                         </div>
                         
                         <div class="space-y-8 relative z-10">
                             <div class="group/input">
-                                <label class="block text-[10px] font-black uppercase tracking-[0.4em] text-pink-400 mb-4 ml-4 italic group-focus-within/input:text-white transition-colors">Select Career Build fr</label>
+                                <label class="block text-[10px] font-black uppercase tracking-[0.4em] text-pink-400 mb-4 ml-4 italic group-focus-within/input:text-white transition-colors">Select Your Resume</label>
                                 <div class="relative">
                                     <select x-model="resumeId" class="w-full bg-indigo-950/60 border border-white/10 rounded-2xl sm:rounded-[2rem] px-6 sm:px-8 py-4 sm:py-6 text-white text-xs sm:text-sm font-black italic focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition-all appearance-none shadow-2xl">
                                         <option value="" class="bg-indigo-900">-- SELECT YOUR ITERATION --</option>
@@ -49,25 +49,25 @@
                             </div>
                             
                             <div class="group/input">
-                                <label class="block text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400 mb-4 ml-4 italic group-focus-within/input:text-white transition-colors">Target Objective 💼</label>
+                                <label class="block text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400 mb-4 ml-4 italic group-focus-within/input:text-white transition-colors">Target Job Title 💼</label>
                                 <input x-model="jobTitle" type="text" 
                                        class="w-full bg-indigo-950/60 border border-white/10 rounded-2xl sm:rounded-[2rem] px-6 sm:px-8 py-4 sm:py-6 text-white text-xs sm:text-sm font-black italic focus:outline-none focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/10 transition-all shadow-2xl placeholder-white/5" 
-                                       placeholder="E.G. CHIEF VIBE OFFICER">
+                                       placeholder="E.G. SOFTWARE ENGINEER">
                             </div>
                             
                             <div class="group/input">
-                                <label class="block text-[10px] font-black uppercase tracking-[0.4em] text-yellow-400 mb-4 ml-4 italic group-focus-within/input:text-white transition-colors">Mission Log 📝</label>
+                                <label class="block text-[10px] font-black uppercase tracking-[0.4em] text-yellow-400 mb-4 ml-4 italic group-focus-within/input:text-white transition-colors">Job Description 📝</label>
                                 <textarea x-model="jobDescription" rows="8" 
                                           class="w-full bg-indigo-950/60 border border-white/10 rounded-2xl sm:rounded-[2.5rem] px-6 sm:px-8 py-4 sm:py-6 text-white text-[13px] font-medium leading-relaxed focus:outline-none focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all shadow-2xl placeholder-white/5 scrollbar-hide resize-none" 
-                                          placeholder="Paste the target requirements here... (no cap allowed)"></textarea>
+                                          placeholder="Paste the target requirements here..."></textarea>
                             </div>
 
                             <button @click="generate()" :disabled="loading || !canGenerate()" 
                                     class="relative w-full overflow-hidden rounded-2xl sm:rounded-[3rem] bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 py-6 sm:py-8 shadow-[0_20px_50px_rgba(236,72,153,0.3)] transition-all hover:scale-[1.03] active:scale-[0.97] disabled:opacity-50 disabled:grayscale">
-                                <span x-show="!loading" class="text-lg sm:text-2xl font-black text-white flex items-center justify-center gap-4 italic uppercase tracking-tighter">Manifest Protocol ✨</span>
+                                <span x-show="!loading" class="text-lg sm:text-2xl font-black text-white flex items-center justify-center gap-4 italic uppercase tracking-tighter">Generate Cover Letter ✨</span>
                                 <div x-show="loading" class="flex items-center justify-center gap-4">
                                     <div class="animate-spin text-3xl">⚙️</div>
-                                    <span class="text-[12px] font-black text-white uppercase tracking-[0.4em]">AI is Cooking...</span>
+                                    <span class="text-[12px] font-black text-white uppercase tracking-[0.4em]">AI is Generating...</span>
                                 </div>
                             </button>
                         </div>
@@ -83,15 +83,15 @@
                         
                         <div class="flex flex-col md:flex-row items-center justify-between gap-8 mb-12 pb-10 border-b border-white/5 relative z-10">
                             <div>
-                                <h2 class="text-4xl font-black text-white italic tracking-tighter uppercase mb-2">The Manifest</h2>
-                                <p class="text-[10px] font-black text-blue-300 uppercase tracking-[0.4em]">Ready for tactical deployment</p>
+                                <h2 class="text-4xl font-black text-white italic tracking-tighter uppercase mb-2">The Document</h2>
+                                <p class="text-[10px] font-black text-blue-300 uppercase tracking-[0.4em]">Ready for professional application</p>
                             </div>
                             <div class="flex items-center gap-4" x-show="coverLetter">
                                 <button @click="copyToClipboard()" class="px-8 py-4 rounded-2xl bg-white/10 border border-white/20 text-white font-black text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all active:scale-95 shadow-xl">
                                     Copy 📋
                                 </button>
                                 <button @click="downloadPDF()" class="px-10 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-black text-[10px] uppercase tracking-widest shadow-[0_15px_30px_rgba(6,182,212,0.3)] hover:scale-105 active:scale-95 transition-all">
-                                    PDF fr 📥
+                                    Download PDF 📥
                                 </button>
                             </div>
                         </div>
@@ -101,8 +101,8 @@
                             <!-- Empty ERA -->
                             <div x-show="!coverLetter && !loading" class="text-center max-w-sm px-4">
                                 <div class="w-32 h-32 mx-auto rounded-[3rem] bg-indigo-500/10 flex items-center justify-center text-6xl mb-10 border border-white/10 shadow-3xl animate-float grayscale opacity-20">📝</div>
-                                <h3 class="text-2xl font-black text-white/20 italic tracking-tighter mb-4 uppercase">Archive Terminal Empty</h3>
-                                <p class="text-[10px] font-bold text-white/10 uppercase tracking-[0.4em] leading-relaxed italic">Initiate protocol on the left to manifest results.</p>
+                                <h3 class="text-2xl font-black text-white/20 italic tracking-tighter mb-4 uppercase">Document Empty</h3>
+                                <p class="text-[10px] font-bold text-white/10 uppercase tracking-[0.4em] leading-relaxed italic">Enter details on the left to generate your cover letter.</p>
                             </div>
 
                             <!-- Cooking ERA -->
@@ -110,11 +110,11 @@
                                 <div class="relative w-32 h-32 mx-auto mb-10">
                                     <div class="absolute inset-0 border-2 border-pink-500/10 rounded-full"></div>
                                     <div class="absolute inset-0 border-t-2 border-pink-500 rounded-full animate-spin"></div>
-                                    <div class="absolute inset-0 flex items-center justify-center text-4xl">🔥</div>
+                                    <div class="absolute inset-0 flex items-center justify-center text-4xl">✨</div>
                                     <div class="absolute inset-0 bg-pink-500/20 blur-3xl rounded-full"></div>
                                 </div>
-                                <h3 class="text-4xl font-black text-white italic tracking-tighter uppercase animate-pulse mb-4 leading-none">AI is Cooking...</h3>
-                                <p class="text-[10px] font-black text-pink-400 uppercase tracking-[0.5em] italic">Baking the perfect corporate frequency</p>
+                                <h3 class="text-4xl font-black text-white italic tracking-tighter uppercase animate-pulse mb-4 leading-none">AI is Generating...</h3>
+                                <p class="text-[10px] font-black text-pink-400 uppercase tracking-[0.5em] italic">Crafting your professional document</p>
                             </div>
 
                             <!-- Final Manifest -->
