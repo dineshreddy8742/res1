@@ -16,8 +16,11 @@ RUN pip install --no-cache-dir --upgrade pip
 COPY pyproject.toml .
 COPY . .
 
+# Extract dependencies from pyproject.toml and write to requirements.txt
+RUN python -c "import tomllib; open('requirements.txt', 'w').write('\n'.join(tomllib.load(open('pyproject.toml', 'rb'))['project']['dependencies']))"
+
 # Install dependencies into the local environment
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r <(python -c "import tomli; print('\n'.join(tomli.load(open('pyproject.toml', 'rb'))['project']['dependencies']))" 2>/dev/null || pip install .[standard] --root-user-action=ignore ) || pip install --prefix=/install .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 FROM python:3.12-slim
 
