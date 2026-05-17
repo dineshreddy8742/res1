@@ -14,8 +14,6 @@ RUN pip install --no-cache-dir --upgrade pip
 
 # Copy the pyproject.toml and source to leverage the project standards
 COPY pyproject.toml .
-COPY README.md . 
-# (If README is missing, pip might complain, but usually fine for simple builds. If we don't have it, we just copy everything)
 COPY . .
 
 # Install dependencies into the local environment
