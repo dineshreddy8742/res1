@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "dailsmart-496415"
+  },
+  "targets": {
+    "dailsmart-496415": {
+      "hosting": {
+        "resume-site": [
+          "aurarise-resume"
+        ]
+      }
+    }
+  }
+}

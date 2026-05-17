@@ -1,0 +1,22 @@
+{
+  "hosting": [
+    {
+      "target": "resume-site",
+      "public": "public_firebase",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "run": {
+            "serviceId": "resume",
+            "region": "asia-south1"
+          }
+        }
+      ]
+    }
+  ]
+}

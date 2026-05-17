@@ -167,6 +167,9 @@ async def add_response_headers(request: Request, call_next):
     -------
         The response with added security headers
     """
+    if request.headers.get("x-forwarded-proto") == "https":
+        request.scope["scheme"] = "https"
+
     response = await call_next(request)
 
     # Add security headers
