@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_ROLE_KEY: Optional[str] = None
 
     # AI Service Configuration (Multi-Key Rotation for 1k+ Users)
-    MODEL_NAME: str = "google/gemini-2.0-flash-lite-001"
+    MODEL_NAME: str = "google/gemini-2.5-flash-lite"
     # Provide a comma-separated list of keys in your .env
     API_KEYS: Union[str, list[str]] = []
     API_BASE: str = "https://openrouter.ai/api/v1"
