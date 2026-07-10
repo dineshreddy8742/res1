@@ -244,15 +244,22 @@ class ResumeRepository(BaseRepository):
 
     async def can_create_resume(self, user_id: str) -> bool:
         """Check if user has reached their daily, monthly, or yearly resume limit."""
+        if user_id in ("anonymous", "temp-user-id"):
+            return True
         from app.database.repositories.user_repository import UserRepository
         user_repo = UserRepository()
         user = await user_repo.get_user_by_id(user_id)
-        if not user: return False
         
         # Enforce all tiers of limits
-        daily_limit = user.get("daily_limit", 5)
-        monthly_limit = user.get("monthly_limit", 50)
-        yearly_limit = user.get("yearly_limit", 500)
+        if not user:
+            # Fallback to standard limits if user record is missing
+            daily_limit = 5
+            monthly_limit = 50
+            yearly_limit = 500
+        else:
+            daily_limit = user.get("daily_limit", 5)
+            monthly_limit = user.get("monthly_limit", 50)
+            yearly_limit = user.get("yearly_limit", 500)
         
         stats = await self.get_usage_stats(user_id)
         

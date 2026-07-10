@@ -46,10 +46,14 @@ class Settings(BaseSettings):
             return [k.strip() for k in v.split(",") if k.strip()]
         return v
     
-    # Scaling & Performance
-    MAX_CONCURRENT_REQUESTS: int = 50
-    REQUEST_TIMEOUT: int = 120
-    
+    @property
+    def API_KEY(self) -> str:
+        if isinstance(self.API_KEYS, list) and self.API_KEYS:
+            return self.API_KEYS[0]
+        elif isinstance(self.API_KEYS, str) and self.API_KEYS:
+            return self.API_KEYS
+        return ""
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
