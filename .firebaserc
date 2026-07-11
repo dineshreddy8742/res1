@@ -1,12 +1,12 @@
 {
   "projects": {
-    "default": "dailsmart-496415"
+    "default": "aurarise-resume-dinesh"
   },
   "targets": {
-    "dailsmart-496415": {
+    "aurarise-resume-dinesh": {
       "hosting": {
         "resume-site": [
-          "aurarise-resume"
+          "aurarise-resume-dinesh"
         ]
       }
     }
