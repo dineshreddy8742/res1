@@ -190,6 +190,25 @@ async def _do_optimization(
         raise RuntimeError(f"AI error: {result['error']}")
 
     # --- Step 3: Validate result ---
+    # Robust key alignment: LLMs often place experiences/education/skills at the top level
+    if isinstance(result, dict):
+        if "user_information" not in result or not isinstance(result["user_information"], dict):
+            result["user_information"] = {}
+        user_info = result["user_information"]
+        
+        for key in ["experiences", "education", "skills", "hobbies"]:
+            if key in result:
+                if key not in user_info or (not user_info[key] and result[key]):
+                    user_info[key] = result[key]
+                result.pop(key, None)
+        
+        if "experiences" not in user_info or user_info["experiences"] is None:
+            user_info["experiences"] = []
+        if "education" not in user_info or user_info["education"] is None:
+            user_info["education"] = []
+        if "skills" not in user_info or user_info["skills"] is None:
+            user_info["skills"] = {"hard_skills": [], "soft_skills": []}
+
     optimized_data = ResumeData.parse_obj(result)
 
     # --- Step 4: Score optimized resume ---
