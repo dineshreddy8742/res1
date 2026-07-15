@@ -23,7 +23,7 @@ class UserRepository(BaseRepository):
             user_data["is_active"] = True
             user_data["is_admin"] = False
             user_data["resume_count"] = 0
-            user_data["daily_limit"] = 5
+            user_data["daily_limit"] = 2
             user_data["monthly_limit"] = 50
             user_data["yearly_limit"] = 500
             

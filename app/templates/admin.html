@@ -31,6 +31,7 @@
                     </template>
                 </button>
                 <button @click="activeTab = 'blocked'" :class="activeTab === 'blocked' ? 'bg-red-500 text-white shadow-xl shadow-red-500/20' : 'bg-white/10 text-red-300 hover:bg-white/20'" class="px-5 py-2.5 rounded-xl font-bold transition-all">🚫 Blocked Agents</button>
+                <button @click="activeTab = 'interviews'" :class="activeTab === 'interviews' ? 'bg-white text-purple-900 shadow-xl' : 'bg-white/10 text-white hover:bg-white/20'" class="px-5 py-2.5 rounded-xl font-bold transition-all">🤖 AI Interviews</button>
             </div>
         </div>
 
@@ -195,99 +196,7 @@
             </div>
 
             <!-- Users List Table -->
-            <!-- ... table content ... -->
-        </div>
-
-        <!-- Tab 4: Feedback & Enquiries -->
-        <div x-show="activeTab === 'feedback'" x-cloak class="space-y-8">
-            <div class="flex items-center justify-between mb-2">
-                <div>
-                    <h3 class="text-2xl font-black text-white">📬 User Feedback & Enquiries</h3>
-                    <p class="text-blue-300 text-sm">Monitor bug reports, feature requests, and general messages</p>
-                </div>
-                <div class="flex gap-2">
-                    <div class="bg-indigo-500/20 text-indigo-300 px-4 py-2 rounded-xl border border-indigo-500/30 font-bold text-sm">
-                        Pending: <span x-text="feedback.filter(f => f.status === 'pending').length"></span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 gap-6">
-                <template x-for="item in filteredFeedback" :key="item.id">
-                    <div class="bg-white/10 border border-white/20 rounded-3xl backdrop-blur-xl overflow-hidden shadow-2xl transition-all hover:border-indigo-500/40">
-                        <div class="p-6">
-                            <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                                <div class="flex gap-4">
-                                    <div :class="{
-                                        'bg-red-500/20 text-red-400': item.type === 'bug',
-                                        'bg-blue-500/20 text-blue-400': item.type === 'general',
-                                        'bg-green-500/20 text-green-400': item.type === 'suggestion',
-                                        'bg-yellow-500/20 text-yellow-400': item.type === 'issue'
-                                    }" class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl h-fit">
-                                        <template x-if="item.type === 'bug'"><span>🐞</span></template>
-                                        <template x-if="item.type === 'suggestion'"><span>💡</span></template>
-                                        <template x-if="item.type === 'issue'"><span>⚠️</span></template>
-                                        <template x-if="item.type === 'general'"><span>✉️</span></template>
-                                    </div>
-                                    <div>
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border" 
-                                                  :class="item.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' : 'bg-green-500/20 text-green-300 border-green-500/30'"
-                                                  x-text="item.status"></span>
-                                            <p class="text-xs text-blue-300" x-text="new Date(item.created_at).toLocaleString()"></p>
-                                        </div>
-                                        <h4 class="text-xl font-black text-white" x-text="item.title"></h4>
-                                        <p class="text-blue-100 mt-2 text-sm leading-relaxed" x-text="item.content"></p>
-                                        
-                                        <template x-if="item.image">
-                                            <div class="mt-4">
-                                                <button @click="viewImage(item.image)" class="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1">
-                                                    🖼️ View Attached Image
-                                                </button>
-                                            </div>
-                                        </template>
-
-                                        <div class="mt-4 flex items-center gap-4 border-t border-white/5 pt-4">
-                                            <div class="flex items-center gap-2">
-                                                <div class="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px]">👤</div>
-                                                <p class="text-xs font-bold text-white" x-text="item.user_name || 'Anonymous'"></p>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <div class="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px]">📧</div>
-                                                <p class="text-xs text-blue-300" x-text="item.user_email || 'Not provided'"></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col gap-2 min-w-[150px]">
-                                    <template x-if="item.status === 'pending'">
-                                        <button @click="resolveFeedback(item.id)" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-black text-xs transition-all shadow-lg shadow-emerald-500/20">
-                                            MARK RESOLVED ✅
-                                        </button>
-                                    </template>
-                                    <template x-if="item.status !== 'pending'">
-                                        <button @click="updateFeedbackStatus(item.id, 'pending')" class="w-full bg-white/10 hover:bg-white/20 text-white py-2.5 rounded-xl font-bold text-xs transition-all">
-                                            RE-OPEN 📂
-                                        </button>
-                                    </template>
-                                    <button @click="deleteFeedback(item.id)" class="w-full bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white py-2.5 rounded-xl font-bold text-xs transition-all border border-red-500/30">
-                                        DELETE 🗑️
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-                
-                <template x-if="filteredFeedback.length === 0">
-                    <div class="bg-white/5 border border-white/10 rounded-3xl p-12 text-center backdrop-blur-xl">
-                        <div class="text-6xl mb-4 opacity-20">📭</div>
-                        <h3 class="text-xl font-bold text-white mb-2">Inbox Empty</h3>
-                        <p class="text-blue-300">No feedback matching your current filters.</p>
-                    </div>
-                </template>
-            </div>
-        </div>
+            <div class="bg-white/10 border border-white/20 rounded-3xl backdrop-blur-xl overflow-hidden shadow-2xl">
                 <div class="px-6 py-5 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h3 class="text-xl font-bold text-white">User Directory</h3>
                     <div class="flex gap-2">
@@ -391,7 +300,97 @@
                 </div>
             </div>
         </div>
-    </div>
+
+        <!-- Tab 4: Feedback & Enquiries -->
+        <div x-show="activeTab === 'feedback'" x-cloak class="space-y-8">
+            <div class="flex items-center justify-between mb-2">
+                <div>
+                    <h3 class="text-2xl font-black text-white">📬 User Feedback & Enquiries</h3>
+                    <p class="text-blue-300 text-sm">Monitor bug reports, feature requests, and general messages</p>
+                </div>
+                <div class="flex gap-2">
+                    <div class="bg-indigo-500/20 text-indigo-300 px-4 py-2 rounded-xl border border-indigo-500/30 font-bold text-sm">
+                        Pending: <span x-text="feedback.filter(f => f.status === 'pending').length"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6">
+                <template x-for="item in filteredFeedback" :key="item.id">
+                    <div class="bg-white/10 border border-white/20 rounded-3xl backdrop-blur-xl overflow-hidden shadow-2xl transition-all hover:border-indigo-500/40">
+                        <div class="p-6">
+                            <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                <div class="flex gap-4">
+                                    <div :class="{
+                                        'bg-red-500/20 text-red-400': item.type === 'bug',
+                                        'bg-blue-500/20 text-blue-400': item.type === 'general',
+                                        'bg-green-500/20 text-green-400': item.type === 'suggestion',
+                                        'bg-yellow-500/20 text-yellow-400': item.type === 'issue'
+                                    }" class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl h-fit">
+                                        <template x-if="item.type === 'bug'"><span>🐞</span></template>
+                                        <template x-if="item.type === 'suggestion'"><span>💡</span></template>
+                                        <template x-if="item.type === 'issue'"><span>⚠️</span></template>
+                                        <template x-if="item.type === 'general'"><span>✉️</span></template>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border" 
+                                                  :class="item.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' : 'bg-green-500/20 text-green-300 border-green-500/30'"
+                                                  x-text="item.status"></span>
+                                            <p class="text-xs text-blue-300" x-text="new Date(item.created_at).toLocaleString()"></p>
+                                        </div>
+                                        <h4 class="text-xl font-black text-white" x-text="item.title"></h4>
+                                        <p class="text-blue-100 mt-2 text-sm leading-relaxed" x-text="item.content"></p>
+                                        
+                                        <template x-if="item.image">
+                                            <div class="mt-4">
+                                                <button @click="viewImage(item.image)" class="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1">
+                                                    🖼️ View Attached Image
+                                                </button>
+                                            </div>
+                                        </template>
+
+                                        <div class="mt-4 flex items-center gap-4 border-t border-white/5 pt-4">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px]">👤</div>
+                                                <p class="text-xs font-bold text-white" x-text="item.user_name || 'Anonymous'"></p>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px]">📧</div>
+                                                <p class="text-xs text-blue-300" x-text="item.user_email || 'Not provided'"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-2 min-w-[150px]">
+                                    <template x-if="item.status === 'pending'">
+                                        <button @click="resolveFeedback(item.id)" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-black text-xs transition-all shadow-lg shadow-emerald-500/20">
+                                            MARK RESOLVED ✅
+                                        </button>
+                                    </template>
+                                    <template x-if="item.status !== 'pending'">
+                                        <button @click="updateFeedbackStatus(item.id, 'pending')" class="w-full bg-white/10 hover:bg-white/20 text-white py-2.5 rounded-xl font-bold text-xs transition-all">
+                                            RE-OPEN 📂
+                                        </button>
+                                    </template>
+                                    <button @click="deleteFeedback(item.id)" class="w-full bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white py-2.5 rounded-xl font-bold text-xs transition-all border border-red-500/30">
+                                        DELETE 🗑️
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                
+                <template x-if="filteredFeedback.length === 0">
+                    <div class="bg-white/5 border border-white/10 rounded-3xl p-12 text-center backdrop-blur-xl">
+                        <div class="text-6xl mb-4 opacity-20">📭</div>
+                        <h3 class="text-xl font-bold text-white mb-2">Inbox Empty</h3>
+                        <p class="text-blue-300">No feedback matching your current filters.</p>
+                    </div>
+                </template>
+            </div>
+        </div>
 
     <!-- Tab 4: Blocked Sector (Institutional View) -->
     <div x-show="activeTab === 'blocked'" x-cloak class="space-y-8">
@@ -446,6 +445,85 @@
             </div>
         </div>
     </div>
+
+    <!-- Tab 5: AI Interview Bookings -->
+    <div x-show="activeTab === 'interviews'" x-cloak class="space-y-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h3 class="text-2xl font-black text-white">🤖 AI Interview Manager</h3>
+                <p class="text-blue-300 text-sm">Control outbound telephony simulation and review student schedule entries</p>
+            </div>
+            <div class="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-4 shrink-0 flex-wrap">
+                <span class="text-xs font-bold text-blue-200">Simulation Service:</span>
+                <button @click="toggleInterviewService()" 
+                        :class="interviewServiceStatus === 'active' ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-red-500 text-white shadow-red-500/20'"
+                        class="px-4 py-2 rounded-xl text-xs font-black uppercase transition-all shadow-lg"
+                        x-text="interviewServiceStatus === 'active' ? 'Active ✓' : 'Suspended ⚠️'"></button>
+                <a href="/api/interview/admin/export" 
+                   class="px-4 py-2 rounded-xl text-xs font-black uppercase bg-green-500 text-white hover:bg-green-600 transition-all shadow-lg shadow-green-500/20 flex items-center gap-2">
+                    📥 Download Excel
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white/10 border border-white/20 rounded-3xl backdrop-blur-xl overflow-hidden shadow-2xl">
+            <div class="px-6 py-5 border-b border-white/10">
+                <h3 class="text-xl font-bold text-white">Scheduled Interview Logs</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white/5">
+                            <th class="px-6 py-4 text-xs font-bold text-blue-200 uppercase">Student Name</th>
+                            <th class="px-6 py-4 text-xs font-bold text-blue-200 uppercase">Phone Number</th>
+                            <th class="px-6 py-4 text-xs font-bold text-blue-200 uppercase text-center">Date</th>
+                            <th class="px-6 py-4 text-xs font-bold text-blue-200 uppercase text-center">Time</th>
+                            <th class="px-6 py-4 text-xs font-bold text-blue-200 uppercase text-center">Status</th>
+                            <th class="px-6 py-4 text-xs font-bold text-blue-200 uppercase text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        <template x-for="item in interviews" :key="item.id">
+                            <tr class="hover:bg-white/5 transition-colors group">
+                                <td class="px-6 py-4">
+                                    <p class="font-bold text-white" x-text="item.user_name || 'Unknown'"></p>
+                                    <p class="text-xs text-blue-300" x-text="'User ID: ' + item.user_id"></p>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-blue-100" x-text="item.phone_number"></td>
+                                <td class="px-6 py-4 text-sm text-blue-100 text-center" x-text="item.interview_date"></td>
+                                <td class="px-6 py-4 text-sm text-blue-100 text-center" x-text="item.interview_time"></td>
+                                <td class="px-6 py-4 text-center">
+                                    <span :class="{
+                                        'bg-yellow-500/20 text-yellow-300 border-yellow-500/30': item.status === 'pending',
+                                        'bg-green-500/20 text-green-300 border-green-500/30': item.status === 'completed'
+                                    }" class="px-2 py-1 rounded-lg text-[10px] font-black border uppercase" x-text="item.status"></span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <template x-if="item.status === 'pending'">
+                                            <button @click="triggerInterview(item.id)" class="px-3 py-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500 hover:text-white transition-all text-xs font-black uppercase">
+                                                Trigger 🚀
+                                            </button>
+                                        </template>
+                                        <button @click="deleteInterview(item.id)" class="p-2 bg-white/10 text-white rounded-lg hover:bg-red-600 transition-all font-bold" title="Delete Booking">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h14"/></svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                        <template x-if="interviews.length === 0">
+                            <tr>
+                                <td colspan="6" class="px-6 py-10 text-center text-blue-300 font-bold">No interview schedules registered in system.</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    </div><!-- end max-w-7xl -->
 
     <!-- Manual Add Modal -->
     <div x-show="showAddModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -537,6 +615,8 @@ function adminDashboard() {
     return {
         activeTab: 'stats',
         stats: { total_users: 0, total_resumes: 0 },
+        interviews: [],
+        interviewServiceStatus: 'active',
         users: [],
         colleges: [],
         searchQuery: '',
@@ -620,6 +700,7 @@ function adminDashboard() {
                 this.recentActivity = await activityRes.json();
                 const feedbackData = await feedbackRes.json();
                 this.feedback = Array.isArray(feedbackData) ? feedbackData : [];
+                await this.loadInterviews();
 
                 console.log("Admin Dashboard Context Refreshed:", {
                     total_users: this.users.length,
@@ -627,6 +708,70 @@ function adminDashboard() {
                     feedback: this.feedback.length
                 });
             } catch (e) { console.error("Admin Refresh Failed", e); }
+        },
+
+        async loadInterviews() {
+            try {
+                const [statusRes, interviewsRes] = await Promise.all([
+                    fetch('/api/interview/status'),
+                    fetch('/api/interview/admin/all')
+                ]);
+                if (statusRes.ok) {
+                    const data = await statusRes.json();
+                    this.interviewServiceStatus = data.status;
+                } else {
+                    const errText = await statusRes.text();
+                    console.error('Interview status error:', statusRes.status, errText);
+                }
+                if (interviewsRes.ok) {
+                    const data = await interviewsRes.json();
+                    console.log('Loaded interviews:', data);
+                    this.interviews = Array.isArray(data) ? data : [];
+                } else {
+                    const errText = await interviewsRes.text();
+                    console.error('Interview admin/all error:', interviewsRes.status, errText);
+                    this.interviews = [];
+                }
+            } catch(e) { 
+                console.error('Failed to load interviews:', e); 
+                this.interviews = [];
+            }
+        },
+
+        async toggleInterviewService() {
+            const newStatus = this.interviewServiceStatus === 'active' ? 'suspended' : 'active';
+            try {
+                const res = await fetch('/api/interview/admin/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                if (res.ok) {
+                    this.interviewServiceStatus = newStatus;
+                    window.showNotification?.(`AI Interview service status updated: ${newStatus}`, 'success');
+                }
+            } catch(e) { console.error(e); }
+        },
+
+        async triggerInterview(id) {
+            try {
+                const res = await fetch(`/api/interview/${id}/trigger`, { method: 'POST' });
+                if (res.ok) {
+                    await this.loadInterviews();
+                    window.showNotification?.('AI Interview simulation triggered!', 'success');
+                }
+            } catch(e) { console.error(e); }
+        },
+
+        async deleteInterview(id) {
+            if (!confirm('Are you sure you want to delete this scheduled interview?')) return;
+            try {
+                const res = await fetch(`/api/interview/admin/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    await this.loadInterviews();
+                    window.showNotification?.('Interview booking deleted', 'info');
+                }
+            } catch(e) { console.error(e); }
         },
 
         get filteredFeedback() {

@@ -94,6 +94,7 @@ class RegisterRequest(BaseModel):
     college: str
     role: str = "student"
     password: str
+    phone_number: Optional[str] = None
 
 class RegisterResponse(BaseModel):
     success: bool
@@ -122,6 +123,7 @@ async def register(req: RegisterRequest, response: Response):
         "name": req.name,
         "college": req.college,
         "role": req.role,
+        "phone_number": req.phone_number,
         "password_hash": hash_password(req.password),
     }
     
@@ -135,7 +137,7 @@ async def register(req: RegisterRequest, response: Response):
         expires_delta=timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
     )
     response.set_cookie(
-        key="auth_token",
+        key="__session",
         value=access_token,
         httponly=True,
         secure=False,  # Set to True in production with HTTPS
@@ -230,7 +232,7 @@ async def login(req: LoginRequest, response: Response):
 
         # 5. Set Session Cookie
         response.set_cookie(
-            key="auth_token",
+            key="__session",
             value=create_access_token(data={"sub": str(user.get("id", "")), "role": user.get("role", "student")}),
             httponly=True,
             samesite="lax",
@@ -262,7 +264,7 @@ async def login(req: LoginRequest, response: Response):
 @auth_router.post("/logout")
 async def logout(response: Response):
     """Logout and clear session."""
-    response.delete_cookie(key="auth_token")
+    response.delete_cookie(key="__session")
     return {"success": True, "message": "Logged out successfully"}
 
 
@@ -363,6 +365,7 @@ async def admin_add_user(req: RegisterRequest, user_id: str = Depends(get_curren
         "name": req.name,
         "college": req.college,
         "role": req.role,
+        "phone_number": req.phone_number,
         "password_hash": hash_password(req.password),
     }
     
@@ -385,6 +388,7 @@ async def admin_bulk_import(users: List[RegisterRequest], user_id: str = Depends
             "name": u.name,
             "college": u.college,
             "role": u.role,
+            "phone_number": u.phone_number,
             "password_hash": hash_password(u.password),
             "is_active": True,
             "is_admin": False

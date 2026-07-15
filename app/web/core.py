@@ -143,6 +143,21 @@ async def login_page(
     )
 
 @core_web_router.get(
+    "/register",
+    summary="Register Page",
+    response_class=HTMLResponse,
+)
+async def register_page(
+    request: Request,
+):
+    """Render the registration page."""
+    return templates.TemplateResponse(
+        request,
+        "register.html",
+        {"request": request},
+    )
+
+@core_web_router.get(
     "/admin",
     summary="Admin Dashboard",
     response_description="Admin dashboard",
@@ -193,5 +208,22 @@ async def profile_page(
     return templates.TemplateResponse(
         request,
         "profile.html",
+        {"request": request},
+    )
+
+@core_web_router.get(
+    "/ai-interview",
+    summary="AI Interview Simulator",
+    response_class=HTMLResponse,
+)
+async def ai_interview_page(
+    request: Request,
+):
+    """Render the AI Interview page."""
+    redirect = require_login_redirect(request)
+    if redirect: return redirect
+    return templates.TemplateResponse(
+        request,
+        "ai_interview.html",
         {"request": request},
     )

@@ -75,13 +75,24 @@
                             </div>
                         </div>
 
-                        <div class="group">
-                            <label class="block text-xs font-black uppercase tracking-widest text-blue-300 mb-2 ml-2">Secure The Code (Password)</label>
-                            <div class="relative">
-                                <span class="absolute left-5 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-100 transition-all text-xl">🔒</span>
-                                <input x-model="password" @focus="vibeMessage = 'KEEP IT SECURE FR FR 💯'" type="password" required 
-                                       class="w-full bg-slate-950/40 border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-white placeholder-white/20 focus:outline-none focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all font-bold" 
-                                       placeholder="••••••••">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="group">
+                                <label class="block text-xs font-black uppercase tracking-widest text-blue-300 mb-2 ml-2">Phone Number</label>
+                                <div class="relative">
+                                    <span class="absolute left-5 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-100 transition-all text-xl">📞</span>
+                                    <input x-model="phone_number" @focus="vibeMessage = 'TO COORDINATE YOUR CALLS 📱'" type="tel" required
+                                           class="w-full bg-slate-950/40 border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-white placeholder-white/20 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition-all font-bold"
+                                           placeholder="e.g. +91 9963873206">
+                                </div>
+                            </div>
+                            <div class="group">
+                                <label class="block text-xs font-black uppercase tracking-widest text-blue-300 mb-2 ml-2">Secure The Code (Password)</label>
+                                <div class="relative">
+                                    <span class="absolute left-5 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-100 transition-all text-xl">🔒</span>
+                                    <input x-model="password" @focus="vibeMessage = 'KEEP IT SECURE FR FR 💯'" type="password" required 
+                                           class="w-full bg-slate-950/40 border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-white placeholder-white/20 focus:outline-none focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all font-bold" 
+                                           placeholder="••••••••">
+                                </div>
                             </div>
                         </div>
 
@@ -115,6 +126,7 @@ function registerForm() {
         roll_number: '',
         college: '',
         password: '',
+        phone_number: '',
         error: '',
         loading: false,
         vibeMessage: 'WAITING FOR INPUT...',
@@ -131,7 +143,8 @@ function registerForm() {
                         roll_number: this.roll_number,
                         name: this.name,
                         college: this.college,
-                        password: this.password
+                        password: this.password,
+                        phone_number: this.phone_number
                     })
                 });
                 

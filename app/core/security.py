@@ -53,7 +53,7 @@ def decode_access_token(token: str) -> dict:
 
 async def get_current_user(request: Request) -> str:
     """FastAPI dependency to get current logged-in user ID from session cookie."""
-    token = request.cookies.get("auth_token")
+    token = request.cookies.get("__session")
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     payload = decode_access_token(token)
@@ -65,7 +65,7 @@ async def get_current_user(request: Request) -> str:
 
 async def get_current_user_optional(request: Request) -> str:
     """Get current user ID or None if not logged in."""
-    token = request.cookies.get("auth_token")
+    token = request.cookies.get("__session")
     if not token:
         return None
     try:
@@ -77,7 +77,7 @@ async def get_current_user_optional(request: Request) -> str:
 
 def require_login_redirect(request: Request) -> RedirectResponse | None:
     """Redirect to login if not authenticated (for web routes)."""
-    token = request.cookies.get("auth_token")
+    token = request.cookies.get("__session")
     if not token:
         return RedirectResponse(url="/login", status_code=303)
     try:

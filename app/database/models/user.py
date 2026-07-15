@@ -14,6 +14,7 @@ class User(BaseModel):
     college: str = Field(..., description="College/institution name")
     role: str = Field(default="student", description="User role (student, employee, admin)")
     password_hash: str = Field(..., description="Bcrypt hashed password")
+    phone_number: Optional[str] = Field(default=None, description="User phone number")
     is_active: bool = True
     is_admin: bool = False
     resume_count: int = 0
@@ -33,6 +34,7 @@ class UserCreate(BaseModel):
     college: str = Field(..., min_length=2, max_length=200)
     role: str = Field(default="student", min_length=2, max_length=20)
     password: str = Field(..., min_length=6, max_length=100)
+    phone_number: Optional[str] = Field(default=None, description="User phone number")
 
 
 class UserLogin(BaseModel):
@@ -50,6 +52,7 @@ class UserResponse(BaseModel):
     name: str
     college: str
     role: str
+    phone_number: Optional[str] = None
     is_active: bool
     is_admin: bool
     resume_count: int

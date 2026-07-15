@@ -32,11 +32,11 @@ class BaseRepository:
             return "", "Insert succeeded but no data was returned. Check RLS policies."
         except Exception as e:
             error_msg = str(e)
-            print(f"❌ DATABASE INSERT ERROR [{self.table_name}]: {error_msg}")
+            print(f"[ERROR] DATABASE INSERT ERROR [{self.table_name}]: {error_msg}")
             
             missing_column = self._get_missing_column_name(e)
             if missing_column and missing_column in payload:
-                print(f"⚠️ Column '{missing_column}' missing in {self.table_name}, retrying...")
+                print(f"[WARNING] Column '{missing_column}' missing in {self.table_name}, retrying...")
                 retry_payload = {k: v for k, v in payload.items() if k != missing_column}
                 return await self.insert_one(retry_payload)
             return "", error_msg
@@ -83,11 +83,11 @@ class BaseRepository:
             return len(result.data) > 0 if result.data else False
         except Exception as e:
             error_msg = str(e)
-            print(f"❌ DATABASE UPDATE ERROR [{self.table_name}]: {error_msg}")
+            print(f"[ERROR] DATABASE UPDATE ERROR [{self.table_name}]: {error_msg}")
             
             missing_column = self._get_missing_column_name(e)
             if missing_column and missing_column in payload:
-                print(f"⚠️ Column '{missing_column}' missing in {self.table_name}, retrying update...")
+                print(f"[WARNING] Column '{missing_column}' missing in {self.table_name}, retrying update...")
                 retry_payload = {k: v for k, v in payload.items() if k != missing_column}
                 return await self.update_one(query, retry_payload)
             return False

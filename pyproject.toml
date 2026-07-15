@@ -23,4 +23,6 @@ dependencies = [
     "pypdf",
     "PyPDF2",
     "python-docx",
+    "openpyxl",
 ]
+

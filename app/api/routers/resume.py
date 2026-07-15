@@ -274,12 +274,12 @@ async def process_resume_upload(resume_id: str, temp_file_path: str, repo: Resum
         # Extract LinkedIn
         linkedin_match = re.search(r'linkedin\.com/in/([\w\.-]+)', resume_text, re.IGNORECASE)
         if linkedin_match:
-            contact_info['linkedin'] = linkedin_match.group(1)
+            contact_info['linkedin_url'] = f"https://linkedin.com/in/{linkedin_match.group(1)}"
         
         # Extract GitHub
         github_match = re.search(r'github\.com/([\w\.-]+)', resume_text, re.IGNORECASE)
         if github_match:
-            contact_info['github'] = github_match.group(1)
+            contact_info['github_url'] = f"https://github.com/{github_match.group(1)}"
         
         # Extract Portfolio
         portfolio_match = re.search(r'(?:portfolio|website|personal site)[:\s]*(https?://[\w\.-]+)', resume_text, re.IGNORECASE)
