@@ -243,18 +243,18 @@ class ResumeRepository(BaseRepository):
             return {"today": 0, "yesterday": 0, "tomorrow": 0, "weekly": 0, "monthly": 0, "yearly": 0, "last_today": None}
 
     async def can_create_resume(self, user_id: str) -> bool:
-        """Check if user has reached their maximum total resume limit."""
+        """Check if user has reached their maximum daily resume limit."""
         if user_id in ("anonymous", "temp-user-id"):
             return True
         from app.database.repositories.user_repository import UserRepository
         user_repo = UserRepository()
         user = await user_repo.get_user_by_id(user_id)
         
-        # Enforce total limit using daily_limit field as the total quota
+        # Enforce daily limit using daily_limit field
         if not user:
             max_resumes = 2
         else:
             max_resumes = user.get("daily_limit", 2)
         
-        resumes = await self.get_resumes_by_user_id(user_id)
-        return len(resumes) < max_resumes
+        stats = await self.get_usage_stats(user_id)
+        return stats.get("today", 0) < max_resumes
