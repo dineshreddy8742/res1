@@ -86,16 +86,37 @@
     <div class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-pink-500/10 rounded-full blur-[120px] animate-blob"></div>
     <div class="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] animate-blob animation-delay-2000"></div>
     
-    <div class="relative z-10 max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-12 backdrop-blur-[2px]">
+    <div class="relative z-10 max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 backdrop-blur-[2px]">
         <!-- Hero Header Protocol -->
-        <div class="text-center mb-16">
-            <div class="flex items-center justify-center gap-4 mb-6">
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-4 mb-4">
                 <span class="px-4 py-1.5 bg-pink-500/20 border border-pink-500/30 rounded-full text-[10px] font-black text-pink-400 uppercase tracking-widest italic animate-pulse">Resume Optimization System 🚀</span>
             </div>
-            <h1 class="text-5xl sm:text-7xl md:text-9xl font-black text-white italic tracking-tighter uppercase leading-none mb-6">
+            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-white italic tracking-tighter uppercase leading-tight mb-4">
                 ATS Resume <span class="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">Optimizer</span>
             </h1>
-            <p class="text-[12px] font-bold text-white/40 uppercase tracking-[0.4em]">Propelling your professional signal past the ATS robots.</p>
+            <p class="text-xs font-bold text-white/50 uppercase tracking-[0.3em]">Propelling your professional signal past the ATS robots.</p>
+        </div>
+        <!-- New Feature Banner: Build with AI Chat -->
+        <div class="mb-10 bg-gradient-to-r from-pink-500/20 via-purple-600/20 to-indigo-600/20 border-2 border-pink-500/40 rounded-3xl p-6 backdrop-blur-2xl flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl">
+            <div class="flex items-center gap-4 text-center sm:text-left">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-3xl shrink-0 shadow-lg shadow-pink-500/30">
+                    💬
+                </div>
+                <div>
+                    <span class="px-3 py-0.5 bg-pink-500 text-white rounded-full text-[9px] font-black uppercase tracking-widest italic">New Feature</span>
+                    <h3 class="text-xl sm:text-2xl font-black italic uppercase tracking-tight text-white mt-1">
+                        Build with AI (Interactive Chat)
+                    </h3>
+                    <p class="text-xs text-white/70 font-medium">
+                        Don't know how to build a resume? Simply text AI or upload an image/PDF of your old resume!
+                    </p>
+                </div>
+            </div>
+            <a href="/ai-chat-builder" class="px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:scale-105 transition-transform rounded-2xl font-black text-white text-xs uppercase italic tracking-widest shrink-0 shadow-xl border border-white/20 flex items-center gap-2">
+                <span>Start AI Chat</span>
+                <span>→</span>
+            </a>
         </div>
 
         <div class="bg-white/[0.02] backdrop-blur-3xl border border-white/10 rounded-[4rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] p-12"
@@ -490,7 +511,38 @@ function resumeCreator() {
         resumePreviewUrl: '',
         resumePreviewLoaded: false,
         progressInterval: null,
-        progressInterval: null,
+
+        async init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const rid = urlParams.get('resume_id') || urlParams.get('id');
+            if (rid) {
+                await this.loadExistingResume(rid);
+            }
+        },
+
+        async loadExistingResume(rid) {
+            try {
+                this.isAnalyzing = true;
+                this.analysisProgressMessage = 'Loading your AI generated resume...';
+                const res = await fetch(`/api/resume/${rid}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    this.resumeId = rid;
+                    this.matchScore = data.ats_score || 92;
+                    this.originalScore = data.original_ats_score || 75;
+                    this.matchedSkills = data.matching_skills || ['Python', 'HTML', 'CSS', 'JavaScript'];
+                    this.missingSkills = data.missing_skills || [];
+                    this.recommendation = data.recommendation || 'ATS-optimized resume created with AI Assistant.';
+                    this.resumePreviewUrl = `/api/resume/${rid}/download?use_optimized=true`;
+                    this.resumePreviewLoaded = true;
+                    this.currentStep = 3;
+                }
+            } catch (e) {
+                console.error('Error loading resume:', e);
+            } finally {
+                this.isAnalyzing = false;
+            }
+        },
 
         handleResumeFileChange(e) {
             const file = e.target.files[0];

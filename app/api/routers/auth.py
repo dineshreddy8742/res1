@@ -208,15 +208,32 @@ async def login(req: LoginRequest, response: Response):
         if not user:
             raise HTTPException(status_code=401, detail="User not found. Contact admin to create account.")
         
-        # Check password hash
-        from app.core.security import verify_password
+        # Check password hash (supports bcrypt hashes, legacy plain text, case-insensitive roll number passwords, and auto-upgrades to bcrypt)
+        from app.core.security import verify_password, hash_password
         
-        stored_hash = user.get("password_hash")
-        password_valid = stored_hash and verify_password(req.password, stored_hash)
+        stored_hash = user.get("password_hash") or user.get("password") or user.get("pwd")
+        password_valid = False
+        should_upgrade_hash = False
+
+        if stored_hash:
+            if stored_hash.startswith("$2b$") or stored_hash.startswith("$2a$"):
+                password_valid = verify_password(req.password, stored_hash)
+                # Fallback: if bcrypt check fails, check if plain password or lowercase plain password matches
+                if not password_valid and (req.password == stored_hash or req.password.lower() == stored_hash.lower()):
+                    password_valid = True
+                    should_upgrade_hash = True
+            elif req.password == stored_hash or req.password.lower() == stored_hash.lower():
+                password_valid = True
+                should_upgrade_hash = True
+
         print(f"DEBUG PASSWORD: stored={bool(stored_hash)}, valid={password_valid}")
         
-        if not stored_hash or not verify_password(req.password, stored_hash):
+        if not password_valid:
             raise HTTPException(status_code=401, detail="Invalid password.")
+
+        if should_upgrade_hash and user.get("id"):
+            new_hash = hash_password(req.password)
+            await repo.update_user(user.get("id"), {"password_hash": new_hash})
         
         print(f"DEBUG STATUS: is_active={user.get('is_active')}")
         # Check user status
@@ -558,6 +575,7 @@ class AdminUserUpdate(BaseModel):
     college: str
     is_admin: bool = False
     is_active: bool = True
+    daily_limit: Optional[int] = 3
 
 @auth_router.post("/admin/update-user")
 async def admin_update_user(req: AdminUserUpdate, user_id: str = Depends(get_current_user)):
@@ -573,6 +591,8 @@ async def admin_update_user(req: AdminUserUpdate, user_id: str = Depends(get_cur
         "is_admin": req.is_admin,
         "is_active": req.is_active,
     }
+    if req.daily_limit is not None:
+        update_data["daily_limit"] = req.daily_limit
     
     success = await repo.update_user(req.id, update_data)
     if not success:

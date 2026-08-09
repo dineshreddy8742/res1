@@ -1,26 +1,21 @@
-const CACHE_NAME = 'aurarise-v1';
-const ASSETS = [
-  '/',
-  '/static/manifest.json',
-  '/static/icon-512.png'
-];
+// AuraRise Service Worker - Pure Proxy & Cache Bypass Protocol (v3.0)
+const CACHE_NAME = 'aurarise-v3-bypass';
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cache) => caches.delete(cache))
+      );
+    }).then(() => self.clients.claim())
   );
 });
 
+// Always fetch directly from network to ensure 100% fresh real-time server updates
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests and skip API calls
-  if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
-    return;
-  }
-  
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
-  );
+  event.respondWith(fetch(event.request));
 });
-

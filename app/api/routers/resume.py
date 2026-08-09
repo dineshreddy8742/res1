@@ -1113,6 +1113,20 @@ async def score_resume(
 
 
 @resume_router.get(
+    "/{resume_id}/pdf",
+    summary="Download a resume as PDF (Alias)",
+    response_description="Resume PDF downloaded successfully",
+)
+async def download_resume_pdf_alias(
+    resume_id: str,
+    request: Request = None,
+    repo: ResumeRepository = Depends(get_resume_repository),
+):
+    """Download resume as PDF alias endpoint."""
+    return await download_resume(resume_id=resume_id, use_optimized=True, format="pdf", request=request, repo=repo)
+
+
+@resume_router.get(
     "/{resume_id}/download",
     summary="Download a resume as PDF or HTML",
     response_description="Resume downloaded successfully",
@@ -1453,3 +1467,166 @@ async def check_ai_phrases(req: PhraseCheckRequest):
 async def phrase_stats():
     """Get blacklist statistics."""
     return get_blacklist_stats()
+
+
+# ===== AI CHAT RESUME BUILDER & HISTORY =====
+@resume_router.get("/ai-chats")
+async def get_ai_chat_history(user_id: str = Depends(get_current_user)):
+    """Get list of user's past AI chat sessions."""
+    from app.database.repositories.ai_chat_repository import AIChatRepository
+    chat_repo = AIChatRepository()
+    chats = await chat_repo.get_user_chats(user_id)
+    return chats
+
+@resume_router.get("/ai-chats/{chat_id}")
+async def get_ai_chat_detail(chat_id: str, user_id: str = Depends(get_current_user)):
+    """Get details of a specific AI chat session."""
+    from app.database.repositories.ai_chat_repository import AIChatRepository
+    chat_repo = AIChatRepository()
+    chat = await chat_repo.get_chat(chat_id, user_id)
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat session not found")
+    return chat
+
+@resume_router.delete("/ai-chats/{chat_id}")
+async def delete_ai_chat(chat_id: str, user_id: str = Depends(get_current_user)):
+    """Delete a specific AI chat session."""
+    from app.database.repositories.ai_chat_repository import AIChatRepository
+    chat_repo = AIChatRepository()
+    success = await chat_repo.delete_chat(chat_id, user_id)
+    return {"success": success}
+
+@resume_router.post("/ai-chat-builder")
+async def ai_chat_builder(
+    request: Request,
+    message: str = Form(""),
+    chat_history: str = Form("[]"),
+    chat_id: Optional[str] = Form(None),
+    file: Optional[UploadFile] = File(None),
+    user_id: str = Depends(get_current_user_optional)
+):
+    """Conversational AI Resume Builder endpoint with optional document upload and session persistence."""
+    if not user_id:
+        user_id = "temp-user-id"
+
+    # Enforce daily limit
+    user_repo = UserRepository()
+    allowed, current_today, max_limit = await user_repo.check_ai_chat_limit(user_id)
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Daily AI generation limit reached ({current_today}/{max_limit}). Please contact your administrator or try again tomorrow."
+        )
+
+    # Parse chat history JSON
+    try:
+        parsed_history = json.loads(chat_history)
+    except Exception:
+        parsed_history = []
+
+    # Read uploaded file bytes if provided
+    file_tuple = None
+    if file:
+        content = await file.read()
+        file_tuple = (file.filename, content)
+
+    # Initialize AIChatResumeBuilder
+    from app.services.ai.chat_builder import AIChatResumeBuilder
+    builder = AIChatResumeBuilder(
+        model_name=settings.MODEL_NAME,
+        api_key=settings.API_KEY,
+        api_base=settings.API_BASE
+    )
+
+    loop = asyncio.get_event_loop()
+    def _run_chat():
+        return builder.process_chat(
+            user_message=message,
+            chat_history=parsed_history,
+            file_info=file_tuple
+        )
+
+    res = await loop.run_in_executor(None, _run_chat)
+
+    resume_id = None
+    if res.get("is_complete") and res.get("resume_data"):
+        # Save newly constructed resume to database
+        resume_repo = ResumeRepository()
+        r_data = ResumeData.parse_obj(res["resume_data"])
+        now_iso = datetime.now().isoformat()
+        
+        target_role = getattr(r_data.user_information, "main_job_title", None) or "Software Engineer"
+        new_resume = Resume(
+            id=str(uuid.uuid4()),
+            user_id=user_id,
+            title=f"AI Resume - {target_role}",
+            original_content="Generated via AI Chat Builder",
+            job_description=f"Generated via AI Chat for role: {target_role}",
+            resume_data=r_data,
+            optimized_data=r_data,
+            ats_score=92,
+            original_ats_score=75,
+            created_at=now_iso,
+            updated_at=now_iso,
+            status="done"
+        )
+        
+        created_id = await resume_repo.create_resume(new_resume)
+        resume_id = created_id or new_resume.id
+        await user_repo.increment_resume_count(user_id)
+
+    # Persist chat session to Firestore if authenticated
+    active_chat_id = chat_id
+    if user_id != "temp-user-id":
+        from app.database.repositories.ai_chat_repository import AIChatRepository
+        chat_repo = AIChatRepository()
+        
+        # Prepare full updated messages list
+        updated_messages = list(parsed_history)
+        if message or file_tuple:
+            updated_messages.append({"role": "user", "content": message, "file": file_tuple[0] if file_tuple else None})
+        if res.get("response"):
+            updated_messages.append({"role": "assistant", "content": res.get("response")})
+
+        title_src = message or (file_tuple[0] if file_tuple else "Resume Chat")
+        active_chat_id = await chat_repo.save_chat(user_id, chat_id, title_src, updated_messages)
+
+    return {
+        "response": res.get("response", ""),
+        "is_complete": res.get("is_complete", False),
+        "resume_id": resume_id,
+        "chat_id": active_chat_id,
+        "resume_data": res.get("resume_data"),
+        "usage": {
+            "current_today": current_today + (1 if res.get("is_complete") else 0),
+            "max_limit": max_limit
+        }
+    }
+
+
+class AdminSetLimitRequest(BaseModel):
+    user_id: str
+    daily_limit: int = 3
+    monthly_limit: int = 50
+    yearly_limit: int = 500
+
+@resume_router.post("/admin/limit")
+async def set_user_limits(req: AdminSetLimitRequest, admin_id: str = Depends(get_current_user)):
+    """Admin endpoint to set daily/monthly/yearly resume generation limits for a user."""
+    user_repo = UserRepository()
+    admin = await user_repo.get_user_by_id(admin_id)
+    if not admin or (not admin.get("is_admin", False) and admin.get("role") != "admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    success = await user_repo.update_user(req.user_id, {
+        "daily_limit": req.daily_limit,
+        "monthly_limit": req.monthly_limit,
+        "yearly_limit": req.yearly_limit,
+    })
+
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to update user limits")
+
+    return {"success": True, "message": "Quotas updated successfully"}
+
+

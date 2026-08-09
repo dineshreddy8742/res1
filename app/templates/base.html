@@ -13,11 +13,19 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // PWA Service Worker Registration
+        // PWA Service Worker Cache Eviction & Proxy Protocol
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/static/sw.js')
-                    .then(reg => console.log('SW Registered!', reg))
+                if ('caches' in window) {
+                    caches.keys().then(keys => keys.forEach(key => caches.delete(key)));
+                }
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    for (let registration of registrations) {
+                        registration.unregister();
+                    }
+                });
+                navigator.serviceWorker.register('/static/sw.js?v=3')
+                    .then(reg => console.log('SW Auto-Refreshed!', reg))
                     .catch(err => console.log('SW Fail:', err));
             });
         }
@@ -114,17 +122,17 @@
                :class="{
                    'translate-x-0': mobileMenuOpen,
                    '-translate-x-full lg:translate-x-0': !mobileMenuOpen,
-                   'w-[280px] sm:w-80': !sidebarCollapsed,
-                   'w-28': sidebarCollapsed,
-                   'lg:w-72': !sidebarCollapsed
+                   'w-[240px] sm:w-64': !sidebarCollapsed,
+                   'w-20': sidebarCollapsed,
+                   'lg:w-60': !sidebarCollapsed
                }"
-               class="fixed lg:static inset-y-0 lg:inset-y-4 left-0 lg:left-4 z-50 lg:z-0 bg-indigo-950/60 lg:bg-white/5 backdrop-blur-[40px] border-r lg:border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.4)] transform transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) flex flex-col lg:rounded-[3rem] overflow-hidden lg:my-6 lg:ml-6 h-screen lg:h-[calc(100vh-3rem)]">
+               class="fixed lg:static inset-y-0 lg:inset-y-3 left-0 lg:left-3 z-50 lg:z-0 bg-indigo-950/80 lg:bg-white/5 backdrop-blur-3xl border-r lg:border border-white/10 shadow-2xl transform transition-transform duration-300 flex flex-col lg:rounded-2xl overflow-hidden lg:my-3 lg:ml-3 h-screen lg:h-[calc(100vh-1.5rem)] shrink-0">
             
             <!-- Branding Flare -->
-            <div class="flex items-center justify-between h-20 lg:h-24 px-6 border-b border-white/5 overflow-hidden">
-                <a href="/" class="flex items-center gap-3 transition-all duration-500" :class="sidebarCollapsed ? 'opacity-0 scale-50' : 'opacity-100 scale-100'">
-                    <div class="w-8 h-8 lg:w-10 lg:h-10 rounded-xl lg:rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-lg lg:text-xl shadow-lg shadow-pink-500/20">🚀</div>
-                    <span class="text-xl lg:text-2xl font-black italic tracking-tighter uppercase bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">AuraRise</span>
+            <div class="flex items-center justify-between h-16 px-5 border-b border-white/5 overflow-hidden">
+                <a href="/" class="flex items-center gap-2.5 transition-all duration-300" :class="sidebarCollapsed ? 'opacity-0 scale-50' : 'opacity-100 scale-100'">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-lg shadow-md shadow-pink-500/20">🚀</div>
+                    <span class="text-xl font-black italic tracking-tighter uppercase bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">AuraRise</span>
                 </a>
                 
                 <button @click="sidebarCollapsed = !sidebarCollapsed" class="hidden lg:flex p-2.5 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all hover:scale-110" :class="sidebarCollapsed ? 'mx-auto' : ''">
@@ -139,35 +147,74 @@
             </div>
 
             <!-- Protocol Navigation -->
-            <nav class="flex-1 px-4 py-8 space-y-3 overflow-y-auto sidebar-scroll">
-                <div class="px-4 mb-4" x-show="!sidebarCollapsed">
+            <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto sidebar-scroll">
+                <div class="px-2 mb-2" x-show="!sidebarCollapsed">
                     <button @click="openFeedback()" class="w-full relative group">
-                        <div class="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                        <div class="relative flex items-center gap-3 px-4 py-4 bg-white/5 rounded-2xl border border-white/10 transition-all group-hover:bg-white/10">
-                            <span class="text-xl">💬</span>
-                            <span class="text-[10px] font-black text-pink-400 uppercase tracking-[0.2em] italic">Contact Support</span>
+                        <div class="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl blur opacity-30 group-hover:opacity-100 transition duration-300"></div>
+                        <div class="relative flex items-center gap-2.5 px-3 py-2.5 bg-white/5 rounded-xl border border-white/10 transition-all group-hover:bg-white/10">
+                            <span class="text-base">💬</span>
+                            <span class="text-[10px] font-black text-pink-400 uppercase tracking-widest italic">Contact Support</span>
                         </div>
                     </button>
                 </div>
 
-                <div class="text-[9px] font-black text-white/20 tracking-[0.4em] uppercase mb-4 px-6 italic" x-show="!sidebarCollapsed">Menu</div>
+                <div class="text-[9px] font-black text-white/20 tracking-[0.3em] uppercase mb-2 px-4 italic" x-show="!sidebarCollapsed">Menu</div>
 
-                <template x-for="item in navItems" :key="item.href">
-                    <a :href="item.href" 
-                       @click="mobileMenuOpen = false"
-                       :class="{
-                           'bg-white/10 text-white border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.05)]': currentPath === item.href,
-                           'text-white/40 hover:bg-white/5 border-transparent hover:text-white': currentPath !== item.href,
-                           'justify-center px-0': sidebarCollapsed
-                       }" 
-                       class="flex items-center gap-4 px-6 py-4 mx-2 rounded-2xl border transition-all duration-300 group relative">
-                        <span class="text-2xl transition-transform group-hover:scale-125 duration-500" x-text="item.icon"></span>
-                        <span x-show="!sidebarCollapsed" x-text="item.label" class="text-xs font-black uppercase italic tracking-widest transition-all duration-300"></span>
-                        
-                        <!-- Tooltip -->
-                        <div x-show="sidebarCollapsed" class="absolute left-full ml-4 px-4 py-2 bg-indigo-950/40 border border-white/10 text-white font-black text-[10px] uppercase italic tracking-widest rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-all shadow-2xl" x-text="item.label"></div>
-                    </a>
-                </template>
+                <!-- Navigation Protocol Links -->
+                <a href="/dashboard" 
+                   @click="mobileMenuOpen = false"
+                   :class="currentPath === '/dashboard' ? 'bg-white/10 text-white border-white/20 shadow-md' : 'text-white/50 hover:bg-white/5 border-transparent hover:text-white'" 
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all duration-200 group relative">
+                    <span class="text-lg transition-transform group-hover:scale-110">📊</span>
+                    <span x-show="!sidebarCollapsed" class="text-xs font-bold uppercase italic tracking-wider">Dashboard</span>
+                    <div x-show="sidebarCollapsed" class="absolute left-full ml-3 px-3 py-1.5 bg-indigo-950 border border-white/10 text-white font-bold text-[10px] uppercase italic tracking-wider rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl">Dashboard</div>
+                </a>
+
+                <a href="/ai-chat-builder" 
+                   @click="mobileMenuOpen = false"
+                   :class="currentPath === '/ai-chat-builder' ? 'bg-pink-500/20 text-white border-pink-500/40 shadow-md' : 'text-pink-400 hover:bg-pink-500/10 border-pink-500/20 hover:text-white'" 
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-pink-500/30 bg-pink-500/10 transition-all duration-200 group relative">
+                    <span class="text-lg transition-transform group-hover:scale-110">💬</span>
+                    <span x-show="!sidebarCollapsed" class="text-xs font-bold uppercase italic tracking-wider text-pink-400">Build with AI</span>
+                    <span x-show="!sidebarCollapsed" class="ml-auto px-1.5 py-0.5 bg-pink-500 text-white rounded-full text-[8px] font-black uppercase italic tracking-wider">New</span>
+                    <div x-show="sidebarCollapsed" class="absolute left-full ml-3 px-3 py-1.5 bg-indigo-950 border border-white/10 text-white font-bold text-[10px] uppercase italic tracking-wider rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl">Build with AI</div>
+                </a>
+
+                <a href="/create" 
+                   @click="mobileMenuOpen = false"
+                   :class="currentPath === '/create' ? 'bg-white/10 text-white border-white/20 shadow-md' : 'text-white/50 hover:bg-white/5 border-transparent hover:text-white'" 
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all duration-200 group relative">
+                    <span class="text-lg transition-transform group-hover:scale-110">✨</span>
+                    <span x-show="!sidebarCollapsed" class="text-xs font-bold uppercase italic tracking-wider">Optimize</span>
+                    <div x-show="sidebarCollapsed" class="absolute left-full ml-3 px-3 py-1.5 bg-indigo-950 border border-white/10 text-white font-bold text-[10px] uppercase italic tracking-wider rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl">Optimize</div>
+                </a>
+
+                <a href="/build" 
+                   @click="mobileMenuOpen = false"
+                   :class="currentPath === '/build' ? 'bg-white/10 text-white border-white/20 shadow-md' : 'text-white/50 hover:bg-white/5 border-transparent hover:text-white'" 
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all duration-200 group relative">
+                    <span class="text-lg transition-transform group-hover:scale-110">📝</span>
+                    <span x-show="!sidebarCollapsed" class="text-xs font-bold uppercase italic tracking-wider">Build</span>
+                    <div x-show="sidebarCollapsed" class="absolute left-full ml-3 px-3 py-1.5 bg-indigo-950 border border-white/10 text-white font-black text-[10px] uppercase italic tracking-wider rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl">Build</div>
+                </a>
+
+                <a href="/cover-letter" 
+                   @click="mobileMenuOpen = false"
+                   :class="currentPath === '/cover-letter' ? 'bg-white/10 text-white border-white/20 shadow-md' : 'text-white/50 hover:bg-white/5 border-transparent hover:text-white'" 
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all duration-200 group relative">
+                    <span class="text-lg transition-transform group-hover:scale-110">📄</span>
+                    <span x-show="!sidebarCollapsed" class="text-xs font-bold uppercase italic tracking-wider">Cover Letter</span>
+                    <div x-show="sidebarCollapsed" class="absolute left-full ml-3 px-3 py-1.5 bg-indigo-950 border border-white/10 text-white font-bold text-[10px] uppercase italic tracking-wider rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl">Cover Letter</div>
+                </a>
+
+                <a href="/ai-interview" 
+                   @click="mobileMenuOpen = false"
+                   :class="currentPath === '/ai-interview' ? 'bg-white/10 text-white border-white/20 shadow-md' : 'text-white/50 hover:bg-white/5 border-transparent hover:text-white'" 
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all duration-200 group relative">
+                    <span class="text-lg transition-transform group-hover:scale-110">🤖</span>
+                    <span x-show="!sidebarCollapsed" class="text-xs font-bold uppercase italic tracking-wider">AI Interview</span>
+                    <div x-show="sidebarCollapsed" class="absolute left-full ml-3 px-3 py-1.5 bg-indigo-950 border border-white/10 text-white font-bold text-[10px] uppercase italic tracking-wider rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl">AI Interview</div>
+                </a>
 
                 <template x-if="isAdmin">
                     <div class="pt-6 mt-6 border-t border-white/5">
@@ -202,6 +249,16 @@
                 </div>
             </div>
         </aside>
+
+        <!-- Floating Sidebar Re-Open Button (shown when sidebar is collapsed) -->
+        <button x-show="sidebarCollapsed" x-cloak
+                @click="sidebarCollapsed = false"
+                class="hidden lg:flex fixed left-4 top-1/2 -translate-y-1/2 z-50 w-8 h-16 items-center justify-center bg-indigo-950/90 border border-white/20 rounded-r-2xl text-white/50 hover:text-white hover:bg-white/10 transition-all shadow-xl group"
+                title="Expand Sidebar">
+            <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+            </svg>
+        </button>
 
         <!-- Main Content Area -->
         <div :class="showNav ? 'lg:m-4 lg:my-6 lg:mr-6 lg:ml-2 lg:rounded-[3rem] border-0 lg:border border-white/10 bg-indigo-950/20 backdrop-blur-3xl shadow-2xl overflow-x-hidden w-full' : 'w-full'" class="flex-1 flex flex-col min-w-0 transition-all duration-500 min-h-screen sm:min-h-0">
@@ -553,7 +610,7 @@
                 const currentPath = this.currentPath.replace(/\/$/, '') || '/';
                 const publicPaths = ['/', '/login', '/register'];
                 const isPublic = publicPaths.includes(currentPath);
-                const isAppPage = ['/create', '/build', '/dashboard', '/admin', '/cover-letter', '/profile'].some(p => currentPath.startsWith(p));
+                const isAppPage = ['/create', '/build', '/dashboard', '/admin', '/cover-letter', '/profile', '/ai-chat-builder'].some(p => currentPath.startsWith(p));
                 return (Alpine.store('auth').isLoggedIn) || (!isPublic && isAppPage);
             },
             
@@ -577,21 +634,21 @@
 
                 // Set navigation based on role
                 const updateNav = () => {
-                    if (Alpine.store('auth').isLoggedIn) {
-                        if (Alpine.store('auth').isAdmin) {
-                            this.navItems = [
-                                { href: '/dashboard', icon: '📊', label: 'Dashboard' },
-                                { href: '/admin', icon: '🛡️', label: 'Admin Panel' }
-                            ];
-                        } else {
-                            this.navItems = [
-                                { href: '/dashboard', icon: '📊', label: 'Dashboard' },
-                                { href: '/create', icon: '✨', label: 'Optimize' },
-                                { href: '/build', icon: '📝', label: 'Build' },
-                                { href: '/cover-letter', icon: '📄', label: 'Cover Letter' },
-                                { href: '/ai-interview', icon: '🤖', label: 'AI Interview' },
-                            ];
-                        }
+                    if (Alpine.store('auth').isLoggedIn && Alpine.store('auth').isAdmin) {
+                        this.navItems = [
+                            { href: '/dashboard', icon: '📊', label: 'Dashboard' },
+                            { href: '/ai-chat-builder', icon: '💬', label: 'Build with AI' },
+                            { href: '/admin', icon: '🛡️', label: 'Admin Panel' }
+                        ];
+                    } else {
+                        this.navItems = [
+                            { href: '/dashboard', icon: '📊', label: 'Dashboard' },
+                            { href: '/ai-chat-builder', icon: '💬', label: 'Build with AI' },
+                            { href: '/create', icon: '✨', label: 'Optimize' },
+                            { href: '/build', icon: '📝', label: 'Build' },
+                            { href: '/cover-letter', icon: '📄', label: 'Cover Letter' },
+                            { href: '/ai-interview', icon: '🤖', label: 'AI Interview' },
+                        ];
                     }
                     this.showNav = this.shouldShowSidebar;
                 };

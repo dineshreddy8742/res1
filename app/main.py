@@ -13,7 +13,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.core.config import settings
-from app.database.connector import SupabaseConnectionManager
+from app.database.connector import FirebaseConnectionManager, SupabaseConnectionManager
 from app.api.routers.resume import resume_router
 from app.api.routers.token_usage import router as token_usage_router
 from app.api.routers.auth import auth_router
@@ -34,9 +34,10 @@ templates = Jinja2Templates(directory="app/templates")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifecycle manager for the FastAPI application."""
-    # Startup: Initialize Supabase connection
+    # Startup: Initialize Firebase connection
     try:
-        connection_manager = SupabaseConnectionManager()
+        connection_manager = FirebaseConnectionManager()
+        app.state.firebase = connection_manager
         app.state.supabase = connection_manager
         print(f"Started {settings.PROJECT_NAME} v{settings.VERSION}")
         

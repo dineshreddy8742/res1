@@ -27,10 +27,9 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "AuraRise"
     VERSION: str = "2.0.1"
 
-    # Supabase Configuration
-    SUPABASE_URL: str = ""
-    SUPABASE_ANON_KEY: str = ""
-    SUPABASE_SERVICE_ROLE_KEY: Optional[str] = None
+    # Firebase Configuration
+    FIREBASE_PROJECT_ID: str = "aurarise-resume-dinesh"
+    FIREBASE_CREDENTIALS_PATH: Optional[str] = None
 
     # AI Service Configuration (Multi-Key Rotation for 1k+ Users)
     MODEL_NAME: str = "google/gemini-2.5-flash-lite"

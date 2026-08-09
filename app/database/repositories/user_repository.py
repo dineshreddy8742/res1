@@ -12,8 +12,12 @@ class UserRepository(BaseRepository):
         super().__init__(table_name)
 
     def _get_supabase_client(self):
-        """Get the underlying Supabase client."""
-        return self.connection_manager.get_client()
+        """Get the underlying Firestore client."""
+        return self.connection_manager.get_db()
+
+    def _get_firebase_client(self):
+        """Get the underlying Firestore client."""
+        return self.connection_manager.get_db()
 
     async def create_user(self, user_data: Dict) -> Optional[str]:
         """Create a new user. Returns user ID or None if failed."""
@@ -32,6 +36,24 @@ class UserRepository(BaseRepository):
         except Exception as e:
             print(f"Error creating user: {e}")
             return None
+
+    async def check_ai_chat_limit(self, user_id: str) -> tuple[bool, int, int]:
+        """Check if user is within their daily AI generation/chat limit.
+        Returns (allowed: bool, current_today: int, max_limit: int).
+        """
+        if user_id in ("anonymous", "temp-user-id"):
+            return True, 0, 10
+
+        user = await self.get_user_by_id(user_id)
+        max_limit = user.get("daily_limit", 3) if user else 3
+        
+        from app.database.repositories.resume_repository import ResumeRepository
+        resume_repo = ResumeRepository()
+        stats = await resume_repo.get_usage_stats(user_id)
+        today_used = stats.get("today", 0)
+
+        allowed = today_used < max_limit
+        return allowed, today_used, max_limit
 
     async def get_user_by_email(self, email: str) -> Optional[Dict]:
         """Find user by email (case-insensitive)."""

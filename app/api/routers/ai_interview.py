@@ -21,6 +21,8 @@ class BookInterviewRequest(BaseModel):
     phone_number: str
     interview_date: str
     interview_time: str
+    target_company: Optional[str] = "Google"
+    target_role: Optional[str] = "Software Engineer"
 
 
 class ToggleServiceRequest(BaseModel):
@@ -63,6 +65,8 @@ async def book_interview(req: BookInterviewRequest, user_id: str = Depends(get_c
             "resume_id": req.resume_id,
             "interview_date": req.interview_date,
             "interview_time": req.interview_time,
+            "target_company": req.target_company or "Company Mock",
+            "target_role": req.target_role or "Software Engineer",
             "status": "pending",
             "created_at": datetime.now().isoformat()
         }

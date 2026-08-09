@@ -227,3 +227,22 @@ async def ai_interview_page(
         "ai_interview.html",
         {"request": request},
     )
+
+@core_web_router.get(
+    "/ai-chat-builder",
+    summary="Build with AI Chat Builder",
+    response_description="AI Chat Resume Builder page",
+    response_class=HTMLResponse,
+)
+async def ai_chat_builder_page(
+    request: Request,
+):
+    """Render the conversational AI Resume Builder page."""
+    redirect = require_login_redirect(request)
+    if redirect: return redirect
+    return templates.TemplateResponse(
+        request,
+        "ai_chat_builder.html",
+        {"request": request},
+    )
+

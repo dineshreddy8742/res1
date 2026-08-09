@@ -8,66 +8,64 @@
     <div class="absolute top-1/4 -left-20 w-[600px] h-[600px] bg-pink-500/10 rounded-full blur-[120px] animate-blob"></div>
     <div class="absolute bottom-1/4 -right-20 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px] animate-blob animation-delay-2000"></div>
     
-    <div class="relative z-10 max-w-[90rem] mx-auto py-12 px-6 lg:px-12" x-data="coverLetterApp()" x-init="init()">
+    <div class="relative z-10 max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8" x-data="coverLetterApp()" x-init="init()">
         <!-- Header Protocol -->
-        <div class="text-center mb-20">
-            <div class="flex items-center justify-center gap-4 mb-6">
-                <span class="px-5 py-2 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-[10px] font-black text-indigo-400 uppercase tracking-widest italic animate-pulse shadow-2xl">Cover Letter Generator ✨</span>
+        <div class="text-center mb-10">
+            <div class="flex items-center justify-center gap-4 mb-4">
+                <span class="px-4 py-1.5 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-[10px] font-black text-indigo-400 uppercase tracking-widest italic animate-pulse shadow-xl">Cover Letter Generator ✨</span>
             </div>
-            <h1 class="text-4xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white italic tracking-tighter leading-none mb-6 uppercase">
+            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-white italic tracking-tighter leading-tight mb-4 uppercase">
                 Cover Letter <span class="bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">Generator</span>
             </h1>
-            <p class="text-[12px] font-bold text-white/40 uppercase tracking-[0.4em] max-w-3xl mx-auto italic">
+            <p class="text-xs font-bold text-white/50 uppercase tracking-[0.3em] max-w-2xl mx-auto italic">
                 Craft professional, high-impact cover letters optimized for modern applications.
             </p>
         </div>
 
-        <div class="grid lg:grid-cols-12 gap-6 sm:gap-12 items-start relative">
+        <div class="grid lg:grid-cols-12 gap-6 items-start relative">
             <!-- Parameter Node (L) -->
-            <div class="lg:col-span-12 xl:col-span-5 space-y-8">
-                <div class="bg-white/10 backdrop-blur-3xl border border-white/20 rounded-3xl sm:rounded-[4rem] p-0.5 sm:p-1 shadow-2xl overflow-hidden group">
-                    <div class="bg-indigo-950/20 rounded-[1.7rem] sm:rounded-[3.9rem] p-6 sm:p-10 md:p-14 space-y-8 sm:space-y-12 relative overflow-hidden">
-                        <div class="absolute -right-12 -top-12 text-[10rem] text-white/5 font-black uppercase italic pointer-events-none group-hover:scale-110 transition-transform duration-1000">INPUT</div>
-                        
-                        <div class="relative z-10">
-                            <h2 class="text-3xl font-black text-white italic tracking-tighter uppercase mb-2">Application Details</h2>
-                            <p class="text-[10px] font-black text-blue-300 uppercase tracking-[0.4em]">Enter your target career parameters</p>
+            <div class="lg:col-span-5 space-y-6">
+                <div class="bg-white/10 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl overflow-hidden group relative">
+                    <div class="relative z-10 space-y-6">
+                        <div>
+                            <h2 class="text-2xl font-black text-white italic tracking-tighter uppercase mb-1">Application Details</h2>
+                            <p class="text-[10px] font-black text-blue-300 uppercase tracking-widest">Enter target career parameters</p>
                         </div>
                         
-                        <div class="space-y-8 relative z-10">
+                        <div class="space-y-5">
                             <div class="group/input">
-                                <label class="block text-[10px] font-black uppercase tracking-[0.4em] text-pink-400 mb-4 ml-4 italic group-focus-within/input:text-white transition-colors">Select Your Resume</label>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-pink-400 mb-2 italic">Select Your Resume</label>
                                 <div class="relative">
-                                    <select x-model="resumeId" class="w-full bg-indigo-950/60 border border-white/10 rounded-2xl sm:rounded-[2rem] px-6 sm:px-8 py-4 sm:py-6 text-white text-xs sm:text-sm font-black italic focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition-all appearance-none shadow-2xl">
-                                        <option value="" class="bg-indigo-900">-- SELECT YOUR ITERATION --</option>
+                                    <select x-model="resumeId" class="w-full bg-indigo-950/80 border border-white/15 rounded-xl px-4 py-3 text-white text-xs font-bold focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 transition-all appearance-none shadow-xl truncate">
+                                        <option value="" class="bg-indigo-950">-- Select Resume --</option>
                                         <template x-for="r in resumes" :key="r.id">
-                                            <option :value="r.id" class="bg-indigo-900" x-text="r.title.toUpperCase()"></option>
+                                            <option :value="r.id" class="bg-indigo-950" x-text="(r.objective_title || r.title || 'Untitled Resume').toUpperCase() + ' (' + (r.ats_score || 85) + '%)'"></option>
                                         </template>
                                     </select>
-                                    <div class="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none text-white/20">▼</div>
+                                    <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/40 text-xs">▼</div>
                                 </div>
                             </div>
                             
                             <div class="group/input">
-                                <label class="block text-[10px] font-black uppercase tracking-[0.4em] text-cyan-400 mb-4 ml-4 italic group-focus-within/input:text-white transition-colors">Target Job Title 💼</label>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-cyan-400 mb-2 italic">Target Job Title 💼</label>
                                 <input x-model="jobTitle" type="text" 
-                                       class="w-full bg-indigo-950/60 border border-white/10 rounded-2xl sm:rounded-[2rem] px-6 sm:px-8 py-4 sm:py-6 text-white text-xs sm:text-sm font-black italic focus:outline-none focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/10 transition-all shadow-2xl placeholder-white/5" 
-                                       placeholder="E.G. SOFTWARE ENGINEER">
+                                       class="w-full bg-indigo-950/80 border border-white/15 rounded-xl px-4 py-3 text-white text-xs font-bold focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all shadow-xl placeholder-white/30" 
+                                       placeholder="e.g. Software Engineer">
                             </div>
                             
                             <div class="group/input">
-                                <label class="block text-[10px] font-black uppercase tracking-[0.4em] text-yellow-400 mb-4 ml-4 italic group-focus-within/input:text-white transition-colors">Job Description 📝</label>
-                                <textarea x-model="jobDescription" rows="8" 
-                                          class="w-full bg-indigo-950/60 border border-white/10 rounded-2xl sm:rounded-[2.5rem] px-6 sm:px-8 py-4 sm:py-6 text-white text-[13px] font-medium leading-relaxed focus:outline-none focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10 transition-all shadow-2xl placeholder-white/5 scrollbar-hide resize-none" 
-                                          placeholder="Paste the target requirements here..."></textarea>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-yellow-400 mb-2 italic">Job Description 📝</label>
+                                <textarea x-model="jobDescription" rows="6" 
+                                          class="w-full bg-indigo-950/80 border border-white/15 rounded-xl px-4 py-3 text-white text-xs font-medium leading-relaxed focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 transition-all shadow-xl placeholder-white/30 resize-none" 
+                                          placeholder="Paste target job requirements here..."></textarea>
                             </div>
 
                             <button @click="generate()" :disabled="loading || !canGenerate()" 
-                                    class="relative w-full overflow-hidden rounded-2xl sm:rounded-[3rem] bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 py-6 sm:py-8 shadow-[0_20px_50px_rgba(236,72,153,0.3)] transition-all hover:scale-[1.03] active:scale-[0.97] disabled:opacity-50 disabled:grayscale">
-                                <span x-show="!loading" class="text-lg sm:text-2xl font-black text-white flex items-center justify-center gap-4 italic uppercase tracking-tighter">Generate Cover Letter ✨</span>
-                                <div x-show="loading" class="flex items-center justify-center gap-4">
-                                    <div class="animate-spin text-3xl">⚙️</div>
-                                    <span class="text-[12px] font-black text-white uppercase tracking-[0.4em]">AI is Generating...</span>
+                                    class="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 py-4 px-6 shadow-xl shadow-pink-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 font-black text-white italic uppercase tracking-wider text-sm">
+                                <span x-show="!loading" class="flex items-center justify-center gap-2">Generate Cover Letter ✨</span>
+                                <div x-show="loading" class="flex items-center justify-center gap-3">
+                                    <div class="animate-spin text-xl">⚙️</div>
+                                    <span class="text-xs uppercase tracking-widest">AI is Generating...</span>
                                 </div>
                             </button>
                         </div>
@@ -76,53 +74,49 @@
             </div>
 
             <!-- Deployment Field (R) -->
-            <div class="lg:col-span-12 xl:col-span-7">
-                <div class="bg-white/10 backdrop-blur-[50px] border border-white/20 rounded-3xl sm:rounded-[4rem] p-0.5 sm:p-1 shadow-2xl min-h-[500px] sm:min-h-[750px] flex flex-col group">
-                    <div class="bg-indigo-950/20 flex-1 rounded-[1.7rem] sm:rounded-[3.9rem] p-6 sm:p-8 md:p-14 flex flex-col relative overflow-hidden">
-                        <div class="absolute -right-12 -top-12 text-[10rem] text-white/5 font-black uppercase italic pointer-events-none group-hover:scale-110 transition-transform duration-1000">DEPLOY</div>
-                        
-                        <div class="flex flex-col md:flex-row items-center justify-between gap-8 mb-12 pb-10 border-b border-white/5 relative z-10">
+            <div class="lg:col-span-7">
+                <div class="bg-white/10 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl min-h-[480px] flex flex-col group relative">
+                    <div class="flex-1 flex flex-col relative z-10">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-white/10">
                             <div>
-                                <h2 class="text-4xl font-black text-white italic tracking-tighter uppercase mb-2">The Document</h2>
-                                <p class="text-[10px] font-black text-blue-300 uppercase tracking-[0.4em]">Ready for professional application</p>
+                                <h2 class="text-2xl font-black text-white italic tracking-tighter uppercase mb-1">Generated Cover Letter</h2>
+                                <p class="text-[10px] font-black text-blue-300 uppercase tracking-widest">Ready for job applications</p>
                             </div>
-                            <div class="flex items-center gap-4" x-show="coverLetter">
-                                <button @click="copyToClipboard()" class="px-8 py-4 rounded-2xl bg-white/10 border border-white/20 text-white font-black text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all active:scale-95 shadow-xl">
+                            <div class="flex items-center gap-3" x-show="coverLetter">
+                                <button @click="copyToClipboard()" class="px-5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white font-black text-xs uppercase tracking-wider hover:bg-white/20 transition-all active:scale-95 shadow-lg">
                                     Copy 📋
                                 </button>
-                                <button @click="downloadPDF()" class="px-10 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-black text-[10px] uppercase tracking-widest shadow-[0_15px_30px_rgba(6,182,212,0.3)] hover:scale-105 active:scale-95 transition-all">
+                                <button @click="downloadPDF()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:scale-105 active:scale-95 transition-all">
                                     Download PDF 📥
                                 </button>
                             </div>
                         </div>
 
                         <!-- Interface States -->
-                        <div class="flex-1 flex flex-col items-center justify-center relative z-10">
+                        <div class="flex-1 flex flex-col items-center justify-center">
                             <!-- Empty ERA -->
-                            <div x-show="!coverLetter && !loading" class="text-center max-w-sm px-4">
-                                <div class="w-32 h-32 mx-auto rounded-[3rem] bg-indigo-500/10 flex items-center justify-center text-6xl mb-10 border border-white/10 shadow-3xl animate-float grayscale opacity-20">📝</div>
-                                <h3 class="text-2xl font-black text-white/20 italic tracking-tighter mb-4 uppercase">Document Empty</h3>
-                                <p class="text-[10px] font-bold text-white/10 uppercase tracking-[0.4em] leading-relaxed italic">Enter details on the left to generate your cover letter.</p>
+                            <div x-show="!coverLetter && !loading" class="text-center max-w-sm px-4 py-8">
+                                <div class="w-20 h-20 mx-auto rounded-2xl bg-indigo-500/10 flex items-center justify-center text-4xl mb-4 border border-white/10 shadow-xl opacity-40">📝</div>
+                                <h3 class="text-xl font-black text-white/40 italic tracking-tight mb-2 uppercase">Document Empty</h3>
+                                <p class="text-xs font-bold text-white/40 uppercase tracking-wider leading-relaxed">Enter details on the left to generate your ATS-optimized cover letter.</p>
                             </div>
 
                             <!-- Cooking ERA -->
-                            <div x-show="loading" class="text-center">
-                                <div class="relative w-32 h-32 mx-auto mb-10">
-                                    <div class="absolute inset-0 border-2 border-pink-500/10 rounded-full"></div>
+                            <div x-show="loading" class="text-center py-8">
+                                <div class="relative w-20 h-20 mx-auto mb-6">
+                                    <div class="absolute inset-0 border-2 border-pink-500/20 rounded-full"></div>
                                     <div class="absolute inset-0 border-t-2 border-pink-500 rounded-full animate-spin"></div>
-                                    <div class="absolute inset-0 flex items-center justify-center text-4xl">✨</div>
-                                    <div class="absolute inset-0 bg-pink-500/20 blur-3xl rounded-full"></div>
+                                    <div class="absolute inset-0 flex items-center justify-center text-2xl">✨</div>
                                 </div>
-                                <h3 class="text-4xl font-black text-white italic tracking-tighter uppercase animate-pulse mb-4 leading-none">AI is Generating...</h3>
-                                <p class="text-[10px] font-black text-pink-400 uppercase tracking-[0.5em] italic">Crafting your professional document</p>
+                                <h3 class="text-2xl font-black text-white italic uppercase animate-pulse mb-2">AI is Generating...</h3>
+                                <p class="text-xs font-black text-pink-400 uppercase tracking-widest italic">Crafting your professional document</p>
                             </div>
 
                             <!-- Final Manifest -->
                             <div x-show="coverLetter" class="w-full animate-fade-in">
-                                <div class="bg-white border-8 border-white rounded-[3rem] shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden">
-                                     <div class="bg-white/50 backdrop-blur-sm p-10 sm:p-16 text-slate-900 relative group/paper">
-                                         <div class="absolute top-8 right-8 text-4xl font-black italic text-slate-100 uppercase select-none pointer-events-none">OFFICIAL SIGNAL</div>
-                                         <div class="whitespace-pre-wrap text-[14px] sm:text-[18px] leading-[1.8] font-medium selection:bg-pink-100" x-text="coverLetter"></div>
+                                <div class="bg-white border-4 border-white rounded-2xl shadow-2xl overflow-hidden">
+                                     <div class="p-6 sm:p-10 text-slate-900 relative">
+                                         <div class="whitespace-pre-wrap text-xs sm:text-sm leading-relaxed font-medium text-slate-800" x-text="coverLetter"></div>
                                      </div>
                                 </div>
                             </div>
