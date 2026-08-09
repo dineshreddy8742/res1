@@ -14,84 +14,49 @@
     <div class="max-w-7xl mx-auto space-y-6 relative z-10">
 
         <!-- Top Header & Usage Counter -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-2xl shadow-2xl">
-            <div class="flex items-center gap-4">
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-3xl shadow-lg shadow-pink-500/30">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/5 border border-white/10 rounded-3xl p-4 sm:p-6 backdrop-blur-2xl shadow-2xl">
+            <div class="flex items-center gap-3 sm:gap-4">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-2xl sm:text-3xl shadow-lg shadow-pink-500/30 flex-shrink-0">
                     🤖
                 </div>
                 <div>
-                    <h1 class="text-2xl sm:text-3xl font-black italic tracking-tighter uppercase bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+                    <h1 class="text-xl sm:text-3xl font-black italic tracking-tighter uppercase bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
                         Build with AI
                     </h1>
-                    <p class="text-xs font-bold text-white/50 uppercase tracking-widest italic mt-0.5">
+                    <p class="text-[10px] sm:text-xs font-bold text-white/50 uppercase tracking-widest italic mt-0.5">
                         Interactive Resume Assistant & PDF Generator
                     </p>
                 </div>
             </div>
 
             <!-- Header Action Controls -->
-            <div class="flex items-center gap-3">
-                <button @click="startNewChat()" class="flex items-center gap-2 px-5 py-3 rounded-2xl bg-pink-500/20 hover:bg-pink-500/30 border border-pink-500/40 text-pink-300 font-black uppercase italic tracking-wider text-xs transition-all shadow-lg">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                <button @click="showMobileHistory = !showMobileHistory" class="lg:hidden flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-300 font-black uppercase italic tracking-wider text-xs transition-all shadow-lg">
+                    <span>📜</span>
+                    <span x-text="showMobileHistory ? 'Hide History' : 'History'"></span>
+                </button>
+
+                <button @click="startNewChat()" class="flex items-center gap-1.5 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl bg-pink-500/20 hover:bg-pink-500/30 border border-pink-500/40 text-pink-300 font-black uppercase italic tracking-wider text-xs transition-all shadow-lg">
                     <span>✨</span>
                     <span>New Chat</span>
                 </button>
 
-                <div class="flex items-center gap-3 bg-white/5 border border-white/10 px-5 py-3 rounded-2xl">
-                    <span class="text-xl">⚡</span>
+                <div class="flex items-center gap-2 sm:gap-3 bg-white/5 border border-white/10 px-3.5 py-2.5 sm:px-5 sm:py-3 rounded-2xl">
+                    <span class="text-lg sm:text-xl">⚡</span>
                     <div class="text-right">
-                        <p class="text-[10px] font-black uppercase tracking-widest text-pink-400">Daily Quota</p>
+                        <p class="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-pink-400">Daily Quota</p>
                         <p class="text-xs font-black text-white italic" x-text="usage.current_today + ' / ' + usage.max_limit + ' Used'"></p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Main Layout (History Sidebar + Active Chat Area) -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+        <!-- Main Layout (Active Chat Area FIRST on Mobile + History Drawer/Sidebar) -->
+        <div class="flex flex-col lg:grid lg:grid-cols-4 gap-6 items-start">
 
-            <!-- Chat History Sidebar -->
-            <div class="lg:col-span-1 bg-white/5 border border-white/10 rounded-[2rem] p-5 backdrop-blur-2xl shadow-2xl space-y-4">
-                <div class="flex items-center justify-between pb-3 border-b border-white/10">
-                    <div class="flex items-center gap-2">
-                        <span class="text-lg">📜</span>
-                        <h3 class="text-xs font-black uppercase italic tracking-widest text-white/80">Chat History</h3>
-                    </div>
-                    <button @click="loadHistory()" class="text-xs text-white/40 hover:text-white transition-colors" title="Refresh History">
-                        🔄
-                    </button>
-                </div>
+            <!-- Main Chat Conversation Panel (Appears FIRST on Mobile) -->
+            <div class="w-full lg:col-span-3 bg-indigo-950/40 border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] backdrop-blur-3xl shadow-2xl overflow-hidden flex flex-col h-[75vh] lg:h-[72vh] order-1 lg:order-2">
 
-                <!-- History Sessions List -->
-                <div class="space-y-2 max-h-[55vh] overflow-y-auto sidebar-scroll pr-1">
-                    <template x-for="chat in pastChats" :key="chat.id">
-                        <div @click="loadChatSession(chat.id)"
-                             :class="currentChatId === chat.id 
-                                     ? 'bg-pink-500/20 border-pink-500/40 text-white' 
-                                     : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white'"
-                             class="p-3.5 rounded-2xl border transition-all cursor-pointer group relative flex items-center justify-between gap-2">
-                            
-                            <div class="flex-1 min-w-0">
-                                <p class="text-xs font-bold truncate" x-text="chat.title || 'Resume Chat'"></p>
-                                <p class="text-[9px] text-white/40 font-mono mt-0.5" x-text="formatChatDate(chat.updated_at)"></p>
-                            </div>
-
-                            <button @click.stop="deleteChatSession(chat.id)" class="text-xs opacity-0 group-hover:opacity-100 hover:text-red-400 p-1.5 transition-all" title="Delete Chat">
-                                🗑️
-                            </button>
-                        </div>
-                    </template>
-
-                    <template x-if="pastChats.length === 0">
-                        <div class="p-6 text-center text-white/40 space-y-2">
-                            <span class="text-2xl opacity-30">💬</span>
-                            <p class="text-xs font-medium">No previous chats yet. Start typing to build your resume!</p>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            <!-- Main Chat Conversation Panel -->
-            <div class="lg:col-span-3 bg-indigo-950/40 border border-white/10 rounded-[2.5rem] backdrop-blur-3xl shadow-2xl overflow-hidden flex flex-col h-[70vh]">
                 
                 <!-- Message List Thread -->
                 <div class="flex-1 overflow-y-auto p-6 space-y-6 sidebar-scroll" id="chatThread">
@@ -148,15 +113,15 @@
                 </div>
 
                 <!-- Quick Action Suggestions Bar -->
-                <div class="px-6 py-3 bg-black/20 border-t border-white/5 flex flex-wrap gap-2 items-center">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-white/40 italic mr-2">Suggestions:</span>
-                    <button @click="setInput('I want to build a Software Engineer resume from scratch.')" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/15 transition-all">
+                <div class="px-4 sm:px-6 py-3 bg-black/20 border-t border-white/5 flex overflow-x-auto whitespace-nowrap gap-2 items-center sidebar-scroll">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-white/40 italic mr-2 flex-shrink-0">Suggestions:</span>
+                    <button @click="setInput('I want to build a Software Engineer resume from scratch.')" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/15 transition-all flex-shrink-0">
                         💻 Software Engineer
                     </button>
-                    <button @click="setInput('I am a final year student specializing in IT/CS seeking internships.')" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/15 transition-all">
+                    <button @click="setInput('I am a final year student specializing in IT/CS seeking internships.')" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/15 transition-all flex-shrink-0">
                         🎓 Student / Fresher
                     </button>
-                    <button @click="triggerFileInput()" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-pink-500/20 border border-pink-500/40 text-pink-300 hover:bg-pink-500/30 transition-all">
+                    <button @click="triggerFileInput()" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-pink-500/20 border border-pink-500/40 text-pink-300 hover:bg-pink-500/30 transition-all flex-shrink-0">
                         📎 Upload Old Resume (PDF/DOCX/Image)
                     </button>
                 </div>
@@ -192,6 +157,54 @@
                 </form>
             </div>
 
+            <!-- Chat History Sidebar (Collapsible on Mobile, Fixed Sidebar on Desktop) -->
+            <div x-show="showMobileHistory || window.innerWidth >= 1024"
+                 x-transition
+                 class="w-full lg:col-span-1 bg-white/5 border border-white/10 rounded-[2rem] p-5 backdrop-blur-2xl shadow-2xl space-y-4 order-2 lg:order-1">
+                <div class="flex items-center justify-between pb-3 border-b border-white/10">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">📜</span>
+                        <h3 class="text-xs font-black uppercase italic tracking-widest text-white/80">Chat History</h3>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button @click="loadHistory()" class="text-xs text-white/40 hover:text-white transition-colors" title="Refresh History">
+                            🔄
+                        </button>
+                        <button @click="showMobileHistory = false" class="lg:hidden text-xs text-white/40 hover:text-white transition-colors">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+
+                <!-- History Sessions List -->
+                <div class="space-y-2 max-h-[55vh] overflow-y-auto sidebar-scroll pr-1">
+                    <template x-for="chat in pastChats" :key="chat.id">
+                        <div @click="loadChatSession(chat.id); showMobileHistory = false"
+                             :class="currentChatId === chat.id 
+                                     ? 'bg-pink-500/20 border-pink-500/40 text-white' 
+                                     : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white'"
+                             class="p-3.5 rounded-2xl border transition-all cursor-pointer group relative flex items-center justify-between gap-2">
+                            
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-bold truncate" x-text="chat.title || 'Resume Chat'"></p>
+                                <p class="text-[9px] text-white/40 font-mono mt-0.5" x-text="formatChatDate(chat.updated_at)"></p>
+                            </div>
+
+                            <button @click.stop="deleteChatSession(chat.id)" class="text-xs opacity-0 group-hover:opacity-100 hover:text-red-400 p-1.5 transition-all" title="Delete Chat">
+                                🗑️
+                            </button>
+                        </div>
+                    </template>
+
+                    <template x-if="pastChats.length === 0">
+                        <div class="p-6 text-center text-white/40 space-y-2">
+                            <span class="text-2xl opacity-30">💬</span>
+                            <p class="text-xs font-medium">No previous chats yet. Start typing to build your resume!</p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
         </div>
 
     </div>
@@ -200,7 +213,9 @@
 <script>
 function aiChatBuilderApp() {
     return {
+        showMobileHistory: false,
         messages: [
+
             {
                 role: 'assistant',
                 content: "👋 Hello! I am your AuraRise AI Resume Architect.\n\nYou can chat with me to build a brand new ATS-optimized resume, or upload your existing resume (PDF, Word DOCX, or Image scan) using the 📎 button!"
